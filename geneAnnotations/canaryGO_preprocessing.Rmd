@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+
 ```{r}
 # load in annotations file file
 canary_annotations <- readr::read_delim("~/Documents/GitHub/CanarySeq/geneAnnotations/eggNOG-mapper-v2/canary.annotations.tsv", 
@@ -148,7 +149,7 @@ results.table.p= all_res_final[which(all_res_final$weightFisher<=0.05),]
 results.table.bh=all_res_final[which(all_res_final$p.adj<=0.05),]
  
 #save first top 50 ontolgies sorted by adjusted pvalues
-write.table(all_res_final[1:50,],"summary_topGO_analysis.csv",sep=",",quote=FALSE,row.names=FALSE)
+write.table(all_res_final[1:50,],"~/Desktop/canary/summary_topGO_analysis.csv",sep=",",quote=FALSE,row.names=FALSE)
  
 # PLOT the GO hierarchy plot: the enriched GO terms are colored in yellow/red according to significance level
  
