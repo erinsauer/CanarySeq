@@ -9,6 +9,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+library(topGO)
+```
 
 
 ```{r}
@@ -76,6 +80,7 @@ genesMatched <- unique(toupper(names(canary_geneID2GO_filtered))[matches])
 # Identify genes names that are DE in edgeR with FDR < 0.05
 # total of 273 first time I ran this with default settings
 DEgenes <- filter(MGLpost0, FDR < 0.05) %>% pull(`...1`)
+DEgenes <- filter(MGLpost0, FDR < 0.05 & abs(logFC) > 1) %>% pull(`...1`)
 
 #count how many of the genes that are DE have GO terms.
 # 187
@@ -102,6 +107,10 @@ canary_geneID2GO_filtered_DE <- canary_geneID2GO_filtered_DE[!duplicated(canary_
 # Here are the two that are make canary_geneID2GO_filtered_DE longer than DEgenesGO
 names(canary_geneID2GO_filtered_DE)[!(DEgenesGO %in% names(canary_geneID2GO_filtered_DE))]
 
+#Let me also get my full edgeR gene list.
+canary_geneID2GO_filtered_edgeR <- canary_geneID2GO_filtered[which(toupper(names(canary_geneID2GO_filtered)) %in% genesMatched)] 
+canary_geneID2GO_filtered_edgeR <- canary_geneID2GO_filtered_edgeR[!duplicated(canary_geneID2GO_filtered_edgeR)]
+
 # weird formatting creating the geneList for topGO. this code seemed to work for me.
 all_genes <- factor(as.integer(toupper(MGLpost0$...1) %in% DEgenesGO)) # create 0 1 factors.
 names(all_genes) <- toupper(MGLpost0$...1) # add gene names
@@ -114,7 +123,9 @@ GOdata=new('topGOdata',
            ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
            allGenes = all_genes, # all 10188 genes that are in MGLpost0 data from edgeR. factor=1 for those that are DE.
            annot = annFUN.gene2GO, # annotation function for custom annotation
-           gene2GO = canary_geneID2GO_filtered # annotation db from eggNOG output.
+           # gene2GO = canary_geneID2GO_filtered # annotation db from eggNOG output.
+# I am thinking about switching this for one filtered to just edgeR genes:
+           gene2GO = canary_geneID2GO_filtered_edgeR # annotation db from eggNOG output filtered down to just genes in both edgeR and eggNOG.
            # gene2GO = canary_geneID2GO_filtered_DE#, 
            # geneSel = DE_genes
            )
