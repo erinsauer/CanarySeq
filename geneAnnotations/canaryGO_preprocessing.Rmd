@@ -1,0 +1,158 @@
+---
+title: "canaryGO_preprocessing"
+author: "Carson Stacy"
+date: "2022-07-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# load in annotations file file
+canary_annotations <- readr::read_delim("~/Documents/GitHub/CanarySeq/geneAnnotations/eggNOG-mapper-v2/canary.annotations.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE, skip = 4) %>%
+  dplyr::mutate(geneID_ncbi = stringr::str_sub(`#query`, start=24, end= 37))#make new column that is just the ncbi geneID
+
+# make sure it looks pretty
+View(canary_annotations)
+```
+
+```{r}
+geneID2GO_build <- tibble(
+                          # canary_annotations$geneID_ncbi,
+                          canary_annotations$Preferred_name,
+                          "\t",
+                          canary_annotations$GOs
+                          )
+# write out the geneID2GO.map file
+write.table(geneID2GO_build, file="~/Desktop/geneID2GO.map",
+            quote = F, row.names = F, col.names = F)
+
+# read in with readMappings
+canary_geneID2GO <- topGO::readMappings(file = "~/Desktop/geneid2GO.map")
+
+#remove genes that don't have a gene name from eggNOG output
+canary_geneID2GO_filtered <- canary_geneID2GO[canary_geneID2GO != "-"]
+
+# save these filtered mappings
+save(canary_geneID2GO_filtered, file = "~/Desktop/canary/canaryGeneID2GOMappings.RData")
+```
+
+
+I want to combine gene names from eggNOG-mapper output with gene names from EdgeR output
+```{r}
+# load in edgeR output
+MGLpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGLpost0.csv")
+
+#load in canary geneID2GO map
+load(file = "~/Desktop/canary/canaryGeneID2GOMappings.RData")
+
+# Numeric ID values (in edgeR output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
+matches <- which(toupper(names(canary_geneID2GO_filtered)) %in% MGLpost0$...1)
+          # these names came from `edgeR diff expression.R` file
+
+# Numeric ID values (in eggNOG output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
+matches_rnaIndex <- which(MGLpost0$...1 %in%  toupper(names(canary_geneID2GO_filtered)))
+
+```
+
+```{r}
+# eggNOG genes that didn't match
+noMatch_eggNOG <- toupper(names(canary_geneID2GO_filtered))[-matches]
+
+noMatch_edgeR <- MGLpost0$...1[-matches_rnaIndex]
+```
+
+```{r}
+#genes that are in both.
+# used unique because there are some duplicates in eggNOG output. (per isoform)
+genesMatched <- unique(toupper(names(canary_geneID2GO_filtered))[matches])
+
+# Identify genes names that are DE in edgeR with FDR < 0.05
+# total of 273 first time I ran this with default settings
+DEgenes <- filter(MGLpost0, FDR < 0.05) %>% pull(`...1`)
+
+#count how many of the genes that are DE have GO terms.
+# 187
+length(which(DEgenes %in% genesMatched))
+
+# genes names with GO terms and DE.
+DEgeneswithGO <- which(DEgenes %in% genesMatched)
+
+# select only genes that are DE and have GO terms
+DEgenesGO <- DEgenes[DEgeneswithGO]
+```
+Here we see only 187 of the 273 $(68%%)$ DE genes in condition MGLpost0. It looks like many genes that don't have a "name" in the canary genome don't get matched to a gene with GO's attached. Not sure the best solution for this. Maybe trying InterProScan.
+
+For current analysis, let me try doing GO analysis with just these genes. will figure out rest later.
+
+```{r}
+#first, let's subset our canary geneIDtoGO to just these genes.
+canary_geneID2GO_filtered_DE <- #unique(
+  canary_geneID2GO_filtered[which(toupper(names(canary_geneID2GO_filtered)) %in% DEgenesGO)] 
+ # )
+canary_geneID2GO_filtered_DE <- canary_geneID2GO_filtered_DE[!duplicated(canary_geneID2GO_filtered_DE)]
+
+# it is weird there is a difference between length of these two when there shouldn't be. 
+# Here are the two that are make canary_geneID2GO_filtered_DE longer than DEgenesGO
+names(canary_geneID2GO_filtered_DE)[!(DEgenesGO %in% names(canary_geneID2GO_filtered_DE))]
+
+# weird formatting creating the geneList for topGO. this code seemed to work for me.
+all_genes <- factor(as.integer(toupper(MGLpost0$...1) %in% DEgenesGO)) # create 0 1 factors.
+names(all_genes) <- toupper(MGLpost0$...1) # add gene names
+str(all_genes)
+```
+
+```{r}
+#create topGO data obj.
+GOdata=new('topGOdata', 
+           ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+           allGenes = all_genes, # all 10188 genes that are in MGLpost0 data from edgeR. factor=1 for those that are DE.
+           annot = annFUN.gene2GO, # annotation function for custom annotation
+           gene2GO = canary_geneID2GO_filtered # annotation db from eggNOG output.
+           # gene2GO = canary_geneID2GO_filtered_DE#, 
+           # geneSel = DE_genes
+           )
+```
+
+```{r}
+# define test using the classic algorithm with fisher 
+#(refer to Alexa,A., Rahnenführer,J. and Lengauer,T. (2006) Improved scoring of functional groups from gene expression data by decorrelating GO graph structure. Bioinformatics, 22, 1600–1607.
+# for how the different algorithms work)
+classic_fisher_result=runTest(GOdata, algorithm='classic', statistic='fisher')
+```
+
+```{r}
+# define test using the weight01 algorithm (default) with fisher
+weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher') 
+ 
+# generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
+allGO=usedGO(GOdata)
+all_res=GenTable(GOdata, weightFisher=weight_fisher_result, orderBy='weightFisher', topNodes=length(allGO))
+
+#performing BH correction on our p values
+p.adj=round(p.adjust(all_res$weightFisher,method="BH"),digits = 4)
+ 
+# create the file with all the statistics from GO analysis
+all_res_final=cbind(all_res,p.adj)
+all_res_final=all_res_final[order(all_res_final$p.adj),]
+ 
+#get list of significant GO before multiple testing correction
+results.table.p= all_res_final[which(all_res_final$weightFisher<=0.05),]
+ 
+#get list of significant GO after multiple testing correction
+results.table.bh=all_res_final[which(all_res_final$p.adj<=0.05),]
+ 
+#save first top 50 ontolgies sorted by adjusted pvalues
+write.table(all_res_final[1:50,],"summary_topGO_analysis.csv",sep=",",quote=FALSE,row.names=FALSE)
+ 
+# PLOT the GO hierarchy plot: the enriched GO terms are colored in yellow/red according to significance level
+ 
+pdf(file='~/Desktop/canary/topGOPlot_fullnames.pdf', height=12, width=12, paper='special', pointsize=18)
+showSigOfNodes(GOdata, score(weight_fisher_result), useInfo = "none", sigForAll=FALSE, firstSigNodes=2,.NO.CHAR=50)
+dev.off()
+```
