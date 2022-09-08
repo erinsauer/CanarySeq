@@ -1,0 +1,253 @@
+---
+title: "biomaRt canaryGO prep"
+author: "Carson Stacy"
+date: "2022-09-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(topGO)
+library(biomaRt)
+```
+
+```{r}
+
+#load in edgeR output to get gene names
+# load in edgeR output
+MGLpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGLpost0.csv")
+MGpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGpost0.csv")
+
+# load in InterProScan annotations file
+
+InterProScan_annotations <- readr::read_delim("~/Documents/GitHub/CanarySeq/geneAnnotations/canaryGOviaIPS.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    col_names = FALSE, na = "NA", trim_ws = TRUE)
+#give useful column names
+colnames(InterProScan_annotations) <- 
+  c(
+    'accessionID',
+    'seqMD5',
+    'seq_len',
+    'analysis_type',
+    'sign_accession',
+    'sign_description',
+    'start',
+    'stop',
+    'e_val',
+    'match_status',
+    'date_run',
+    'IPannot_accession',
+    'IPannot_description',
+    'GOterms'
+  )
+
+#Total of 472k rows, how many unique genes? First let's get the gene names from column 1 transcript IDs
+
+# I commend this out when rerunning due to the call it makes
+# mart <- useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
+
+transcript_ids <- #InterProScan_annotations$accessionID 
+  #note these weren't all of the genes that we have. I'll use edgeR input instead to get them all.
+  MGLpost0$...1
+
+res <- getBM(attributes = c('ensembl_transcript_id',
+                            'ensembl_peptide_id',
+                            'ensembl_gene_id', 
+                            'uniprot_gn_symbol',
+                            'wikigene_name',
+                            'entrezgene_id',
+                            'external_gene_name',
+                            'go_id',
+                            'description'
+                            ),
+             # filters = 'ensembl_transcript_id', 
+             values = transcript_ids,
+             mart = mart)
+
+
+# Great, I got GO terms for each gene with this. Need to format them properly.
+
+#first let me get GO terms grouped to gene names
+res_min <- res %>% 
+  mutate(wikigene_name = ifelse(wikigene_name %in% "", external_gene_name, wikigene_name))%>%
+  group_by(ensembl_gene_id) %>%
+  mutate(GOterms = paste0(go_id, collapse = ",")) %>%
+  slice_head(n=1) %>% # get only one row per gene
+  ungroup()
+  #mutate(GOterms = gsub("^;+|;+$|(;)+", "\\1", GOterms, perl=TRUE)) # %>%  # tidy up the extra ;;; in Go terms
+# res_min <- res2 %>%  slice_head(n=1) %>% 
+
+res_min <- res_min %>%
+  mutate(GOterms = gsub("^,+|,+$|(,)+", "\\1", GOterms, perl=TRUE)) %>%  # tidy up the extra ;;; in Go terms
+  mutate_all(na_if,"")
+
+# check to see how gene names have GO terms
+## external_gene_names
+res_min %>% 
+  drop_na(GOterms, external_gene_name) %>% 
+  pull(external_gene_name) %>% 
+  unique() %>% 
+  length() #7179
+
+#wikigene names
+res_min %>% 
+  drop_na(GOterms, wikigene_name) %>% 
+  pull(wikigene_name) %>% 
+  unique() %>%
+  length() #8252
+```
+
+Now let's create files needed to load these in as annotationDBs into topGO. First I am trying to just use the GO terms pulled from BioMart DBs.
+```{r}
+# canary_annotations_BMwiki <- res_min %>% drop_na(GOterms, wikigene_name)
+
+geneID2GO_build_BM <- tibble(
+                          # canary_annotations$geneID_ncbi,
+                          res_min$wikigene_name,
+                          "\t",
+                          res_min$GOterms
+                          )
+# write out the geneID2GO_BM.map file
+write.table(geneID2GO_build_BM, file="~/Desktop/geneID2GO_BM.map",
+            quote = F, row.names = F, col.names = F)
+
+# read in with readMappings
+canary_geneID2GO_BM <- topGO::readMappings(file = "~/Desktop/geneid2GO_BM.map")
+
+# save these mappings
+save(canary_geneID2GO_BM, file = "~/Desktop/canary/canaryGeneID2GOMappings_BM.RData")
+```
+
+Now get Gene expression data. Loaded in from EdgeR
+```{r}
+
+#load in canary geneID2GO map
+load(file = "~/Desktop/canary/canaryGeneID2GOMappings_BM.RData")
+
+# Numeric ID values (in edgeR output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
+matches <- which(toupper(names(canary_geneID2GO_BM)) %in% MGLpost0$...1)
+          # these names came from `edgeR diff expression.R` file
+
+# Numeric ID values (in eggNOG output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
+matches_rnaIndex <- which(MGLpost0$...1 %in% toupper(names(canary_geneID2GO_BM)))
+
+```
+
+```{r}
+noMatch_BMwiki <- toupper(names(canary_geneID2GO_BM))[-matches]
+
+noMatch_edgeR.BMwiki <- MGLpost0$...1[-matches_rnaIndex]
+
+head(noMatch_edgeR.BMwiki)
+```
+
+# Choose DEgenes filter here:
+
+```{r}
+#genes that are in both.
+# used unique because there are some duplicates in eggNOG output. (per isoform)
+genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
+
+# Identify genes names that are DE in edgeR with FDR < 0.05
+# total of 273 first time I ran this with default settings
+DEgenes <- filter(MGLpost0, FDR < 0.05) %>% pull(`...1`)
+DEgenes <- filter(MGLpost0, FDR < 0.05 & abs(logFC) > 1) %>% pull(`...1`)
+DEgenes <- filter(MGLpost0, abs(logFC) > 0.4) %>% pull(`...1`)
+DEgenes <- filter(MGLpost0, -(logFC) > 0.4 & PValue < 0.05) %>% pull(`...1`)
+DEgenes <- filter(MGLpost0, (logFC) > 0.585) %>% pull(`...1`)
+DEgenes <- filter(MGLpost0, FDR < 0.05 & logFC < -0.585) %>% pull(`...1`)
+
+DEgenes <- filter(MGLpost0, logFC > 0.585 & PValue < 0.1) %>% pull(`...1`)
+# DEgenes <- filter(MGpost0, logFC < -0.585 & PValue < 0.1) %>% pull(`...1`)
+#Fold change of 1.5
+
+#count how many of the genes that are DE have GO terms.
+# 159
+length(which(DEgenes %in% genesMatched))
+
+# genes names with GO terms and DE.
+DEgeneswithGO <- which(DEgenes %in% genesMatched)
+
+# select only genes that are DE and have GO terms
+DEgenesGO <- DEgenes[DEgeneswithGO]
+
+DEgenes[-DEgeneswithGO]
+write.table(DEgenes[-DEgeneswithGO],"~/Desktop/canary/noMatchDEgenes.csv",sep=",",quote=FALSE,row.names=FALSE)
+length(DEgenes[-DEgeneswithGO]) #count now that don't have GO terms anymore
+```
+
+
+
+
+
+
+```{r}
+#first, let's subset our canary geneIDtoGO to just these genes.
+canary_geneID2GO_BM_DE <- #unique(
+  canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenesGO)] 
+ # )
+# canary_geneID2GO_BM_DE <- canary_geneID2GO_BM_DE[!duplicated(canary_geneID2GO_BM_DE)]
+
+
+names(canary_geneID2GO_BM_DE)[!(DEgenesGO %in% names(canary_geneID2GO_BM_DE))]
+
+#Let me also get my full edgeR gene list.
+canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% genesMatched)] 
+# canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM_edgeR[!duplicated(canary_geneID2GO_BM_edgeR)]
+
+# weird formatting creating the geneList for topGO. this code seemed to work for me.
+all_genes <- factor(as.integer(toupper(MGLpost0$...1) %in% DEgenesGO)) # create 0 1 factors.
+names(all_genes) <- toupper(MGLpost0$...1) # add gene names
+str(all_genes)
+```
+
+```{r}
+#create topGO data obj.
+GOdata=new('topGOdata', 
+           ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+           allGenes = all_genes, # all 10188 genes that are in MGLpost0 data from edgeR. factor=1 for those that are DE.
+           annot = annFUN.gene2GO, # annotation function for custom annotation
+           # gene2GO = canary_geneID2GO_BM # annotation db from eggNOG output.
+# I am thinking about switching this for one filtered to just edgeR genes:
+           gene2GO = canary_geneID2GO_BM_edgeR # annotation db from BiomaRt.
+           # gene2GO = canary_geneID2GO_BM_DE#, 
+           # geneSel = DE_genes
+           )
+```
+
+
+```{r}
+# define test using the weight01 algorithm (default) with fisher
+weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher') 
+ 
+# generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
+allGO=usedGO(GOdata)
+all_res=GenTable(GOdata, weightFisher=weight_fisher_result, orderBy='weightFisher', topNodes=length(allGO), numChar = 200)
+
+#performing BH correction on our p values
+p.adj=round(p.adjust(all_res$weightFisher,method="BH"),digits = 4)
+ 
+# create the file with all the statistics from GO analysis
+all_res_final=cbind(all_res,p.adj)
+all_res_final=all_res_final[order(all_res_final$p.adj),]
+ 
+#get list of significant GO before multiple testing correction
+results.table.p= all_res_final[which(as.numeric(all_res_final$weightFisher)<=0.1),]
+ 
+#get list of significant GO after multiple testing correction
+results.table.bh=all_res_final[which(all_res_final$p.adj<=0.05),]
+ 
+#save first top 50 ontolgies sorted by adjusted pvalues
+write.table(all_res_final[1:50,],"~/Desktop/canary/summary_topGO_analysis.csv",sep=",",quote=FALSE,row.names=FALSE)
+ 
+# PLOT the GO hierarchy plot: the enriched GO terms are colored in yellow/red according to significance level
+ 
+pdf(file='~/Desktop/canary/topGOPlot_fullnames.pdf', height=12, width=12, paper='special', pointsize=18)
+showSigOfNodes(GOdata, score(weight_fisher_result), useInfo = "none", sigForAll=FALSE, firstSigNodes=2,.NO.CHAR=50)
+dev.off()
+```

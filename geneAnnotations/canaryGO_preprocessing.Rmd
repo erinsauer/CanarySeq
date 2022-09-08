@@ -14,7 +14,6 @@ library(tidyverse)
 library(topGO)
 ```
 
-
 ```{r}
 # load in annotations file file
 canary_annotations <- readr::read_delim("~/Documents/GitHub/CanarySeq/geneAnnotations/eggNOG-mapper-v2/canary.annotations.tsv", 
@@ -47,21 +46,22 @@ canary_geneID2GO_filtered <- canary_geneID2GO[canary_geneID2GO != "-"]
 save(canary_geneID2GO_filtered, file = "~/Desktop/canary/canaryGeneID2GOMappings.RData")
 ```
 
-
 I want to combine gene names from eggNOG-mapper output with gene names from EdgeR output
+
 ```{r}
 # load in edgeR output
 MGLpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGLpost0.csv")
+MGpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGpost0.csv")
 
 #load in canary geneID2GO map
 load(file = "~/Desktop/canary/canaryGeneID2GOMappings.RData")
 
 # Numeric ID values (in edgeR output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
-matches <- which(toupper(names(canary_geneID2GO_filtered)) %in% MGLpost0$...1)
+matches <- which(toupper(names(canary_geneID2GO_filtered)) %in% MGpost0$...1)
           # these names came from `edgeR diff expression.R` file
 
 # Numeric ID values (in eggNOG output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
-matches_rnaIndex <- which(MGLpost0$...1 %in%  toupper(names(canary_geneID2GO_filtered)))
+matches_rnaIndex <- which(MGpost0$...1 %in%  toupper(names(canary_geneID2GO_filtered)))
 
 ```
 
@@ -69,7 +69,7 @@ matches_rnaIndex <- which(MGLpost0$...1 %in%  toupper(names(canary_geneID2GO_fil
 # eggNOG genes that didn't match
 noMatch_eggNOG <- toupper(names(canary_geneID2GO_filtered))[-matches]
 
-noMatch_edgeR <- MGLpost0$...1[-matches_rnaIndex]
+noMatch_edgeR <- MGpost0$...1[-matches_rnaIndex]
 ```
 
 ```{r}
@@ -79,8 +79,14 @@ genesMatched <- unique(toupper(names(canary_geneID2GO_filtered))[matches])
 
 # Identify genes names that are DE in edgeR with FDR < 0.05
 # total of 273 first time I ran this with default settings
-DEgenes <- filter(MGLpost0, FDR < 0.05) %>% pull(`...1`)
-DEgenes <- filter(MGLpost0, FDR < 0.05 & abs(logFC) > 1) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, FDR < 0.05) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, FDR < 0.05 & abs(logFC) > 1) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, abs(logFC) > 0.4) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, -(logFC) > 0.4 & PValue < 0.05) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, (logFC) > 1) %>% pull(`...1`)
+
+DEgenes <- filter(MGpost0, logFC > 0.585 & PValue < 0.1) %>% pull(`...1`)
+#Fold change of 1.5
 
 #count how many of the genes that are DE have GO terms.
 # 187
@@ -92,6 +98,7 @@ DEgeneswithGO <- which(DEgenes %in% genesMatched)
 # select only genes that are DE and have GO terms
 DEgenesGO <- DEgenes[DEgeneswithGO]
 ```
+
 Here we see only 187 of the 273 $(68%%)$ DE genes in condition MGLpost0. It looks like many genes that don't have a "name" in the canary genome don't get matched to a gene with GO's attached. Not sure the best solution for this. Maybe trying InterProScan.
 
 For current analysis, let me try doing GO analysis with just these genes. will figure out rest later.
@@ -112,8 +119,8 @@ canary_geneID2GO_filtered_edgeR <- canary_geneID2GO_filtered[which(toupper(names
 canary_geneID2GO_filtered_edgeR <- canary_geneID2GO_filtered_edgeR[!duplicated(canary_geneID2GO_filtered_edgeR)]
 
 # weird formatting creating the geneList for topGO. this code seemed to work for me.
-all_genes <- factor(as.integer(toupper(MGLpost0$...1) %in% DEgenesGO)) # create 0 1 factors.
-names(all_genes) <- toupper(MGLpost0$...1) # add gene names
+all_genes <- factor(as.integer(toupper(MGpost0$...1) %in% DEgenesGO)) # create 0 1 factors.
+names(all_genes) <- toupper(MGpost0$...1) # add gene names
 str(all_genes)
 ```
 
@@ -144,7 +151,7 @@ weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher')
  
 # generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
 allGO=usedGO(GOdata)
-all_res=GenTable(GOdata, weightFisher=weight_fisher_result, orderBy='weightFisher', topNodes=length(allGO))
+all_res=GenTable(GOdata, weightFisher=weight_fisher_result, orderBy='weightFisher', topNodes=length(allGO), numChar = 200)
 
 #performing BH correction on our p values
 p.adj=round(p.adjust(all_res$weightFisher,method="BH"),digits = 4)
@@ -168,3 +175,91 @@ pdf(file='~/Desktop/canary/topGOPlot_fullnames.pdf', height=12, width=12, paper=
 showSigOfNodes(GOdata, score(weight_fisher_result), useInfo = "none", sigForAll=FALSE, firstSigNodes=2,.NO.CHAR=50)
 dev.off()
 ```
+
+#TODO
+- Get GO terms for the missing DE genes
+- use MGpost0 instead of MGLpost0
+
+
+InterProScan .tsv file processing 
+```{r}
+# load in InterProScan annotations file
+
+InterProScan_annotations <- readr::read_delim("~/Documents/GitHub/CanarySeq/geneAnnotations/canaryGOviaIPS.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    col_names = FALSE, na = "NA", trim_ws = TRUE)
+#give useful column names
+colnames(InterProScan_annotations) <- 
+  c(
+    'accessionID',
+    'seqMD5',
+    'seq_len',
+    'analysis_type',
+    'sign_accession',
+    'sign_description',
+    'start',
+    'stop',
+    'e_val',
+    'match_status',
+    'date_run',
+    'IPannot_accession',
+    'IPannot_description',
+    'GOterms'
+  )
+
+#Total of 472k rows, how many unique genes? First let's get the gene names from column 1 transcript IDs
+
+library(biomaRt)
+
+mart <- useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
+
+transcript_ids <- InterProScan_annotations$accessionID
+
+res <- getBM(attributes = c('ensembl_transcript_id',
+                            'ensembl_peptide_id',
+                            'ensembl_gene_id', 
+                            'wikigene_name',
+                            'entrezgene_id',
+                            'external_gene_name',
+                            'go_id',
+                            'description'
+                            ),
+             # filters = 'ensembl_transcript_id', 
+             values = transcript_ids,
+             mart = mart)
+
+head(res)
+
+# Great, I got GO terms for each gene with this. Need to format them properly.
+
+#first let me get GO terms grouped to gene names
+res2 <- res %>%
+  group_by(wikigene_name) %>%
+  mutate(GOterms = paste0(go_id, collapse = ";")) %>%
+  slice_head(n=1) %>% # get only one row per gene
+  ungroup()
+  #mutate(GOterms = gsub("^;+|;+$|(;)+", "\\1", GOterms, perl=TRUE)) # %>%  # tidy up the extra ;;; in Go terms
+# res_min <- res2 %>%  slice_head(n=1) %>% 
+
+res_min <- res2 %>%
+  mutate(GOterms = gsub("^;+|;+$|(;)+", "\\1", GOterms, perl=TRUE)) %>%  # tidy up the extra ;;; in Go terms
+  mutate_all(na_if,"")
+
+# check to see how gene names have GO terms
+## external_gene_names
+res_min %>% 
+  drop_na(GOterms, external_gene_name) %>% 
+  pull(external_gene_name) %>% 
+  unique() %>% 
+  length() #7179
+
+#wikigene names
+res_min %>% 
+  drop_na(GOterms, wikigene_name) %>% 
+  pull(wikigene_name) %>% 
+  unique() %>%
+  length() #8252
+
+
+```
+
