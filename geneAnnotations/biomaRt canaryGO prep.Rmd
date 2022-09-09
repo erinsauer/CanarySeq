@@ -16,6 +16,10 @@ library(biomaRt)
 ```
 
 ```{r}
+#TODO: CHECK HOW MANY lncRNA show up in our edgeR outputs.
+# if they aren't interesting, let's get rid of them and redo our edgeR output.
+# also probably throw out the tRNAs anyway.
+# I'll check if BiomaRt works for this.
 
 #load in edgeR output to get gene names
 # load in edgeR output
@@ -53,7 +57,7 @@ colnames(InterProScan_annotations) <-
 
 transcript_ids <- #InterProScan_annotations$accessionID 
   #note these weren't all of the genes that we have. I'll use edgeR input instead to get them all.
-  MGLpost0$...1
+  MGpost0$...1
 
 res <- getBM(attributes = c('ensembl_transcript_id',
                             'ensembl_peptide_id',
@@ -130,18 +134,18 @@ Now get Gene expression data. Loaded in from EdgeR
 load(file = "~/Desktop/canary/canaryGeneID2GOMappings_BM.RData")
 
 # Numeric ID values (in edgeR output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
-matches <- which(toupper(names(canary_geneID2GO_BM)) %in% MGLpost0$...1)
+matches <- which(toupper(names(canary_geneID2GO_BM)) %in% MGpost0$...1)
           # these names came from `edgeR diff expression.R` file
 
 # Numeric ID values (in eggNOG output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
-matches_rnaIndex <- which(MGLpost0$...1 %in% toupper(names(canary_geneID2GO_BM)))
+matches_rnaIndex <- which(MGpost0$...1 %in% toupper(names(canary_geneID2GO_BM)))
 
 ```
 
 ```{r}
 noMatch_BMwiki <- toupper(names(canary_geneID2GO_BM))[-matches]
 
-noMatch_edgeR.BMwiki <- MGLpost0$...1[-matches_rnaIndex]
+noMatch_edgeR.BMwiki <- MGpost0$...1[-matches_rnaIndex]
 
 head(noMatch_edgeR.BMwiki)
 ```
@@ -155,16 +159,19 @@ genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
 
 # Identify genes names that are DE in edgeR with FDR < 0.05
 # total of 273 first time I ran this with default settings
-DEgenes <- filter(MGLpost0, FDR < 0.05) %>% pull(`...1`)
-DEgenes <- filter(MGLpost0, FDR < 0.05 & abs(logFC) > 1) %>% pull(`...1`)
-DEgenes <- filter(MGLpost0, abs(logFC) > 0.4) %>% pull(`...1`)
-DEgenes <- filter(MGLpost0, -(logFC) > 0.4 & PValue < 0.05) %>% pull(`...1`)
-DEgenes <- filter(MGLpost0, (logFC) > 0.585) %>% pull(`...1`)
-DEgenes <- filter(MGLpost0, FDR < 0.05 & logFC < -0.585) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, FDR < 0.05) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, FDR < 0.05 & abs(logFC) > 1) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, abs(logFC) > 0.4) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, -(logFC) > 0.4 & PValue < 0.05) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, (logFC) > 0.585) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, FDR < 0.05 & logFC < -0.585) %>% pull(`...1`)
 
-DEgenes <- filter(MGLpost0, logFC > 0.585 & PValue < 0.1) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, logFC > 0.585 & PValue < 0.05) %>% pull(`...1`)
 # DEgenes <- filter(MGpost0, logFC < -0.585 & PValue < 0.1) %>% pull(`...1`)
 #Fold change of 1.5
+
+DEgenes <- filter(MGpost0, abs(logFC) > 0.2 ) %>% pull(`...1`)
+
 
 #count how many of the genes that are DE have GO terms.
 # 159
@@ -178,7 +185,11 @@ DEgenesGO <- DEgenes[DEgeneswithGO]
 
 DEgenes[-DEgeneswithGO]
 write.table(DEgenes[-DEgeneswithGO],"~/Desktop/canary/noMatchDEgenes.csv",sep=",",quote=FALSE,row.names=FALSE)
-length(DEgenes[-DEgeneswithGO]) #count now that don't have GO terms anymore
+length(DEgenes[-DEgeneswithGO]) #count now that don't have GO terms
+tmp <- DEgenes[-DEgeneswithGO]
+
+tmp
+res_min$wikigene_name[res_min$wikigene_name %in% tmp]
 ```
 
 
@@ -201,8 +212,8 @@ canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM[which(toupper(names(canary_gene
 # canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM_edgeR[!duplicated(canary_geneID2GO_BM_edgeR)]
 
 # weird formatting creating the geneList for topGO. this code seemed to work for me.
-all_genes <- factor(as.integer(toupper(MGLpost0$...1) %in% DEgenesGO)) # create 0 1 factors.
-names(all_genes) <- toupper(MGLpost0$...1) # add gene names
+all_genes <- factor(as.integer(toupper(MGpost0$...1) %in% DEgenesGO)) # create 0 1 factors.
+names(all_genes) <- toupper(MGpost0$...1) # add gene names
 str(all_genes)
 ```
 
@@ -210,7 +221,7 @@ str(all_genes)
 #create topGO data obj.
 GOdata=new('topGOdata', 
            ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
-           allGenes = all_genes, # all 10188 genes that are in MGLpost0 data from edgeR. factor=1 for those that are DE.
+           allGenes = all_genes, # all 10188 genes that are in MGpost0 data from edgeR. factor=1 for those that are DE.
            annot = annFUN.gene2GO, # annotation function for custom annotation
            # gene2GO = canary_geneID2GO_BM # annotation db from eggNOG output.
 # I am thinking about switching this for one filtered to just edgeR genes:
