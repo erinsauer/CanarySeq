@@ -203,20 +203,35 @@ GCFcanaryGenotype <- read_delim("~/Documents/GitHub/CanarySeq/Reference/GCFcanar
     col_names = FALSE, trim_ws = TRUE, skip = 4)
 View(GCFcanaryGenotype)
 
-gtf <- GCFcanaryGenotype %>%
-  filter(X3 == "gene")
+gtf <- dplyr::filter(GCFcanaryGenotype, X3 == "gene")
 
-fasta <- read_file("~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna")
+# fasta <- read_file("~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna")
 
-library(bedr)
+# library(bedr)
 
-get.fasta(
-  gtf,
-  fasta = '~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna',
-  check.chr = FALSE,
-  check.zero.based = FALSE,
-  output.fasta = TRUE
-)
+# get.fasta(
+#   gtf,
+#   fasta = '~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna',
+#   check.chr = FALSE,
+#   check.zero.based = FALSE,
+#   output.fasta = TRUE
+# )
+
+#load in fasta file
+# install.packages("seqinr")
+# library(seqinr)
+fasta <- seqinr::read.fasta(file = "~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna", 
+                            seqtype = "DNA")#, 
+                            # as.string = TRUE)
+
+seqinr::getAnnot(fasta[[c("NW_022041571.1")]])
+
+seqinr::write.fasta(fasta[c("NW_022041571.1", "NW_022041620.1")], 
+                    names = c("NW_022041571.1", "NW_022041620.1"),
+                    file.out = "~/Desktop/canary/tmp.fa"
+                    )
+
+#Okay enough wasting time. Let's use the gffread utility on the HPC and just use that output to get our fasta file and be done with it.
 ```
 
 
