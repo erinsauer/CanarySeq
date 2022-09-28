@@ -53,7 +53,7 @@ colnames(InterProScan_annotations) <-
 #Total of 472k rows, how many unique genes? First let's get the gene names from column 1 transcript IDs
 
 # I commend this out when rerunning due to the call it makes
-# mart <- useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
+mart <- useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
 
 transcript_ids <- #InterProScan_annotations$accessionID 
   #note these weren't all of the genes that we have. I'll use edgeR input instead to get them all.
@@ -106,19 +106,65 @@ res_min %>%
   length() #8252
 ```
 
+Add in new GO terms identified by Blast2GO
+
+```{r}
+
+###NOTE: looks like I NEED TO HAVE all gene names, not just the ones from res_min. I'm losing genes from the lack of gene names. I need to map them all to edgeR output instead here!
+
+geneID2GO_combine_names <- res_min[,c(5,7,10)] %>%
+  mutate(...1 = ifelse(is.na(res_min$wikigene_name), res_min$external_gene_name, res_min$wikigene_name)) %>%
+  dplyr::select(-c(wikigene_name, external_gene_name))
+
+geneID_names <- left_join(MGpost0[1], geneID2GO_combine_names, by = "...1")
+colnames(geneID_names)[1] <- "seq_name"
+
+# build the table of original GO terms with gene IDs
+geneID2GO_build_BM <- tibble(
+                          # canary_annotations$geneID_ncbi,
+                          geneID_names$seq_name,
+                          "\t",
+                          geneID_names$GOterms
+                          )
+
+colnames(geneID2GO_build_BM) <- c("seq_name", "\t", "go_i_ds")
+
+# load in Blast2GO results
+Blast2GO <- read_delim("~/Desktop/canary/newGOterms_nomatchDEgenes.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE) %>%
+  janitor::clean_names() %>%
+  dplyr::select(seq_name, go_i_ds) %>%
+#change formatting of the GO term seperators to ,
+  dplyr::mutate(go_i_ds = str_replace_all(go_i_ds, "; ", ",")) %>%
+  dplyr::mutate(go_i_ds = str_replace_all(go_i_ds, "[PFC]:", ""))
+
+combinedGOterms <- left_join(geneID2GO_build_BM, Blast2GO, by = "seq_name")
+
+# now condense the two go_i_ds columns into single column of GO terms.
+combinedGOterms <- 
+  tidyr::unite(combinedGOterms,
+               GOterms,
+               go_i_ds.x:go_i_ds.y, 
+                 na.rm = TRUE, remove = FALSE,
+                 sep = ",")
+```
+
 Now let's create files needed to load these in as annotationDBs into topGO. First I am trying to just use the GO terms pulled from BioMart DBs.
 ```{r}
 # canary_annotations_BMwiki <- res_min %>% drop_na(GOterms, wikigene_name)
 
 geneID2GO_build_BM <- tibble(
                           # canary_annotations$geneID_ncbi,
-                          res_min$wikigene_name,
+                          seq_name = combinedGOterms$seq_name,
                           "\t",
-                          res_min$GOterms
+                          GOterms = combinedGOterms$GOterms
                           )
+
 # write out the geneID2GO_BM.map file
 write.table(geneID2GO_build_BM, file="~/Desktop/geneID2GO_BM.map",
             quote = F, row.names = F, col.names = F)
+save(geneID2GO_build_BM, file = "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO.RData")
 
 # read in with readMappings
 canary_geneID2GO_BM <- topGO::readMappings(file = "~/Desktop/geneid2GO_BM.map")
@@ -163,15 +209,32 @@ DEgenes <- filter(MGpost0, FDR < 0.05) %>% pull(`...1`)
 DEgenes <- filter(MGpost0, FDR < 0.05 & abs(logFC) > 1) %>% pull(`...1`)
 DEgenes <- filter(MGpost0, abs(logFC) > 0.4) %>% pull(`...1`)
 DEgenes <- filter(MGpost0, -(logFC) > 0.4 & PValue < 0.05) %>% pull(`...1`)
-DEgenes <- filter(MGpost0, (logFC) > 0.585) %>% pull(`...1`)
-DEgenes <- filter(MGpost0, FDR < 0.05 & logFC < -0.585) %>% pull(`...1`)
+# DEgenes <- filter(MGpost0, (logFC) > 0.585) %>% pull(`...1`)
+# DEgenes <- filter(MGpost0, FDR < 0.05 & logFC < -0.585) %>% pull(`...1`)
 
-DEgenes <- filter(MGpost0, logFC > 0.585 & PValue < 0.05) %>% pull(`...1`)
+# not great results on this one: no FDR sig results
+# DEgenes <- filter(MGpost0, logFC > 0.585 & PValue < 0.05) %>% pull(`...1`)
 # DEgenes <- filter(MGpost0, logFC < -0.585 & PValue < 0.1) %>% pull(`...1`)
 #Fold change of 1.5
 
-DEgenes <- filter(MGpost0, abs(logFC) > 0.2 ) %>% pull(`...1`)
 
+# this DEgene gives lot's of good results once adding in B2GO results
+# DEgenes <- filter(MGpost0, abs(logFC) > 0.2 ) %>% pull(`...1`)
+# surprisingly this one also looks pretty good. Next is seeing if pval effects.
+DEgenes <- filter(MGpost0, logFC > 0.2 ) %>% pull(`...1`)
+# this resulted in one single GO term being upregulated (inflammation)
+DEgenes <- filter(MGpost0, logFC > 0.2 & PValue < 0.05) %>% pull(`...1`)
+# now let's do the repressed genes as above
+DEgenes <- filter(MGpost0, logFC < -0.2 ) %>% pull(`...1`)
+# this resulted in one single GO term being upregulated (inflammation)
+DEgenes <- filter(MGpost0, logFC < -0.2 & PValue < 0.05) %>% pull(`...1`)
+
+# try using a different cutoff value for logFC per https://rdrr.io/bioc/edgeR/man/glmTreat.html
+# for the upregulated genes, log2(1.1) gives sig results, but log2(1.2) doesn't give fdr corrected sig results.
+DEgenes <- filter(MGpost0, logFC > log2(1.2)) %>% pull(`...1`)
+#for downlregulated here, the log(1.1) and log(1.2) give similar results
+# DEgenes <- filter(MGpost0, logFC < -log2(1.2)) %>% pull(`...1`)
+# DEgenes <- filter(MGpost0, abs(logFC) > log2(1.2)) %>% pull(`...1`)
 
 #count how many of the genes that are DE have GO terms.
 # 159
@@ -192,57 +255,13 @@ tmp
 res_min$wikigene_name[res_min$wikigene_name %in% tmp]
 ```
 
-# Parse the gene IDs for DEgenes[-DEgeneswithGO] from the gtf file
-
-This is needed to epost with ncbi to get the fasta files for all of these naughty genes. I suppose I could also just get them directly from the fasta file... Hmm will need to see which is preferable.
-
-```{r}
-library(readr)
-GCFcanaryGenotype <- read_delim("~/Documents/GitHub/CanarySeq/Reference/GCFcanaryGenotype.gtf", 
-    delim = "\t", escape_double = FALSE, 
-    col_names = FALSE, trim_ws = TRUE, skip = 4)
-View(GCFcanaryGenotype)
-
-gtf <- dplyr::filter(GCFcanaryGenotype, X3 == "gene")
-
-# fasta <- read_file("~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna")
-
-# library(bedr)
-
-# get.fasta(
-#   gtf,
-#   fasta = '~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna',
-#   check.chr = FALSE,
-#   check.zero.based = FALSE,
-#   output.fasta = TRUE
-# )
-
-#load in fasta file
-# install.packages("seqinr")
-# library(seqinr)
-fasta <- seqinr::read.fasta(file = "~/Desktop/canary/GCF_007115625.1_cibio_Scana_2019_genomic.fna", 
-                            seqtype = "DNA")#, 
-                            # as.string = TRUE)
-
-seqinr::getAnnot(fasta[[c("NW_022041571.1")]])
-
-seqinr::write.fasta(fasta[c("NW_022041571.1", "NW_022041620.1")], 
-                    names = c("NW_022041571.1", "NW_022041620.1"),
-                    file.out = "~/Desktop/canary/tmp.fa"
-                    )
-
-#Okay enough wasting time. Let's use the gffread utility on the HPC and just use that output to get our fasta file and be done with it.
-```
-
-
-
 
 
 
 ```{r}
 #first, let's subset our canary geneIDtoGO to just these genes.
 canary_geneID2GO_BM_DE <- #unique(
-  canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenesGO)] 
+  canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenesGO)]
  # )
 # canary_geneID2GO_BM_DE <- canary_geneID2GO_BM_DE[!duplicated(canary_geneID2GO_BM_DE)]
 
@@ -250,7 +269,7 @@ canary_geneID2GO_BM_DE <- #unique(
 names(canary_geneID2GO_BM_DE)[!(DEgenesGO %in% names(canary_geneID2GO_BM_DE))]
 
 #Let me also get my full edgeR gene list.
-canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% genesMatched)] 
+canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% genesMatched)]
 # canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM_edgeR[!duplicated(canary_geneID2GO_BM_edgeR)]
 
 # weird formatting creating the geneList for topGO. this code seemed to work for me.
@@ -293,10 +312,10 @@ all_res_final=all_res_final[order(all_res_final$p.adj),]
 results.table.p= all_res_final[which(as.numeric(all_res_final$weightFisher)<=0.1),]
  
 #get list of significant GO after multiple testing correction
-results.table.bh=all_res_final[which(all_res_final$p.adj<=0.05),]
+results.table.bh=all_res_final[which(all_res_final$p.adj<=0.1),]
  
 #save first top 50 ontolgies sorted by adjusted pvalues
-write.table(all_res_final[1:50,],"~/Desktop/canary/summary_topGO_analysis.csv",sep=",",quote=FALSE,row.names=FALSE)
+# write.table(all_res_final[1:50,],"~/Desktop/canary/summary_topGO_analysis.csv",sep=",",quote=FALSE,row.names=FALSE)
  
 # PLOT the GO hierarchy plot: the enriched GO terms are colored in yellow/red according to significance level
  
@@ -304,3 +323,12 @@ pdf(file='~/Desktop/canary/topGOPlot_fullnames.pdf', height=12, width=12, paper=
 showSigOfNodes(GOdata, score(weight_fisher_result), useInfo = "none", sigForAll=FALSE, firstSigNodes=2,.NO.CHAR=50)
 dev.off()
 ```
+
+
+TEMPORARY:
+```{r}
+# save the upregulated results table for log2(1.1)
+# up1.1.results.table.p <- tmp.results.table.p
+# up1.1.results.table.bh <- tmp.results.table.bh
+```
+
