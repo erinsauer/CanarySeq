@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006412,translation,352,112,51.75,1.0e-26,0
+GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,21,6.03,2.4e-08,1e-04
+GO:0042274,ribosomal small subunit biogenesis,25,12,3.68,3.1e-08,1e-04
+GO:0002181,cytoplasmic translation,41,15,6.03,1.6e-07,5e-04
+GO:0015074,DNA integration,33,17,4.85,6.9e-07,0.0016
+GO:0006278,RNA-dependent DNA biosynthetic process,79,23,11.61,1.0e-06,0.002
+GO:0006310,DNA recombination,161,27,23.67,1.5e-05,0.0255
+GO:0075713,establishment of integrated proviral latency,20,11,2.94,3.1e-05,0.0411
+GO:0044826,viral genome integration into host DNA,20,11,2.94,3.1e-05,0.0411
+GO:0046718,viral entry into host cell,50,17,7.35,7.8e-05,0.093
+GO:0006281,DNA repair,244,37,35.87,0.00025,0.2568
+GO:0032508,DNA duplex unwinding,37,13,5.44,0.00026,0.2568
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,8,2.06,0.00028,0.2568
+GO:0050790,regulation of catalytic activity,671,80,98.64,0.00033,0.281
+GO:0006364,rRNA processing,85,20,12.5,0.00084,0.6676
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,1.18,0.00258,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,46,32.64,0.00308,1
+GO:0006508,proteolysis,735,89,108.05,0.00313,1
+GO:0060059,embryonic retina morphogenesis in camera-type eye,3,3,0.44,0.00317,1
+GO:0050917,sensory perception of umami taste,3,3,0.44,0.00317,1
+GO:0097112,gamma-aminobutyric acid receptor clustering,3,3,0.44,0.00317,1
+GO:0090179,planar cell polarity pathway involved in neural tube closure,3,3,0.44,0.00317,1
+GO:0035176,social behavior,13,6,1.91,0.00676,1
+GO:0016310,phosphorylation,845,120,124.22,0.00981,1
+GO:0007601,visual perception,26,10,3.82,0.00990,1
+GO:0010842,retina layer formation,4,3,0.59,0.01128,1
+GO:0098719,sodium ion import across plasma membrane,4,3,0.59,0.01128,1
+GO:0090103,cochlea morphogenesis,4,3,0.59,0.01128,1
+GO:0071539,protein localization to centrosome,22,8,3.23,0.01511,1
+GO:0006897,endocytosis,179,21,26.31,0.01560,1
+GO:0016032,viral process,170,29,24.99,0.01976,1
+GO:2000059,negative regulation of ubiquitin-dependent protein catabolic process,31,7,4.56,0.01987,1
+GO:1902473,regulation of protein localization to synapse,6,3,0.88,0.02157,1
+GO:0048016,inositol phosphate-mediated signaling,22,5,3.23,0.02159,1
+GO:0036335,intestinal stem cell homeostasis,2,2,0.29,0.02159,1
+GO:0021794,thalamus development,2,2,0.29,0.02159,1
+GO:0001827,inner cell mass cell fate commitment,2,2,0.29,0.02159,1
+GO:0001828,inner cell mass cellular morphogenesis,2,2,0.29,0.02159,1
+GO:0060022,hard palate development,2,2,0.29,0.02159,1
+GO:0007021,tubulin complex assembly,2,2,0.29,0.02159,1
+GO:0033693,neurofilament bundle assembly,2,2,0.29,0.02159,1
+GO:2001311,lysobisphosphatidic acid metabolic process,2,2,0.29,0.02159,1
+GO:0060374,mast cell differentiation,2,2,0.29,0.02159,1
+GO:0008594,photoreceptor cell morphogenesis,2,2,0.29,0.02159,1
+GO:0120197,mucociliary clearance,2,2,0.29,0.02159,1
+GO:0060134,prepulse inhibition,2,2,0.29,0.02159,1
+GO:0120222,regulation of blastocyst development,2,2,0.29,0.02159,1
+GO:0052651,monoacylglycerol catabolic process,2,2,0.29,0.02159,1
+GO:0060235,lens induction in camera-type eye,2,2,0.29,0.02159,1
+GO:0035998,7,8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.29,0.02159,1

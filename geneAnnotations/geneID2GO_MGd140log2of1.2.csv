@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:1904707,positive regulation of vascular associated smooth muscle cell proliferation,11,6,1.03,0.00020,1
+GO:0070374,positive regulation of ERK1 and ERK2 cascade,56,14,5.25,0.00049,1
+GO:0006954,inflammatory response,196,33,18.38,0.00057,1
+GO:2001034,positive regulation of double-strand break repair via nonhomologous end joining,9,5,0.84,0.00065,1
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,5,0.84,0.00065,1
+GO:0045071,negative regulation of viral genome replication,14,6,1.31,0.00120,1
+GO:0048538,thymus development,26,8,2.44,0.00193,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,4,0.66,0.00213,1
+GO:0042742,defense response to bacterium,54,11,5.06,0.00297,1
+GO:0048711,positive regulation of astrocyte differentiation,4,3,0.38,0.00305,1
+GO:0032700,negative regulation of interleukin-17 production,4,3,0.38,0.00305,1
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.38,0.00305,1
+GO:0051754,meiotic sister chromatid cohesion, centromeric,4,3,0.38,0.00305,1
+GO:0003007,heart morphogenesis,60,10,5.62,0.00391,1
+GO:0045087,innate immune response,170,29,15.94,0.00452,1
+GO:2000249,regulation of actin cytoskeleton reorganization,16,6,1.5,0.00652,1
+GO:0071380,cellular response to prostaglandin E stimulus,5,3,0.47,0.00710,1
+GO:1900227,positive regulation of NLRP3 inflammasome complex assembly,5,3,0.47,0.00710,1
+GO:0002314,germinal center B cell differentiation,5,3,0.47,0.00710,1
+GO:0061436,establishment of skin barrier,5,3,0.47,0.00710,1
+GO:0030509,BMP signaling pathway,55,9,5.16,0.00819,1
+GO:0045637,regulation of myeloid cell differentiation,89,15,8.34,0.00864,1
+GO:0008272,sulfate transport,5,4,0.47,0.00873,1
+GO:0032964,collagen biosynthetic process,7,4,0.66,0.00873,1
+GO:0035564,regulation of kidney size,3,3,0.28,0.00875,1
+GO:1902730,positive regulation of proteoglycan biosynthetic process,5,3,0.47,0.00876,1
+GO:0010226,response to lithium ion,6,3,0.56,0.00876,1
+GO:0007586,digestion,22,4,2.06,0.00877,1
+GO:2000660,negative regulation of interleukin-1-mediated signaling pathway,2,2,0.19,0.00878,1
+GO:0033292,T-tubule organization,2,2,0.19,0.00878,1
+GO:0097647,amylin receptor signaling pathway,2,2,0.19,0.00878,1
+GO:0000050,urea cycle,2,2,0.19,0.00878,1
+GO:0019441,tryptophan catabolic process to kynurenine,2,2,0.19,0.00878,1
+GO:0007386,compartment pattern specification,2,2,0.19,0.00878,1
+GO:0032286,central nervous system myelin maintenance,2,2,0.19,0.00878,1
+GO:0046059,dAMP catabolic process,2,2,0.19,0.00878,1
+GO:0032696,negative regulation of interleukin-13 production,2,2,0.19,0.00878,1
+GO:0003273,cell migration involved in endocardial cushion formation,2,2,0.19,0.00878,1
+GO:0006196,AMP catabolic process,2,2,0.19,0.00878,1
+GO:0006157,deoxyadenosine catabolic process,2,2,0.19,0.00878,1
+GO:0071650,negative regulation of chemokine (C-C motif) ligand 5 production,2,2,0.19,0.00878,1
+GO:0098708,glucose import across plasma membrane,2,2,0.19,0.00878,1
+GO:0034166,toll-like receptor 10 signaling pathway,2,2,0.19,0.00878,1
+GO:0046533,negative regulation of photoreceptor cell differentiation,2,2,0.19,0.00878,1
+GO:0090129,positive regulation of synapse maturation,2,2,0.19,0.00878,1
+GO:0030187,melatonin biosynthetic process,2,2,0.19,0.00878,1
+GO:0042659,regulation of cell fate specification,2,2,0.19,0.00878,1
+GO:0014807,regulation of somitogenesis,2,2,0.19,0.00878,1
+GO:0050873,brown fat cell differentiation,26,7,2.44,0.00959,1
+GO:0048536,spleen development,16,6,1.5,0.00959,1

@@ -110,7 +110,7 @@ Add in new GO terms identified by Blast2GO
 
 ```{r}
 
-###NOTE: looks like I NEED TO HAVE all gene names, not just the ones from res_min. I'm losing genes from the lack of gene names. I need to map them all to edgeR output instead here!
+###NOTE: looks like I NEEDed TO HAVE all gene names, not just the ones from res_min. I'm losing genes from the lack of gene names. I need to map them all to edgeR output instead here!
 
 geneID2GO_combine_names <- res_min[,c(5,7,10)] %>%
   mutate(...1 = ifelse(is.na(res_min$wikigene_name), res_min$external_gene_name, res_min$wikigene_name)) %>%
@@ -189,6 +189,7 @@ matches_rnaIndex <- which(MGpost0$...1 %in% toupper(names(canary_geneID2GO_BM)))
 ```
 
 ```{r}
+# I don't think i need these.
 noMatch_BMwiki <- toupper(names(canary_geneID2GO_BM))[-matches]
 
 noMatch_edgeR.BMwiki <- MGpost0$...1[-matches_rnaIndex]
@@ -232,6 +233,7 @@ DEgenes <- filter(MGpost0, logFC < -0.2 & PValue < 0.05) %>% pull(`...1`)
 # try using a different cutoff value for logFC per https://rdrr.io/bioc/edgeR/man/glmTreat.html
 # for the upregulated genes, log2(1.1) gives sig results, but log2(1.2) doesn't give fdr corrected sig results.
 DEgenes <- filter(MGpost0, logFC > log2(1.2)) %>% pull(`...1`)
+DEgenes <- filter(MGpost0, logFC < log2(1.1)) %>% pull(`...1`)
 #for downlregulated here, the log(1.1) and log(1.2) give similar results
 # DEgenes <- filter(MGpost0, logFC < -log2(1.2)) %>% pull(`...1`)
 # DEgenes <- filter(MGpost0, abs(logFC) > log2(1.2)) %>% pull(`...1`)

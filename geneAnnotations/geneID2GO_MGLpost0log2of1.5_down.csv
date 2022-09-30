@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0007186,G protein-coupled receptor signaling pathway,222,28,8.47,2.3e-08,3e-04
+GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,11,1.56,7.5e-07,0.0045
+GO:0015074,DNA integration,33,9,1.26,2.6e-06,0.0103
+GO:0032508,DNA duplex unwinding,37,8,1.41,3.8e-05,0.1133
+GO:0075713,establishment of integrated proviral latency,20,6,0.76,7.2e-05,0.1431
+GO:0044826,viral genome integration into host DNA,20,6,0.76,7.2e-05,0.1431
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,5,0.53,0.00012,0.2044
+GO:0046718,viral entry into host cell,50,8,1.91,0.00068,1
+GO:0090305,nucleic acid phosphodiester bond hydrolysis,87,17,3.32,0.00101,1
+GO:0035998,7,8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.08,0.00145,1
+GO:0071320,cellular response to cAMP,14,4,0.53,0.00153,1
+GO:0006310,DNA recombination,161,10,6.14,0.00167,1
+GO:0001658,branching involved in ureteric bud morphogenesis,10,4,0.38,0.00264,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,9,3.01,0.00296,1
+GO:0043622,cortical microtubule organization,3,2,0.11,0.00424,1
+GO:0097112,gamma-aminobutyric acid receptor clustering,3,2,0.11,0.00424,1
+GO:0006281,DNA repair,244,12,9.31,0.00434,1
+GO:0043583,ear development,48,5,1.83,0.00818,1
+GO:0051660,establishment of centrosome localization,4,2,0.15,0.00827,1
+GO:0098719,sodium ion import across plasma membrane,4,2,0.15,0.00827,1
+GO:0035176,social behavior,13,3,0.5,0.01181,1
+GO:0006508,proteolysis,735,27,28.04,0.01289,1
+GO:0007214,gamma-aminobutyric acid signaling pathway,5,2,0.19,0.01343,1
+GO:0030539,male genitalia development,5,2,0.19,0.01343,1
+GO:1903753,negative regulation of p38MAPK cascade,6,2,0.23,0.01964,1
+GO:0071805,potassium ion transmembrane transport,41,6,1.56,0.02458,1
+GO:0006301,postreplication repair,17,3,0.65,0.02669,1
+GO:0002318,myeloid progenitor cell differentiation,7,2,0.27,0.02681,1
+GO:0007010,cytoskeleton organization,540,20,20.6,0.03356,1
+GO:0060037,pharyngeal system development,8,2,0.31,0.03486,1
+GO:0030953,astral microtubule organization,8,2,0.31,0.03486,1
+GO:0019433,triglyceride catabolic process,8,2,0.31,0.03486,1
+GO:0001654,eye development,92,5,3.51,0.03491,1
+GO:0035088,establishment or maintenance of apical/basal cell polarity,19,3,0.72,0.03795,1
+GO:0033280,response to vitamin D,5,2,0.19,0.03802,1
+GO:0021544,subpallium development,8,2,0.31,0.03804,1
+GO:0007548,sex differentiation,62,4,2.37,0.03805,1
+GO:0016191,synaptic vesicle uncoating,1,1,0.04,0.03815,1
+GO:0001951,intestinal D-glucose absorption,1,1,0.04,0.03815,1
+GO:0001971,negative regulation of activation of membrane attack complex,1,1,0.04,0.03815,1
+GO:0010989,negative regulation of low-density lipoprotein particle clearance,1,1,0.04,0.03815,1
+GO:0086092,regulation of the force of heart contraction by cardiac conduction,1,1,0.04,0.03815,1
+GO:1902389,ceramide 1-phosphate transport,1,1,0.04,0.03815,1
+GO:1903760,regulation of voltage-gated potassium channel activity involved in ventricular cardiac muscle cell action potential repolarization,1,1,0.04,0.03815,1
+GO:0038162,erythropoietin-mediated signaling pathway,1,1,0.04,0.03815,1
+GO:0014816,skeletal muscle satellite cell differentiation,1,1,0.04,0.03815,1
+GO:0032971,regulation of muscle filament sliding,1,1,0.04,0.03815,1
+GO:1990569,UDP-N-acetylglucosamine transmembrane transport,1,1,0.04,0.03815,1
+GO:0106040,regulation of GABA-A receptor activity,1,1,0.04,0.03815,1
+GO:0071321,cellular response to cGMP,1,1,0.04,0.03815,1

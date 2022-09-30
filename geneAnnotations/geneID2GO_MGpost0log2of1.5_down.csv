@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,8,0.68,2.7e-07,0.0032
+GO:0032508,DNA duplex unwinding,37,6,0.61,2.8e-05,0.1669
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,4,0.23,6.3e-05,0.2235
+GO:0006278,RNA-dependent DNA biosynthetic process,79,7,1.31,7.5e-05,0.2235
+GO:0007010,cytoskeleton organization,540,18,8.95,0.00013,0.31
+GO:0015074,DNA integration,33,5,0.55,0.00019,0.3775
+GO:0090305,nucleic acid phosphodiester bond hydrolysis,87,13,1.44,0.00031,0.528
+GO:0043622,cortical microtubule organization,3,2,0.05,0.00081,1
+GO:0006281,DNA repair,244,9,4.05,0.00093,1
+GO:0051660,establishment of centrosome localization,4,2,0.07,0.00160,1
+GO:0036211,protein modification process,1660,22,27.52,0.00310,1
+GO:1903753,negative regulation of p38MAPK cascade,6,2,0.1,0.00391,1
+GO:0010737,protein kinase A signaling,6,2,0.1,0.00391,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,12,3.68,0.00394,1
+GO:0046718,viral entry into host cell,50,5,0.83,0.00402,1
+GO:0044826,viral genome integration into host DNA,20,3,0.33,0.00412,1
+GO:0075713,establishment of integrated proviral latency,20,3,0.33,0.00412,1
+GO:0006310,DNA recombination,161,7,2.67,0.00578,1
+GO:0050714,positive regulation of protein secretion,39,4,0.65,0.00606,1
+GO:0030953,astral microtubule organization,8,2,0.13,0.00715,1
+GO:0008360,regulation of cell shape,47,4,0.78,0.00738,1
+GO:0016032,viral process,170,8,2.82,0.01059,1
+GO:0008645,hexose transmembrane transport,32,2,0.53,0.01651,1
+GO:0060992,response to fungicide,1,1,0.02,0.01658,1
+GO:0001951,intestinal D-glucose absorption,1,1,0.02,0.01658,1
+GO:1905188,positive regulation of metaphase/anaphase transition of meiosis I,1,1,0.02,0.01658,1
+GO:1902896,terminal web assembly,1,1,0.02,0.01658,1
+GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0.02,0.01658,1
+GO:0098759,cellular response to interleukin-8,1,1,0.02,0.01658,1
+GO:0038162,erythropoietin-mediated signaling pathway,1,1,0.02,0.01658,1
+GO:0044869,negative regulation by host of viral exo-alpha-sialidase activity,1,1,0.02,0.01658,1
+GO:0044871,negative regulation by host of viral glycoprotein metabolic process,1,1,0.02,0.01658,1
+GO:0097324,melanocyte migration,1,1,0.02,0.01658,1
+GO:0097326,melanocyte adhesion,1,1,0.02,0.01658,1
+GO:0044849,estrous cycle,1,1,0.02,0.01658,1
+GO:0000105,histidine biosynthetic process,1,1,0.02,0.01658,1
+GO:1903760,regulation of voltage-gated potassium channel activity involved in ventricular cardiac muscle cell action potential repolarization,1,1,0.02,0.01658,1
+GO:0032571,response to vitamin K,1,1,0.02,0.01658,1
+GO:0032532,regulation of microvillus length,1,1,0.02,0.01658,1
+GO:0003400,regulation of COPII vesicle coating,1,1,0.02,0.01658,1
+GO:1990569,UDP-N-acetylglucosamine transmembrane transport,1,1,0.02,0.01658,1
+GO:0030432,peristalsis,1,1,0.02,0.01658,1
+GO:0015790,UDP-xylose transmembrane transport,1,1,0.02,0.01658,1
+GO:0016191,synaptic vesicle uncoating,1,1,0.02,0.01658,1
+GO:0046486,glycerolipid metabolic process,167,3,2.77,0.01669,1
+GO:0098856,intestinal lipid absorption,7,2,0.12,0.03262,1
+GO:0140112,extracellular vesicle biogenesis,13,2,0.22,0.03265,1
+GO:0035634,response to stilbenoid,2,1,0.03,0.03288,1
+GO:0042415,norepinephrine metabolic process,2,1,0.03,0.03288,1
+GO:2000255,negative regulation of male germ cell proliferation,2,1,0.03,0.03288,1
