@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down,GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down,GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006412,translation,352,153,79.63,3.4e-26,0,GO:0006412,translation,352,85,36.98,6.6e-21,0,GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,8,0.68,2.7e-07,0.0032
+GO:0015074,DNA integration,33,25,7.47,1.3e-10,0,GO:0015074,DNA integration,33,19,3.47,4.0e-11,0,GO:0032508,DNA duplex unwinding,37,6,0.61,2.8e-05,0.1669
+GO:0006278,RNA-dependent DNA biosynthetic process,79,36,17.87,1.4e-10,0,GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,21,4.31,5.8e-11,0,GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,4,0.23,6.3e-05,0.2235
+GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,28,9.28,8.3e-10,0,GO:0006278,RNA-dependent DNA biosynthetic process,79,22,8.3,4.4e-10,0,GO:0006278,RNA-dependent DNA biosynthetic process,79,7,1.31,7.5e-05,0.2235
+GO:0006310,DNA recombination,161,43,36.42,5.4e-09,0,GO:0044826,viral genome integration into host DNA,20,13,2.1,6.6e-09,0,GO:0007010,cytoskeleton organization,540,18,8.95,0.00013,0.31
+GO:0075713,establishment of integrated proviral latency,20,17,4.52,5.6e-09,0,GO:0075713,establishment of integrated proviral latency,20,13,2.1,6.6e-09,0,GO:0015074,DNA integration,33,5,0.55,0.00019,0.3775
+GO:0044826,viral genome integration into host DNA,20,17,4.52,5.6e-09,0,GO:0046718,viral entry into host cell,50,18,5.25,1.7e-07,3e-04,GO:0090305,nucleic acid phosphodiester bond hydrolysis,87,13,1.44,0.00031,0.528
+GO:0046718,viral entry into host cell,50,26,11.31,7.3e-07,0.0011,GO:0042274,ribosomal small subunit biogenesis,25,9,2.63,4.1e-06,0.0061,GO:0043622,cortical microtubule organization,3,2,0.05,0.00081,1
+GO:0042274,ribosomal small subunit biogenesis,25,13,5.66,1.5e-06,0.002,GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,8,1.47,2.4e-05,0.0318,GO:0006281,DNA repair,244,9,4.05,0.00093,1
+GO:0006413,translational initiation,74,30,16.74,5.3e-05,0.0632,GO:0006310,DNA recombination,161,22,16.91,4.4e-05,0.0525,GO:0051660,establishment of centrosome localization,4,2,0.07,0.00160,1
+GO:0006414,translational elongation,27,13,6.11,0.00013,0.1391,GO:0007186,G protein-coupled receptor signaling pathway,222,41,23.32,7.2e-05,0.078,GO:0036211,protein modification process,1660,22,27.52,0.00310,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,10,3.17,0.00014,0.1391,GO:0050790,regulation of catalytic activity,671,54,70.49,0.00016,0.159,GO:1903753,negative regulation of p38MAPK cascade,6,2,0.1,0.00391,1
+GO:0050790,regulation of catalytic activity,671,132,151.8,0.00021,0.1926,GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,0.84,0.00054,0.4952,GO:0010737,protein kinase A signaling,6,2,0.1,0.00391,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,62,50.22,0.00054,0.4598,GO:0006508,proteolysis,735,69,77.21,0.00061,0.5195,GO:0007186,G protein-coupled receptor signaling pathway,222,12,3.68,0.00394,1
+GO:0019068,virion assembly,32,12,7.24,0.00071,0.5643,GO:0006364,rRNA processing,85,17,8.93,0.00100,0.7948,GO:0046718,viral entry into host cell,50,5,0.83,0.00402,1
+GO:0006364,rRNA processing,85,27,19.23,0.00098,0.7302,GO:2000435,negative regulation of protein neddylation,3,3,0.32,0.00115,0.8569,GO:0044826,viral genome integration into host DNA,20,3,0.33,0.00412,1
+GO:0050908,detection of light stimulus involved in visual perception,4,4,0.9,0.00261,1,GO:0002181,cytoplasmic translation,41,10,4.31,0.00302,1,GO:0075713,establishment of integrated proviral latency,20,3,0.33,0.00412,1
+GO:0006508,proteolysis,735,153,166.28,0.00309,1,GO:0032508,DNA duplex unwinding,37,9,3.89,0.00399,1,GO:0006310,DNA recombination,161,7,2.67,0.00578,1
+GO:0006281,DNA repair,244,53,55.2,0.00400,1,GO:0090305,nucleic acid phosphodiester bond hydrolysis,87,30,9.14,0.00500,1,GO:0050714,positive regulation of protein secretion,39,4,0.65,0.00606,1
+GO:0002181,cytoplasmic translation,41,19,9.28,0.00445,1,GO:0007601,visual perception,26,9,2.73,0.00562,1,GO:0030953,astral microtubule organization,8,2,0.13,0.00715,1
+GO:0006120,mitochondrial electron transport, NADH to ubiquinone,17,9,3.85,0.00537,1,GO:2000059,negative regulation of ubiquitin-dependent protein catabolic process,31,7,3.26,0.00596,1,GO:0008360,regulation of cell shape,47,4,0.78,0.00738,1
+GO:0032508,DNA duplex unwinding,37,13,8.37,0.01001,1,GO:0006811,ion transport,1075,104,112.93,0.00642,1,GO:0016032,viral process,170,8,2.82,0.01059,1
+GO:0034101,erythrocyte homeostasis,76,24,17.19,0.01060,1,GO:0035176,social behavior,13,5,1.37,0.00791,1,GO:0008645,hexose transmembrane transport,32,2,0.53,0.01651,1
+GO:0042744,hydrogen peroxide catabolic process,5,4,1.13,0.01070,1,GO:0006749,glutathione metabolic process,35,9,3.68,0.00821,1,GO:0060992,response to fungicide,1,1,0.02,0.01658,1
+GO:0045329,carnitine biosynthetic process,5,4,1.13,0.01070,1,GO:0042104,positive regulation of activated T cell proliferation,5,3,0.53,0.00981,1,GO:0001951,intestinal D-glucose absorption,1,1,0.02,0.01658,1
+GO:0007130,synaptonemal complex assembly,5,4,1.13,0.01070,1,GO:0007130,synaptonemal complex assembly,5,3,0.53,0.00981,1,GO:1905188,positive regulation of metaphase/anaphase transition of meiosis I,1,1,0.02,0.01658,1
+GO:0019227,neuronal action potential propagation,5,4,1.13,0.01070,1,GO:0048016,inositol phosphate-mediated signaling,22,6,2.31,0.01096,1,GO:1902896,terminal web assembly,1,1,0.02,0.01658,1
+GO:0006897,endocytosis,179,39,40.5,0.01150,1,GO:1902473,regulation of protein localization to synapse,6,3,0.63,0.01100,1,GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0.02,0.01658,1
+GO:1902510,regulation of apoptotic DNA fragmentation,5,5,1.13,0.01153,1,GO:0035998,7,8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.21,0.01102,1,GO:0098759,cellular response to interleukin-8,1,1,0.02,0.01658,1
+GO:1900029,positive regulation of ruffle assembly,3,3,0.68,0.01156,1,GO:0007021,tubulin complex assembly,2,2,0.21,0.01102,1,GO:0038162,erythropoietin-mediated signaling pathway,1,1,0.02,0.01658,1
+GO:2000435,negative regulation of protein neddylation,3,3,0.68,0.01156,1,GO:1903028,positive regulation of opsonization,2,2,0.21,0.01102,1,GO:0044869,negative regulation by host of viral exo-alpha-sialidase activity,1,1,0.02,0.01658,1
+GO:1901222,regulation of NIK/NF-kappaB signaling,41,9,9.28,0.01162,1,GO:0030916,otic vesicle formation,2,2,0.21,0.01102,1,GO:0044871,negative regulation by host of viral glycoprotein metabolic process,1,1,0.02,0.01658,1
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,16,9.28,0.01317,1,GO:0036335,intestinal stem cell homeostasis,2,2,0.21,0.01102,1,GO:0097324,melanocyte migration,1,1,0.02,0.01658,1
+GO:0035176,social behavior,13,7,2.94,0.01398,1,GO:0033693,neurofilament bundle assembly,2,2,0.21,0.01102,1,GO:0097326,melanocyte adhesion,1,1,0.02,0.01658,1
+GO:0007601,visual perception,26,14,5.88,0.01458,1,GO:0120197,mucociliary clearance,2,2,0.21,0.01102,1,GO:0044849,estrous cycle,1,1,0.02,0.01658,1
+GO:0016032,viral process,170,45,38.46,0.01758,1,GO:2001311,lysobisphosphatidic acid metabolic process,2,2,0.21,0.01102,1,GO:0000105,histidine biosynthetic process,1,1,0.02,0.01658,1
+GO:0006783,heme biosynthetic process,10,7,2.26,0.01768,1,GO:0099178,regulation of retrograde trans-synaptic signaling by endocanabinoid,2,2,0.21,0.01102,1,GO:1903760,regulation of voltage-gated potassium channel activity involved in ventricular cardiac muscle cell action potential repolarization,1,1,0.02,0.01658,1
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,1.81,0.01776,1,GO:0006601,creatine biosynthetic process,2,2,0.21,0.01102,1,GO:0032571,response to vitamin K,1,1,0.02,0.01658,1
+GO:0001682,tRNA 5'-leader removal,8,5,1.81,0.01776,1,GO:0060134,prepulse inhibition,2,2,0.21,0.01102,1,GO:0032532,regulation of microvillus length,1,1,0.02,0.01658,1
+GO:0045292,mRNA cis splicing, via spliceosome,17,8,3.85,0.02267,1,GO:0120222,regulation of blastocyst development,2,2,0.21,0.01102,1,GO:0003400,regulation of COPII vesicle coating,1,1,0.02,0.01658,1
+GO:0070886,positive regulation of calcineurin-NFAT signaling cascade,6,4,1.36,0.02635,1,GO:0006897,endocytosis,179,20,18.8,0.01167,1,GO:1990569,UDP-N-acetylglucosamine transmembrane transport,1,1,0.02,0.01658,1
+GO:0021549,cerebellum development,27,8,6.11,0.02640,1,GO:0032259,methylation,168,12,17.65,0.01188,1,GO:0030432,peristalsis,1,1,0.02,0.01658,1
+GO:0006749,glutathione metabolic process,35,16,7.92,0.02841,1,GO:0016032,viral process,170,23,17.86,0.01494,1,GO:0015790,UDP-xylose transmembrane transport,1,1,0.02,0.01658,1
+GO:0006334,nucleosome assembly,49,16,11.09,0.02900,1,GO:0006414,translational elongation,27,8,2.84,0.01530,1,GO:0016191,synaptic vesicle uncoating,1,1,0.02,0.01658,1
+GO:0071897,DNA biosynthetic process,129,47,29.18,0.03130,1,GO:0070886,positive regulation of calcineurin-NFAT signaling cascade,6,3,0.63,0.01810,1,GO:0046486,glycerolipid metabolic process,167,3,2.77,0.01669,1
+GO:0075522,IRES-dependent viral translational initiation,9,5,2.04,0.03259,1,GO:0055091,phospholipid homeostasis,7,3,0.74,0.02923,1,GO:0098856,intestinal lipid absorption,7,2,0.12,0.03262,1
+GO:0045880,positive regulation of smoothened signaling pathway,13,7,2.94,0.03443,1,GO:0070859,positive regulation of bile acid biosynthetic process,3,2,0.32,0.03075,1,GO:0140112,extracellular vesicle biogenesis,13,2,0.22,0.03265,1
+GO:0007368,determination of left/right symmetry,32,9,7.24,0.03467,1,GO:0019509,L-methionine salvage from methylthioadenosine,3,2,0.32,0.03075,1,GO:0035634,response to stilbenoid,2,1,0.03,0.03288,1
+GO:0051056,regulation of small GTPase mediated signal transduction,81,14,18.32,0.03531,1,GO:0072282,metanephric nephron tubule morphogenesis,3,2,0.32,0.03075,1,GO:0042415,norepinephrine metabolic process,2,1,0.03,0.03288,1
+GO:0048541,Peyer's patch development,4,3,0.9,0.03841,1,GO:0002227,innate immune response in mucosa,3,2,0.32,0.03075,1,GO:2000255,negative regulation of male germ cell proliferation,2,1,0.03,0.03288,1

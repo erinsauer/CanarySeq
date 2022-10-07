@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0030890,positive regulation of B cell proliferation,22,20,11.46,0.00012,1
+GO:0009636,response to toxic substance,37,24,19.27,0.00046,1
+GO:0060907,positive regulation of macrophage cytokine production,11,11,5.73,0.00076,1
+GO:0050729,positive regulation of inflammatory response,41,33,21.35,0.00092,1
+GO:0007015,actin filament organization,162,106,84.35,0.00108,1
+GO:0050853,B cell receptor signaling pathway,28,24,14.58,0.00114,1
+GO:0006874,cellular calcium ion homeostasis,103,76,53.63,0.00127,1
+GO:0007219,Notch signaling pathway,55,42,28.64,0.00132,1
+GO:0071526,semaphorin-plexin signaling pathway,12,11,6.25,0.00146,1
+GO:0098586,cellular response to virus,34,20,17.7,0.00201,1
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,9,4.69,0.00280,1
+GO:0045087,innate immune response,170,114,88.52,0.00294,1
+GO:0032755,positive regulation of interleukin-6 production,34,26,17.7,0.00304,1
+GO:0006487,protein N-linked glycosylation,39,29,20.31,0.00336,1
+GO:0032728,positive regulation of interferon-beta production,19,16,9.89,0.00375,1
+GO:0007229,integrin-mediated signaling pathway,40,31,20.83,0.00404,1
+GO:0006814,sodium ion transport,45,33,23.43,0.00469,1
+GO:0043491,protein kinase B signaling,72,45,37.49,0.00472,1
+GO:0007616,long-term memory,8,8,4.17,0.00538,1
+GO:0002218,activation of innate immune response,17,15,8.85,0.00576,1
+GO:0032760,positive regulation of tumor necrosis factor production,29,22,15.1,0.00751,1
+GO:0010629,negative regulation of gene expression,373,209,194.22,0.00834,1
+GO:0006935,chemotaxis,142,92,73.94,0.00936,1
+GO:0008361,regulation of cell size,51,33,26.56,0.00969,1
+GO:2000042,negative regulation of double-strand break repair via homologous recombination,14,12,7.29,0.00974,1
+GO:0001570,vasculogenesis,24,20,12.5,0.00992,1
+GO:0030225,macrophage differentiation,18,15,9.37,0.01030,1
+GO:0071404,cellular response to low-density lipoprotein particle stimulus,8,8,4.17,0.01034,1
+GO:2001240,negative regulation of extrinsic apoptotic signaling pathway in absence of ligand,7,7,3.64,0.01035,1
+GO:0006954,inflammatory response,196,136,102.05,0.01036,1
+GO:0032743,positive regulation of interleukin-2 production,22,17,11.46,0.01388,1
+GO:0071260,cellular response to mechanical stimulus,22,17,11.46,0.01388,1
+GO:0045071,negative regulation of viral genome replication,14,11,7.29,0.01489,1
+GO:0031663,lipopolysaccharide-mediated signaling pathway,21,14,10.93,0.01492,1
+GO:0070373,negative regulation of ERK1 and ERK2 cascade,19,15,9.89,0.01514,1
+GO:0043124,negative regulation of I-kappaB kinase/NF-kappaB signaling,27,20,14.06,0.01644,1
+GO:0030163,protein catabolic process,483,235,251.49,0.01723,1
+GO:0050731,positive regulation of peptidyl-tyrosine phosphorylation,54,39,28.12,0.01763,1
+GO:0032091,negative regulation of protein binding,43,32,22.39,0.01851,1
+GO:0000045,autophagosome assembly,58,38,30.2,0.01852,1
+GO:0061024,membrane organization,271,154,141.11,0.01954,1
+GO:0016064,immunoglobulin mediated immune response,42,30,21.87,0.01971,1
+GO:0048260,positive regulation of receptor-mediated endocytosis,19,16,9.89,0.01978,1
+GO:0048041,focal adhesion assembly,28,20,14.58,0.01980,1
+GO:0002281,macrophage activation involved in immune response,7,7,3.64,0.01987,1
+GO:0018149,peptide cross-linking,6,6,3.12,0.01989,1
+GO:0090051,negative regulation of cell migration involved in sprouting angiogenesis,6,6,3.12,0.01989,1
+GO:0090026,positive regulation of monocyte chemotaxis,6,6,3.12,0.01989,1
+GO:0051279,regulation of release of sequestered calcium ion into cytosol,21,12,10.93,0.01995,1
+GO:0000413,protein peptidyl-prolyl isomerization,18,14,9.37,0.02345,1

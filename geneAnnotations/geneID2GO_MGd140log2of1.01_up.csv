@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0007229,integrin-mediated signaling pathway,40,33,18.07,1.4e-05,0.1669
+GO:0016567,protein ubiquitination,340,177,153.59,5.8e-05,0.3457
+GO:0006954,inflammatory response,196,117,88.54,0.00018,0.5961
+GO:0032755,positive regulation of interleukin-6 production,34,26,15.36,0.00020,0.5961
+GO:0008217,regulation of blood pressure,35,26,15.81,0.00058,1
+GO:0008285,negative regulation of cell population proliferation,208,113,93.96,0.00066,1
+GO:0045944,positive regulation of transcription by RNA polymerase II,433,229,195.6,0.00111,1
+GO:0006909,phagocytosis,72,43,32.52,0.00113,1
+GO:0043123,positive regulation of I-kappaB kinase/NF-kappaB signaling,65,42,29.36,0.00119,1
+GO:0030308,negative regulation of cell growth,46,30,20.78,0.00149,1
+GO:0010951,negative regulation of endopeptidase activity,39,27,17.62,0.00170,1
+GO:0030216,keratinocyte differentiation,44,30,19.88,0.00220,1
+GO:0030335,positive regulation of cell migration,179,111,80.86,0.00260,1
+GO:0051649,establishment of localization in cell,848,410,383.07,0.00264,1
+GO:0032760,positive regulation of tumor necrosis factor production,29,21,13.1,0.00271,1
+GO:0051897,positive regulation of protein kinase B signaling,33,23,14.91,0.00380,1
+GO:0035025,positive regulation of Rho protein signal transduction,7,7,3.16,0.00382,1
+GO:0030163,protein catabolic process,483,242,218.19,0.00400,1
+GO:0071526,semaphorin-plexin signaling pathway,12,11,5.42,0.00461,1
+GO:0045669,positive regulation of osteoblast differentiation,23,17,10.39,0.00495,1
+GO:0050731,positive regulation of peptidyl-tyrosine phosphorylation,54,37,24.39,0.00585,1
+GO:1905168,positive regulation of double-strand break repair via homologous recombination,25,18,11.29,0.00605,1
+GO:0002218,activation of innate immune response,17,14,7.68,0.00650,1
+GO:0043967,histone H4 acetylation,45,31,20.33,0.00654,1
+GO:0070374,positive regulation of ERK1 and ERK2 cascade,56,35,25.3,0.00660,1
+GO:0001938,positive regulation of endothelial cell proliferation,33,22,14.91,0.00663,1
+GO:0032757,positive regulation of interleukin-8 production,20,15,9.03,0.00665,1
+GO:0043524,negative regulation of neuron apoptotic process,46,31,20.78,0.00668,1
+GO:0010862,positive regulation of pathway-restricted SMAD protein phosphorylation,12,10,5.42,0.00810,1
+GO:1900152,negative regulation of nuclear-transcribed mRNA catabolic process; deadenylation-dependent decay,7,7,3.16,0.00847,1
+GO:0018149,peptide cross-linking,6,6,2.71,0.00847,1
+GO:0002091,negative regulation of receptor internalization,6,6,2.71,0.00847,1
+GO:0001516,prostaglandin biosynthetic process,12,8,5.42,0.00849,1
+GO:0010629,negative regulation of gene expression,373,200,168.5,0.00861,1
+GO:0009636,response to toxic substance,37,21,16.71,0.00893,1
+GO:0045087,innate immune response,170,96,76.79,0.00910,1
+GO:2000249,regulation of actin cytoskeleton reorganization,16,13,7.23,0.00926,1
+GO:0030878,thyroid gland development,9,8,4.07,0.00930,1
+GO:0061484,hematopoietic stem cell homeostasis,9,8,4.07,0.00930,1
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,8,4.07,0.00930,1
+GO:0042953,lipoprotein transport,9,8,4.07,0.00930,1
+GO:0032728,positive regulation of interferon-beta production,19,14,8.58,0.01128,1
+GO:0030509,BMP signaling pathway,55,29,24.85,0.01133,1
+GO:0048538,thymus development,26,18,11.75,0.01142,1
+GO:0007623,circadian rhythm,73,41,32.98,0.01164,1
+GO:0050729,positive regulation of inflammatory response,41,24,18.52,0.01296,1
+GO:0001701,in utero embryonic development,192,104,86.73,0.01370,1
+GO:0060324,face development,23,15,10.39,0.01516,1
+GO:0071276,cellular response to cadmium ion,12,10,5.42,0.01516,1
+GO:1904707,positive regulation of vascular associated smooth muscle cell proliferation,11,9,4.97,0.01518,1

@@ -2,7 +2,7 @@ GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
 GO:0006412,translation,352,153,79.63,3.4e-26,0
 GO:0015074,DNA integration,33,25,7.47,1.3e-10,0
 GO:0006278,RNA-dependent DNA biosynthetic process,79,36,17.87,1.4e-10,0
-GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,28,9.28,8.3e-10,0
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,28,9.28,8.3e-10,0
 GO:0006310,DNA recombination,161,43,36.42,5.4e-09,0
 GO:0075713,establishment of integrated proviral latency,20,17,4.52,5.6e-09,0
 GO:0044826,viral genome integration into host DNA,20,17,4.52,5.6e-09,0
@@ -19,7 +19,7 @@ GO:0050908,detection of light stimulus involved in visual perception,4,4,0.9,0.0
 GO:0006508,proteolysis,735,153,166.28,0.00309,1
 GO:0006281,DNA repair,244,53,55.2,0.00400,1
 GO:0002181,cytoplasmic translation,41,19,9.28,0.00445,1
-GO:0006120,mitochondrial electron transport, NADH to ubiquinone,17,9,3.85,0.00537,1
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,9,3.85,0.00537,1
 GO:0032508,DNA duplex unwinding,37,13,8.37,0.01001,1
 GO:0034101,erythrocyte homeostasis,76,24,17.19,0.01060,1
 GO:0042744,hydrogen peroxide catabolic process,5,4,1.13,0.01070,1
@@ -38,7 +38,7 @@ GO:0016032,viral process,170,45,38.46,0.01758,1
 GO:0006783,heme biosynthetic process,10,7,2.26,0.01768,1
 GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,1.81,0.01776,1
 GO:0001682,tRNA 5'-leader removal,8,5,1.81,0.01776,1
-GO:0045292,mRNA cis splicing, via spliceosome,17,8,3.85,0.02267,1
+GO:0045292,mRNA cis splicing; via spliceosome,17,8,3.85,0.02267,1
 GO:0070886,positive regulation of calcineurin-NFAT signaling cascade,6,4,1.36,0.02635,1
 GO:0021549,cerebellum development,27,8,6.11,0.02640,1
 GO:0006749,glutathione metabolic process,35,16,7.92,0.02841,1

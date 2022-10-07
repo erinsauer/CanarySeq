@@ -1,5 +1,5 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:0051754,meiotic sister chromatid cohesion, centromeric,4,3,0.09,4.5e-05,0.2682
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.09,4.5e-05,0.2682
 GO:0044205,'de novo' UMP biosynthetic process,4,3,0.09,4.5e-05,0.2682
 GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.16,0.00037,1
 GO:0070098,chemokine-mediated signaling pathway,12,4,0.27,0.00057,1
@@ -32,7 +32,7 @@ GO:1905662,negative regulation of telomerase RNA reverse transcriptase activity,
 GO:1903408,positive regulation of sodium:potassium-exchanging ATPase activity,1,1,0.02,0.02259,1
 GO:1990798,pancreas regeneration,1,1,0.02,0.02259,1
 GO:0035995,detection of muscle stretch,1,1,0.02,0.02259,1
-GO:2000266,regulation of blood coagulation, intrinsic pathway,1,1,0.02,0.02259,1
+GO:2000266,regulation of blood coagulation; intrinsic pathway,1,1,0.02,0.02259,1
 GO:1990036,calcium ion import into sarcoplasmic reticulum,1,1,0.02,0.02259,1
 GO:0035902,response to immobilization stress,1,1,0.02,0.02259,1
 GO:0003117,regulation of vasoconstriction by circulating norepinephrine,1,1,0.02,0.02259,1
@@ -48,4 +48,4 @@ GO:0071644,negative regulation of chemokine (C-C motif) ligand 4 production,1,1,
 GO:0036076,ligamentous ossification,1,1,0.02,0.02259,1
 GO:2000538,positive regulation of B cell chemotaxis,1,1,0.02,0.02259,1
 GO:0003062,regulation of heart rate by chemical signal,1,1,0.02,0.02259,1
-GO:0051968,positive regulation of synaptic transmission, glutamatergic,1,1,0.02,0.02259,1
+GO:0051968,positive regulation of synaptic transmission; glutamatergic,1,1,0.02,0.02259,1

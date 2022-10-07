@@ -1,5 +1,5 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,7,0.63,2.5e-06,0.0298
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,7,0.63,2.5e-06,0.0298
 GO:0006278,RNA-dependent DNA biosynthetic process,79,7,1.22,0.0002,1
 GO:1990379,lipid transport across blood-brain barrier,3,2,0.05,0.0007,1
 GO:0007010,cytoskeleton organization,540,14,8.32,0.0013,1

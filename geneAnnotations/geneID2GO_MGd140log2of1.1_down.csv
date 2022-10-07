@@ -5,7 +5,7 @@ GO:0033617,mitochondrial cytochrome c oxidase assembly,7,7,1.58,2.9e-05,0.1152
 GO:0042274,ribosomal small subunit biogenesis,25,14,5.63,4.6e-05,0.1371
 GO:0031295,T cell costimulation,9,8,2.03,0.00019,0.3974
 GO:0006278,RNA-dependent DNA biosynthetic process,79,23,17.78,0.00020,0.3974
-GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,19,9.23,0.00041,0.6983
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,19,9.23,0.00041,0.6983
 GO:0045060,negative thymic T cell selection,7,6,1.58,0.00073,1
 GO:0006310,DNA recombination,161,46,36.23,0.00085,1
 GO:0015074,DNA integration,33,16,7.43,0.00089,1

@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0045071,negative regulation of viral genome replication,14,3,0.08,6.0e-05,0.5663
+GO:0070106,interleukin-27-mediated signaling pathway,3,2,0.02,9.5e-05,0.5663
+GO:0007186,G protein-coupled receptor signaling pathway,222,6,1.27,0.0039,1
+GO:1902847,regulation of neuronal signal transduction,1,1,0.01,0.0057,1
+GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0.01,0.0057,1
+GO:0150102,negative regulation of monocyte activation,1,1,0.01,0.0057,1
+GO:1905892,negative regulation of cellular response to thapsigargin,1,1,0.01,0.0057,1
+GO:1905895,negative regulation of cellular response to tunicamycin,1,1,0.01,0.0057,1
+GO:0009615,response to virus,130,6,0.74,0.0079,1
+GO:0048255,mRNA stabilization,27,2,0.15,0.0102,1
+GO:0034165,positive regulation of toll-like receptor 9 signaling pathway,2,1,0.01,0.0114,1
+GO:0034157,positive regulation of toll-like receptor 7 signaling pathway,2,1,0.01,0.0114,1
+GO:1904237,positive regulation of substrate-dependent cell migration; cell attachment to substrate,2,1,0.01,0.0114,1
+GO:1901166,neural crest cell migration involved in autonomic nervous system development,2,1,0.01,0.0114,1
+GO:1902949,positive regulation of tau-protein kinase activity,2,1,0.01,0.0114,1
+GO:0032286,central nervous system myelin maintenance,2,1,0.01,0.0114,1
+GO:0030200,heparan sulfate proteoglycan catabolic process,2,1,0.01,0.0114,1
+GO:0007161,calcium-independent cell-matrix adhesion,2,1,0.01,0.0114,1
+GO:0035634,response to stilbenoid,2,1,0.01,0.0114,1
+GO:0090310,negative regulation of DNA methylation-dependent heterochromatin assembly,2,1,0.01,0.0114,1
+GO:0061740,protein targeting to lysosome involved in chaperone-mediated autophagy,3,1,0.02,0.0171,1
+GO:1902358,sulfate transmembrane transport,3,1,0.02,0.0171,1
+GO:0070837,dehydroascorbic acid transport,3,1,0.02,0.0171,1
+GO:0061518,microglial cell proliferation,3,1,0.02,0.0171,1
+GO:0090209,negative regulation of triglyceride metabolic process,3,1,0.02,0.0171,1
+GO:0006027,glycosaminoglycan catabolic process,8,2,0.05,0.0221,1
+GO:2000623,negative regulation of nuclear-transcribed mRNA catabolic process; nonsense-mediated decay,4,1,0.02,0.0227,1
+GO:0071635,negative regulation of transforming growth factor beta production,4,1,0.02,0.0227,1
+GO:0003383,apical constriction,4,1,0.02,0.0227,1
+GO:1905907,negative regulation of amyloid fibril formation,4,1,0.02,0.0227,1
+GO:0030214,hyaluronan catabolic process,4,1,0.02,0.0227,1
+GO:0015882,L-ascorbic acid transmembrane transport,4,1,0.02,0.0227,1
+GO:0016554,cytidine to uridine editing,4,1,0.02,0.0227,1
+GO:1900246,positive regulation of RIG-I signaling pathway,5,1,0.03,0.0283,1
+GO:2000553,positive regulation of T-helper 2 cell cytokine production,5,1,0.03,0.0283,1
+GO:0018149,peptide cross-linking,6,1,0.03,0.0339,1
+GO:0071493,cellular response to UV-B,6,1,0.03,0.0339,1
+GO:0044790,negative regulation by host of viral release from host cell,6,1,0.03,0.0339,1
+GO:1902430,negative regulation of amyloid-beta formation,6,1,0.03,0.0339,1
+GO:0042127,regulation of cell population proliferation,492,5,2.82,0.0369,1
+GO:0045087,innate immune response,170,5,0.97,0.0372,1
+GO:0042742,defense response to bacterium,54,2,0.31,0.0379,1
+GO:0040015,negative regulation of multicellular organism growth,7,1,0.04,0.0394,1
+GO:0046597,negative regulation of viral entry into host cell,7,1,0.04,0.0394,1
+GO:1900221,regulation of amyloid-beta clearance,7,1,0.04,0.0394,1
+GO:0006388,tRNA splicing; via endonucleolytic cleavage and ligation,7,1,0.04,0.0394,1
+GO:0002281,macrophage activation involved in immune response,7,1,0.04,0.0394,1
+GO:0051702,biological process involved in interaction with symbiont,54,2,0.31,0.0441,1
+GO:0001774,microglial cell activation,8,1,0.05,0.0449,1
+GO:0045824,negative regulation of innate immune response,19,2,0.11,0.0492,1

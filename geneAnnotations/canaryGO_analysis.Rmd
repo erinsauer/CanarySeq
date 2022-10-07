@@ -27,11 +27,23 @@ library(here)
 MGLpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGLpost0.csv")
 MGpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGpost0.csv")
 MGd140 <- readr::read_csv("~/Desktop/canary/contrasts/MGd140.csv")
+MGPpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGPpost0.csv")
+MGd2114 <- readr::read_csv("~/Desktop/canary/contrasts/MGd2114.csv")
+Diet0 <- readr::read_csv("~/Desktop/canary/contrasts/Diet0.csv")
+
+MGDietpost0 <- (((groupMG.lipid.14 + groupMG.lipid.21)/2) - (groupMG.lipid.0)) - 
+  (((groupMG.protein.14 + groupMG.protein.21)/2) - (groupMG.protein.0))
+
+# DietMGpost0
+
 
 contrasts <- list(
   MGLpost0 = MGLpost0,
   MGpost0 = MGpost0,
-  MGd140 = MGd140
+  MGd140 = MGd140,
+  MGPpost0 = MGPpost0,
+  MGd2114 = MGd2114,
+  Diet0 = Diet0
 )
 ```
 
@@ -42,7 +54,6 @@ mart <- if(exists('mart') == TRUE){
 } else {
   useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
 }
-
 ```
 
 ```{r}
@@ -156,7 +167,7 @@ for(i in 1:length(contrasts)) {
   genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
   
   # loop through different lfc cutoffs I want to compare (and up v down)
-  for (j in c(1.1,1.2,1.5)) {
+  for (j in c(1.01,1.1,1.2,1.5,2)) {
     DEgenes_up <- filter(as.data.frame(contrasts[[i]]), logFC > log2(j)) %>% pull(`...1`)
     DEgenes_down <- filter(contrasts[[i]], logFC < -log2(j)) %>% pull(`...1`)
     
@@ -232,20 +243,26 @@ for(i in 1:length(contrasts)) {
      
     # create the file with all the statistics from GO analysis
     all_res_final_up=cbind(all_res_up,p.adj_up)
-    all_res_final_up=all_res_final_up[order(all_res_final_up$p.adj),]
+    all_res_final_up=all_res_final_up[order(all_res_final_up$p.adj),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
     
     all_res_final_down=cbind(all_res_down,p.adj_down)
-    all_res_final_down=all_res_final_down[order(all_res_final_down$p.adj),]
+    all_res_final_down=all_res_final_down[order(all_res_final_down$p.adj),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
      
     #get list of significant GO before multiple testing correction
-    results.table.p_up= all_res_final_up[which(as.numeric(all_res_final_up$weightFisher)<=0.1),]
+    results.table.p_up= all_res_final_up[which(as.numeric(all_res_final_up$weightFisher)<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
     
-    results.table.p_down= all_res_final_down[which(as.numeric(all_res_final_down$weightFisher)<=0.1),]
+    results.table.p_down= all_res_final_down[which(as.numeric(all_res_final_down$weightFisher)<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
     
     #get list of significant GO after multiple testing correction
-    results.table.bh_up=all_res_final_up[which(all_res_final_up$p.adj<=0.1),]
+    results.table.bh_up=all_res_final_up[which(all_res_final_up$p.adj<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
     
-    results.table.bh_down=all_res_final_down[which(all_res_final_down$p.adj<=0.1),]
+    results.table.bh_down=all_res_final_down[which(all_res_final_down$p.adj<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
     
      
     #save first top 50 ontolgies sorted by adjusted pvalues
@@ -318,23 +335,31 @@ GOdata=new('topGOdata',
 weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher') 
 
      
-    # generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
+    # generate a table of results: we can use the GenTable function to generate 
+    # a summary table with the results from tests applied to the topGOdata object.
     allGO=usedGO(GOdata)
-    all_res=GenTable(GOdata, weightFisher=weight_fisher_result, orderBy='weightFisher', topNodes=length(allGO), numChar = 200)
+    all_res=GenTable(GOdata, 
+                     weightFisher=weight_fisher_result, 
+                     orderBy='weightFisher', 
+                     topNodes=length(allGO), 
+                     numChar = 200)
 
     #performing BH correction on our p values
     p.adj=round(p.adjust(all_res$weightFisher,method="BH"),digits = 4)
 
     # create the file with all the statistics from GO analysis
     all_res_final=cbind(all_res,p.adj)
-    all_res_final=all_res_final_up[order(all_res_final$p.adj),]
+    all_res_final=all_res_final_up[order(all_res_final$p.adj),]  %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
 
     #get list of significant GO before multiple testing correction
-    results.table.p= all_res_final[which(as.numeric(all_res_final$weightFisher)<=0.1),]
+    results.table.p= all_res_final[which(as.numeric(all_res_final$weightFisher)<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
     
 
     #get list of significant GO after multiple testing correction
-    results.table.bh=all_res_final[which(all_res_final$p.adj<=0.1),]
+    results.table.bh=all_res_final[which(all_res_final$p.adj<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
     
 
     #save first top 50 ontolgies sorted by adjusted pvalues
@@ -347,7 +372,6 @@ weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher')
                   quote=FALSE,
                   row.names=FALSE)
 
-    
 
 ```
 

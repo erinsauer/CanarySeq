@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0007186,G protein-coupled receptor signaling pathway,222,5,0.59,0.00021,1
+GO:0032877,positive regulation of DNA endoreduplication,1,1,0,0.00264,1
+GO:0019230,proprioception,1,1,0,0.00264,1
+GO:0033301,cell cycle comprising mitosis without cytokinesis,1,1,0,0.00264,1
+GO:0015074,DNA integration,33,2,0.09,0.00331,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,2,0.11,0.00508,1
+GO:0060718,chorionic trophoblast cell differentiation,3,1,0.01,0.00790,1
+GO:0070365,hepatocyte differentiation,3,1,0.01,0.00790,1
+GO:0032466,negative regulation of cytokinesis,4,1,0.01,0.01052,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,2,0.21,0.01800,1
+GO:0060391,positive regulation of SMAD protein signal transduction,7,1,0.02,0.01835,1
+GO:0007156,homophilic cell adhesion via plasma membrane adhesion molecules,10,1,0.03,0.02611,1
+GO:0010862,positive regulation of pathway-restricted SMAD protein phosphorylation,12,1,0.03,0.03126,1
+GO:1904262,negative regulation of TORC1 signaling,13,1,0.03,0.03382,1
+GO:1901031,regulation of response to reactive oxygen species,14,1,0.04,0.03638,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,1,0.04,0.03638,1
+GO:0006468,protein phosphorylation,685,4,1.81,0.04273,1
+GO:0071260,cellular response to mechanical stimulus,22,1,0.06,0.05660,1
+GO:0098655,cation transmembrane transport,223,2,0.59,0.06480,1
+GO:0016032,viral process,170,2,0.45,0.07288,1
+GO:0048144,fibroblast proliferation,38,1,0.1,0.09585,1
+GO:0071805,potassium ion transmembrane transport,41,1,0.11,0.10303,1
+GO:0002040,sprouting angiogenesis,41,1,0.11,0.10303,1
+GO:0055072,iron ion homeostasis,42,1,0.11,0.10542,1
+GO:0006334,nucleosome assembly,49,1,0.13,0.12193,1
+GO:0022008,neurogenesis,436,2,1.15,0.12210,1
+GO:0040029,regulation of gene expression; epigenetic,50,1,0.13,0.12427,1
+GO:0006979,response to oxidative stress,162,2,0.43,0.16316,1
+GO:0019827,stem cell population maintenance,68,1,0.18,0.16532,1
+GO:0051260,protein homooligomerization,68,1,0.18,0.16532,1
+GO:0000122,negative regulation of transcription by RNA polymerase II,297,2,0.78,0.18365,1
+GO:0055085,transmembrane transport,459,3,1.21,0.21734,1
+GO:0006887,exocytosis,99,1,0.26,0.23179,1
+GO:0034765,regulation of ion transmembrane transport,123,1,0.32,0.27978,1
+GO:0043087,regulation of GTPase activity,133,1,0.35,0.29893,1
+GO:0009617,response to bacterium,159,1,0.42,0.34650,1
+GO:0006310,DNA recombination,161,1,0.43,0.35003,1
+GO:0007166,cell surface receptor signaling pathway,781,3,2.06,0.36244,1
+GO:0031175,neuron projection development,231,1,0.61,0.46281,1
+GO:0008284,positive regulation of cell population proliferation,268,1,0.71,0.51468,1
+GO:0043066,negative regulation of apoptotic process,315,1,0.83,0.57378,1
+GO:0016567,protein ubiquitination,340,1,0.9,0.60237,1
+GO:0030097,hemopoiesis,376,1,0.99,0.64038,1
+GO:0006952,defense response,430,1,1.14,0.69102,1
+GO:0045944,positive regulation of transcription by RNA polymerase II,433,1,1.14,0.69363,1
+GO:0006508,proteolysis,735,1,1.94,0.87211,1
+GO:0001889,liver development,33,1,0.09,1.00000,1
+GO:0008219,cell death,718,1,1.9,1.00000,1
+GO:0046903,secretion,233,1,0.62,1.00000,1
+GO:0003008,system process,396,2,1.05,1.00000,1

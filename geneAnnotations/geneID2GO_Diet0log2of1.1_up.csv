@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0030890,positive regulation of B cell proliferation,22,15,5.68,3.7e-05,0.2802
+GO:0050853,B cell receptor signaling pathway,28,20,7.23,4.7e-05,0.2802
+GO:0007015,actin filament organization,162,52,41.85,0.00012,0.4769
+GO:0043123,positive regulation of I-kappaB kinase/NF-kappaB signaling,65,30,16.79,0.00030,0.8941
+GO:0002250,adaptive immune response,115,56,29.71,0.00046,1
+GO:0051092,positive regulation of NF-kappaB transcription factor activity,69,30,17.83,0.00104,1
+GO:2000343,positive regulation of chemokine (C-X-C motif) ligand 2 production,5,5,1.29,0.00115,1
+GO:0034351,negative regulation of glial cell apoptotic process,5,5,1.29,0.00115,1
+GO:0045060,negative thymic T cell selection,7,6,1.81,0.00161,1
+GO:2001034,positive regulation of double-strand break repair via nonhomologous end joining,9,7,2.33,0.00165,1
+GO:2000249,regulation of actin cytoskeleton reorganization,16,8,4.13,0.00165,1
+GO:0032755,positive regulation of interleukin-6 production,34,17,8.78,0.00210,1
+GO:0032722,positive regulation of chemokine production,24,16,6.2,0.00268,1
+GO:0006270,DNA replication initiation,17,11,4.39,0.00343,1
+GO:0071260,cellular response to mechanical stimulus,22,12,5.68,0.00381,1
+GO:0070233,negative regulation of T cell apoptotic process,11,10,2.84,0.00440,1
+GO:0070244,negative regulation of thymocyte apoptotic process,4,4,1.03,0.00444,1
+GO:0035435,phosphate ion transmembrane transport,4,4,1.03,0.00444,1
+GO:0050729,positive regulation of inflammatory response,41,21,10.59,0.00503,1
+GO:0032757,positive regulation of interleukin-8 production,20,11,5.17,0.00512,1
+GO:0042100,B cell proliferation,39,27,10.08,0.00521,1
+GO:0032733,positive regulation of interleukin-10 production,15,9,3.88,0.00528,1
+GO:0032753,positive regulation of interleukin-4 production,13,8,3.36,0.00696,1
+GO:0006814,sodium ion transport,45,16,11.63,0.00697,1
+GO:0006631,fatty acid metabolic process,116,38,29.97,0.00900,1
+GO:0033077,T cell differentiation in thymus,43,24,11.11,0.00903,1
+GO:0060907,positive regulation of macrophage cytokine production,11,7,2.84,0.00912,1
+GO:0006268,DNA unwinding involved in DNA replication,11,7,2.84,0.00912,1
+GO:0045184,establishment of protein localization,625,127,161.48,0.01048,1
+GO:0032481,positive regulation of type I interferon production,33,13,8.53,0.01177,1
+GO:1900016,negative regulation of cytokine production involved in inflammatory response,9,6,2.33,0.01180,1
+GO:0042742,defense response to bacterium,54,25,13.95,0.01243,1
+GO:2000042,negative regulation of double-strand break repair via homologous recombination,14,8,3.62,0.01260,1
+GO:0032735,positive regulation of interleukin-12 production,14,8,3.62,0.01260,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,83,57.36,0.01273,1
+GO:0032729,positive regulation of interferon-gamma production,22,11,5.68,0.01275,1
+GO:0007264,small GTPase mediated signal transduction,163,57,42.11,0.01457,1
+GO:0045582,positive regulation of T cell differentiation,36,18,9.3,0.01466,1
+GO:0009617,response to bacterium,159,57,41.08,0.01481,1
+GO:2000353,positive regulation of endothelial cell apoptotic process,7,5,1.81,0.01487,1
+GO:0040015,negative regulation of multicellular organism growth,7,5,1.81,0.01487,1
+GO:2000563,positive regulation of CD4-positive; alpha-beta T cell proliferation,7,5,1.81,0.01487,1
+GO:0050861,positive regulation of B cell receptor signaling pathway,7,5,1.81,0.01487,1
+GO:0006805,xenobiotic metabolic process,19,11,4.91,0.01524,1
+GO:0098586,cellular response to virus,34,12,8.78,0.01541,1
+GO:0048870,cell motility,495,163,127.89,0.01620,1
+GO:0009888,tissue development,573,162,148.04,0.01685,1
+GO:0045576,mast cell activation,20,11,5.17,0.01712,1
+GO:0001952,regulation of cell-matrix adhesion,40,16,10.33,0.01712,1
+GO:0034138,toll-like receptor 3 signaling pathway,9,7,2.33,0.01715,1

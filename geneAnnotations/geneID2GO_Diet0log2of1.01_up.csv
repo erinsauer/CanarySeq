@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0007015,actin filament organization,162,88,75.82,0.00024,1
+GO:0043123,positive regulation of I-kappaB kinase/NF-kappaB signaling,65,44,30.42,0.00052,1
+GO:0051092,positive regulation of NF-kappaB transcription factor activity,69,46,32.29,0.00065,1
+GO:0030890,positive regulation of B cell proliferation,22,18,10.3,0.00081,1
+GO:0050853,B cell receptor signaling pathway,28,24,13.1,0.00160,1
+GO:0006493,protein O-linked glycosylation,36,22,16.85,0.00316,1
+GO:2000042,negative regulation of double-strand break repair via homologous recombination,14,12,6.55,0.00323,1
+GO:0071260,cellular response to mechanical stimulus,22,17,10.3,0.00356,1
+GO:0048304,positive regulation of isotype switching to IgG isotypes,7,7,3.28,0.00490,1
+GO:0006805,xenobiotic metabolic process,19,14,8.89,0.00598,1
+GO:0071526,semaphorin-plexin signaling pathway,12,10,5.62,0.00620,1
+GO:0007507,heart development,151,79,70.67,0.00654,1
+GO:0032733,positive regulation of interleukin-10 production,15,12,7.02,0.00924,1
+GO:0002250,adaptive immune response,115,82,53.82,0.01029,1
+GO:0045830,positive regulation of isotype switching,15,14,7.02,0.01041,1
+GO:0002281,macrophage activation involved in immune response,7,7,3.28,0.01047,1
+GO:0016446,somatic hypermutation of immunoglobulin genes,6,6,2.81,0.01048,1
+GO:2000562,negative regulation of CD4-positive; alpha-beta T cell proliferation,6,6,2.81,0.01048,1
+GO:0045656,negative regulation of monocyte differentiation,6,6,2.81,0.01048,1
+GO:0032481,positive regulation of type I interferon production,33,23,15.44,0.01195,1
+GO:2001034,positive regulation of double-strand break repair via nonhomologous end joining,9,8,4.21,0.01205,1
+GO:0010212,response to ionizing radiation,67,32,31.36,0.01652,1
+GO:0048813,dendrite morphogenesis,29,16,13.57,0.01994,1
+GO:0001570,vasculogenesis,24,17,11.23,0.02118,1
+GO:0001822,kidney development,85,52,39.78,0.02184,1
+GO:0008544,epidermis development,84,51,39.31,0.02210,1
+GO:0043542,endothelial cell migration,83,45,38.85,0.02229,1
+GO:0050832,defense response to fungus,11,10,5.15,0.02234,1
+GO:0008611,ether lipid biosynthetic process,7,6,3.28,0.02241,1
+GO:0060440,trachea formation,5,5,2.34,0.02242,1
+GO:2000343,positive regulation of chemokine (C-X-C motif) ligand 2 production,5,5,2.34,0.02242,1
+GO:0140289,protein mono-ADP-ribosylation,5,5,2.34,0.02242,1
+GO:1900227,positive regulation of NLRP3 inflammasome complex assembly,5,5,2.34,0.02242,1
+GO:0034351,negative regulation of glial cell apoptotic process,5,5,2.34,0.02242,1
+GO:0006048,UDP-N-acetylglucosamine biosynthetic process,5,5,2.34,0.02242,1
+GO:0072344,rescue of stalled ribosome,5,5,2.34,0.02242,1
+GO:0034144,negative regulation of toll-like receptor 4 signaling pathway,5,5,2.34,0.02242,1
+GO:0045944,positive regulation of transcription by RNA polymerase II,433,219,202.65,0.02305,1
+GO:0030889,negative regulation of B cell proliferation,8,7,3.74,0.02317,1
+GO:0003376,sphingosine-1-phosphate receptor signaling pathway,8,7,3.74,0.02317,1
+GO:0019933,cAMP-mediated signaling,11,8,5.15,0.02319,1
+GO:0006302,double-strand break repair,131,74,61.31,0.02566,1
+GO:0018279,protein N-linked glycosylation via asparagine,13,10,6.08,0.02762,1
+GO:0042531,positive regulation of tyrosine phosphorylation of STAT protein,13,10,6.08,0.02762,1
+GO:0032753,positive regulation of interleukin-4 production,13,10,6.08,0.02762,1
+GO:0032727,positive regulation of interferon-alpha production,13,10,6.08,0.02762,1
+GO:0051607,defense response to virus,91,51,42.59,0.02799,1
+GO:0030163,protein catabolic process,483,198,226.05,0.03002,1
+GO:0032757,positive regulation of interleukin-8 production,20,14,9.36,0.03109,1
+GO:0060021,roof of mouth development,21,16,9.83,0.03476,1

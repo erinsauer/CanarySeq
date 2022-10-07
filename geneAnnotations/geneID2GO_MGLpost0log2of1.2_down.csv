@@ -1,6 +1,6 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
 GO:0006412,translation,352,112,51.75,1.0e-26,0
-GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,21,6.03,2.4e-08,1e-04
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,21,6.03,2.4e-08,1e-04
 GO:0042274,ribosomal small subunit biogenesis,25,12,3.68,3.1e-08,1e-04
 GO:0002181,cytoplasmic translation,41,15,6.03,1.6e-07,5e-04
 GO:0015074,DNA integration,33,17,4.85,6.9e-07,0.0016
@@ -48,4 +48,4 @@ GO:0060134,prepulse inhibition,2,2,0.29,0.02159,1
 GO:0120222,regulation of blastocyst development,2,2,0.29,0.02159,1
 GO:0052651,monoacylglycerol catabolic process,2,2,0.29,0.02159,1
 GO:0060235,lens induction in camera-type eye,2,2,0.29,0.02159,1
-GO:0035998,7,8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.29,0.02159,1
+GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.29,0.02159,1

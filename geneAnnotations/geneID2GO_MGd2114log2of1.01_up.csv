@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0006412,translation,352,193,185.55,0.00012,0.8941
+GO:0051289,protein homotetramerization,22,20,11.6,0.00015,0.8941
+GO:0006955,immune response,430,279,226.67,0.00024,0.9538
+GO:0007186,G protein-coupled receptor signaling pathway,222,133,117.03,0.00427,1
+GO:0050830,defense response to Gram-positive bacterium,19,16,10.02,0.00441,1
+GO:0071260,cellular response to mechanical stimulus,22,18,11.6,0.00456,1
+GO:0050853,B cell receptor signaling pathway,28,25,14.76,0.00703,1
+GO:0060907,positive regulation of macrophage cytokine production,11,10,5.8,0.00945,1
+GO:0090023,positive regulation of neutrophil chemotaxis,11,10,5.8,0.00945,1
+GO:0045582,positive regulation of T cell differentiation,36,27,18.98,0.01118,1
+GO:0031295,T cell costimulation,9,9,4.74,0.01126,1
+GO:0006893,Golgi to plasma membrane transport,25,17,13.18,0.01127,1
+GO:0048304,positive regulation of isotype switching to IgG isotypes,7,7,3.69,0.01128,1
+GO:2000353,positive regulation of endothelial cell apoptotic process,7,7,3.69,0.01128,1
+GO:0045060,negative thymic T cell selection,7,7,3.69,0.01128,1
+GO:2001240,negative regulation of extrinsic apoptotic signaling pathway in absence of ligand,7,7,3.69,0.01128,1
+GO:0050861,positive regulation of B cell receptor signaling pathway,7,7,3.69,0.01128,1
+GO:0006915,apoptotic process,638,369,336.32,0.01320,1
+GO:0006493,protein O-linked glycosylation,36,24,18.98,0.01641,1
+GO:0002931,response to ischemia,10,9,5.27,0.01646,1
+GO:0050860,negative regulation of T cell receptor signaling pathway,10,9,5.27,0.01646,1
+GO:0070584,mitochondrion morphogenesis,13,11,6.85,0.01822,1
+GO:0007224,smoothened signaling pathway,57,36,30.05,0.01935,1
+GO:0045088,regulation of innate immune response,69,47,36.37,0.02113,1
+GO:0046834,lipid phosphorylation,25,19,13.18,0.02131,1
+GO:1902570,protein localization to nucleolus,11,10,5.8,0.02137,1
+GO:0045664,regulation of neuron differentiation,49,30,25.83,0.02137,1
+GO:0050862,positive regulation of T cell receptor signaling pathway,6,6,3.16,0.02141,1
+GO:0045656,negative regulation of monocyte differentiation,6,6,3.16,0.02141,1
+GO:0090026,positive regulation of monocyte chemotaxis,6,6,3.16,0.02141,1
+GO:0050850,positive regulation of calcium-mediated signaling,13,8,6.85,0.02148,1
+GO:0000413,protein peptidyl-prolyl isomerization,18,14,9.49,0.02662,1
+GO:0006364,rRNA processing,85,50,44.81,0.02693,1
+GO:0032481,positive regulation of type I interferon production,33,23,17.4,0.02831,1
+GO:0050768,negative regulation of neurogenesis,28,20,14.76,0.02833,1
+GO:0046835,carbohydrate phosphorylation,9,8,4.74,0.02844,1
+GO:0042274,ribosomal small subunit biogenesis,25,16,13.18,0.02846,1
+GO:0042632,cholesterol homeostasis,31,22,16.34,0.02998,1
+GO:0045454,cell redox homeostasis,17,13,8.96,0.04024,1
+GO:0034101,erythrocyte homeostasis,76,45,40.06,0.04050,1
+GO:1902017,regulation of cilium assembly,28,19,14.76,0.04054,1
+GO:0050773,regulation of dendrite development,19,14,10.02,0.04056,1
+GO:0019370,leukotriene biosynthetic process,6,6,3.16,0.04062,1
+GO:0034638,phosphatidylcholine catabolic process,6,6,3.16,0.04062,1
+GO:0015986,ATP synthesis coupled proton transport,14,10,7.38,0.04064,1
+GO:0043653,mitochondrial fragmentation involved in apoptotic process,5,5,2.64,0.04065,1
+GO:0048714,positive regulation of oligodendrocyte differentiation,5,5,2.64,0.04065,1
+GO:0140289,protein mono-ADP-ribosylation,5,5,2.64,0.04065,1
+GO:0034351,negative regulation of glial cell apoptotic process,5,5,2.64,0.04065,1
+GO:0032725,positive regulation of granulocyte macrophage colony-stimulating factor production,5,5,2.64,0.04065,1

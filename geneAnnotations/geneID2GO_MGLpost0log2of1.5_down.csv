@@ -1,6 +1,6 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
 GO:0007186,G protein-coupled receptor signaling pathway,222,28,8.47,2.3e-08,3e-04
-GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,11,1.56,7.5e-07,0.0045
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,11,1.56,7.5e-07,0.0045
 GO:0015074,DNA integration,33,9,1.26,2.6e-06,0.0103
 GO:0032508,DNA duplex unwinding,37,8,1.41,3.8e-05,0.1133
 GO:0075713,establishment of integrated proviral latency,20,6,0.76,7.2e-05,0.1431
@@ -8,7 +8,7 @@ GO:0044826,viral genome integration into host DNA,20,6,0.76,7.2e-05,0.1431
 GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,5,0.53,0.00012,0.2044
 GO:0046718,viral entry into host cell,50,8,1.91,0.00068,1
 GO:0090305,nucleic acid phosphodiester bond hydrolysis,87,17,3.32,0.00101,1
-GO:0035998,7,8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.08,0.00145,1
+GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.08,0.00145,1
 GO:0071320,cellular response to cAMP,14,4,0.53,0.00153,1
 GO:0006310,DNA recombination,161,10,6.14,0.00167,1
 GO:0001658,branching involved in ureteric bud morphogenesis,10,4,0.38,0.00264,1

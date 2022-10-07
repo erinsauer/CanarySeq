@@ -11,7 +11,7 @@ GO:0042742,defense response to bacterium,54,11,5.06,0.00297,1
 GO:0048711,positive regulation of astrocyte differentiation,4,3,0.38,0.00305,1
 GO:0032700,negative regulation of interleukin-17 production,4,3,0.38,0.00305,1
 GO:0044205,'de novo' UMP biosynthetic process,4,3,0.38,0.00305,1
-GO:0051754,meiotic sister chromatid cohesion, centromeric,4,3,0.38,0.00305,1
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.38,0.00305,1
 GO:0003007,heart morphogenesis,60,10,5.62,0.00391,1
 GO:0045087,innate immune response,170,29,15.94,0.00452,1
 GO:2000249,regulation of actin cytoskeleton reorganization,16,6,1.5,0.00652,1

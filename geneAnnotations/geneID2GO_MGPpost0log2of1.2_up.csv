@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0006954,inflammatory response,196,63,24.59,7.8e-07,0.0093
+GO:0006952,defense response,430,103,53.94,9.4e-06,0.056
+GO:0045087,innate immune response,170,36,21.32,3.1e-05,0.1232
+GO:1902895,positive regulation of pri-miRNA transcription by RNA polymerase II,17,9,2.13,7.0e-05,0.1987
+GO:0060907,positive regulation of macrophage cytokine production,11,7,1.38,1.0e-04,0.1987
+GO:1904707,positive regulation of vascular associated smooth muscle cell proliferation,11,7,1.38,1.0e-04,0.1987
+GO:0060395,SMAD protein signal transduction,26,10,3.26,0.00017,0.2895
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,6,1.13,0.00023,0.3312
+GO:0042450,arginine biosynthetic process via ornithine,4,4,0.5,0.00025,0.3312
+GO:0002755,MyD88-dependent toll-like receptor signaling pathway,13,7,1.63,0.00041,0.4888
+GO:0003151,outflow tract morphogenesis,20,11,2.51,0.00050,0.5044
+GO:0071526,semaphorin-plexin signaling pathway,12,8,1.51,0.00051,0.5044
+GO:0032755,positive regulation of interleukin-6 production,34,12,4.26,0.00055,0.5044
+GO:0006631,fatty acid metabolic process,116,18,14.55,0.00102,0.808
+GO:1900273,positive regulation of long-term synaptic potentiation,5,4,0.63,0.00111,0.808
+GO:0034144,negative regulation of toll-like receptor 4 signaling pathway,5,4,0.63,0.00111,0.808
+GO:0050873,brown fat cell differentiation,26,10,3.26,0.00122,0.808
+GO:0032722,positive regulation of chemokine production,24,9,3.01,0.00122,0.808
+GO:0002250,adaptive immune response,115,25,14.43,0.00174,0.9786
+GO:0009617,response to bacterium,159,42,19.94,0.00180,0.9786
+GO:0050885,neuromuscular process controlling balance,16,7,2.01,0.00195,0.9786
+GO:0072112,glomerular visceral epithelial cell differentiation,6,5,0.75,0.00196,0.9786
+GO:0014850,response to muscle activity,3,3,0.38,0.00197,0.9786
+GO:0042262,DNA protection,3,3,0.38,0.00197,0.9786
+GO:0050729,positive regulation of inflammatory response,41,14,5.14,0.00253,1
+GO:0001889,liver development,33,13,4.14,0.00261,1
+GO:0006919,activation of cysteine-type endopeptidase activity involved in apoptotic process,27,9,3.39,0.00268,1
+GO:0071356,cellular response to tumor necrosis factor,71,16,8.91,0.00271,1
+GO:0042531,positive regulation of tyrosine phosphorylation of STAT protein,13,6,1.63,0.00300,1
+GO:0007229,integrin-mediated signaling pathway,40,13,5.02,0.00343,1
+GO:0006955,immune response,430,100,53.94,0.00371,1
+GO:0051092,positive regulation of NF-kappaB transcription factor activity,69,17,8.66,0.00419,1
+GO:1901224,positive regulation of NIK/NF-kappaB signaling,27,9,3.39,0.00421,1
+GO:0001947,heart looping,18,7,2.26,0.00433,1
+GO:0007623,circadian rhythm,73,15,9.16,0.00466,1
+GO:0045669,positive regulation of osteoblast differentiation,23,8,2.89,0.00514,1
+GO:0070374,positive regulation of ERK1 and ERK2 cascade,56,15,7.02,0.00550,1
+GO:0090630,activation of GTPase activity,19,7,2.38,0.00613,1
+GO:0001657,ureteric bud development,21,6,2.63,0.00628,1
+GO:0050861,positive regulation of B cell receptor signaling pathway,7,4,0.88,0.00629,1
+GO:0045780,positive regulation of bone resorption,7,4,0.88,0.00629,1
+GO:0010718,positive regulation of epithelial to mesenchymal transition,20,9,2.51,0.00692,1
+GO:0034405,response to fluid shear stress,12,6,1.51,0.00708,1
+GO:0001774,microglial cell activation,8,5,1,0.00710,1
+GO:0007044,cell-substrate junction assembly,32,8,4.01,0.00710,1
+GO:0030502,negative regulation of bone mineralization,5,4,0.63,0.00711,1
+GO:0032836,glomerular basement membrane development,5,4,0.63,0.00711,1
+GO:0002576,platelet degranulation,6,4,0.75,0.00711,1
+GO:0034154,toll-like receptor 7 signaling pathway,6,4,0.75,0.00711,1
+GO:0002467,germinal center formation,8,4,1,0.00712,1

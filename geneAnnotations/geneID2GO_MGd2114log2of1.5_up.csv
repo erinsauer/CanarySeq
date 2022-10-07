@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0006278,RNA-dependent DNA biosynthetic process,79,11,1.56,9.1e-09,1e-04
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,8,0.81,1.1e-06,0.0051
+GO:0044826,viral genome integration into host DNA,20,6,0.4,1.7e-06,0.0051
+GO:0075713,establishment of integrated proviral latency,20,6,0.4,1.7e-06,0.0051
+GO:0046718,viral entry into host cell,50,8,0.99,1.1e-05,0.0262
+GO:0007186,G protein-coupled receptor signaling pathway,222,16,4.4,1.5e-05,0.0298
+GO:0015074,DNA integration,33,6,0.65,3.9e-05,0.0664
+GO:0006310,DNA recombination,161,10,3.19,0.00031,0.462
+GO:0009653,anatomical structure morphogenesis,771,18,15.27,0.00546,1
+GO:0006955,immune response,430,10,8.52,0.00961,1
+GO:0070098,chemokine-mediated signaling pathway,12,3,0.24,0.00995,1
+GO:0007616,long-term memory,8,2,0.16,0.01008,1
+GO:0035357,peroxisome proliferator activated receptor signaling pathway,8,2,0.16,0.01008,1
+GO:0045471,response to ethanol,9,2,0.18,0.01280,1
+GO:0031295,T cell costimulation,9,2,0.18,0.01280,1
+GO:0048731,system development,1383,29,27.39,0.01283,1
+GO:0010976,positive regulation of neuron projection development,27,3,0.53,0.01570,1
+GO:0065007,biological regulation,4227,88,83.72,0.01853,1
+GO:0007131,reciprocal meiotic recombination,11,2,0.22,0.01905,1
+GO:0042220,response to cocaine,4,2,0.08,0.01967,1
+GO:0033280,response to vitamin D,5,2,0.1,0.01967,1
+GO:0060992,response to fungicide,1,1,0.02,0.01981,1
+GO:0032971,regulation of muscle filament sliding,1,1,0.02,0.01981,1
+GO:0051659,maintenance of mitochondrion location,1,1,0.02,0.01981,1
+GO:0016104,triterpenoid biosynthetic process,1,1,0.02,0.01981,1
+GO:0032078,negative regulation of endodeoxyribonuclease activity,1,1,0.02,0.01981,1
+GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0.02,0.01981,1
+GO:1901647,positive regulation of synoviocyte proliferation,1,1,0.02,0.01981,1
+GO:0060023,soft palate development,1,1,0.02,0.01981,1
+GO:0002157,positive regulation of thyroid hormone mediated signaling pathway,1,1,0.02,0.01981,1
+GO:1905799,regulation of intraciliary retrograde transport,1,1,0.02,0.01981,1
+GO:0014816,skeletal muscle satellite cell differentiation,1,1,0.02,0.01981,1
+GO:0035902,response to immobilization stress,1,1,0.02,0.01981,1
+GO:0032571,response to vitamin K,1,1,0.02,0.01981,1
+GO:0043157,response to cation stress,1,1,0.02,0.01981,1
+GO:0051968,positive regulation of synaptic transmission; glutamatergic,1,1,0.02,0.01981,1
+GO:0007066,female meiosis sister chromatid cohesion,1,1,0.02,0.01981,1
+GO:0019230,proprioception,1,1,0.02,0.01981,1
+GO:2000538,positive regulation of B cell chemotaxis,1,1,0.02,0.01981,1
+GO:1990550,mitochondrial alpha-ketoglutarate transmembrane transport,1,1,0.02,0.01981,1
+GO:1902483,cytotoxic T cell pyroptotic process,1,1,0.02,0.01981,1
+GO:0031296,B cell costimulation,1,1,0.02,0.01981,1
+GO:1904744,positive regulation of telomeric DNA binding,1,1,0.02,0.01981,1
+GO:2000458,regulation of astrocyte chemotaxis,1,1,0.02,0.01981,1
+GO:0002540,leukotriene production involved in inflammatory response,1,1,0.02,0.01981,1
+GO:0002250,adaptive immune response,115,4,2.28,0.02258,1
+GO:0019068,virion assembly,32,3,0.63,0.02479,1
+GO:0033209,tumor necrosis factor-mediated signaling pathway,36,3,0.71,0.03372,1
+GO:0098655,cation transmembrane transport,223,7,4.42,0.03411,1
+GO:0010226,response to lithium ion,6,2,0.12,0.03896,1

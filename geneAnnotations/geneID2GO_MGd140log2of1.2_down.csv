@@ -1,7 +1,7 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
 GO:0006412,translation,352,71,34.5,2.3e-17,0
 GO:0006278,RNA-dependent DNA biosynthetic process,79,16,7.74,1.0e-05,0.0596
-GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,12,4.02,0.00039,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,12,4.02,0.00039,1
 GO:0006310,DNA recombination,161,19,15.78,0.00052,1
 GO:0071805,potassium ion transmembrane transport,41,9,4.02,0.00068,1
 GO:0042274,ribosomal small subunit biogenesis,25,7,2.45,0.00080,1

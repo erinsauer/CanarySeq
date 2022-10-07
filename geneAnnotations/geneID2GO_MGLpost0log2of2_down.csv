@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,7,0.42,1.4e-07,0.0017
+GO:0015074,DNA integration,33,5,0.33,1.7e-05,0.0978
+GO:0032508,DNA duplex unwinding,37,5,0.37,3.1e-05,0.0978
+GO:0075713,establishment of integrated proviral latency,20,4,0.2,4.1e-05,0.0978
+GO:0044826,viral genome integration into host DNA,20,4,0.2,4.1e-05,0.0978
+GO:0006278,RNA-dependent DNA biosynthetic process,79,5,0.8,0.0012,1
+GO:0046718,viral entry into host cell,50,4,0.51,0.0016,1
+GO:0090305,nucleic acid phosphodiester bond hydrolysis,87,10,0.88,0.0030,1
+GO:0008645,hexose transmembrane transport,32,2,0.32,0.0100,1
+GO:0034959,endothelin maturation,1,1,0.01,0.0101,1
+GO:0031448,positive regulation of fast-twitch skeletal muscle fiber contraction,1,1,0.01,0.0101,1
+GO:1990036,calcium ion import into sarcoplasmic reticulum,1,1,0.01,0.0101,1
+GO:0098759,cellular response to interleukin-8,1,1,0.01,0.0101,1
+GO:0016191,synaptic vesicle uncoating,1,1,0.01,0.0101,1
+GO:0038162,erythropoietin-mediated signaling pathway,1,1,0.01,0.0101,1
+GO:0106040,regulation of GABA-A receptor activity,1,1,0.01,0.0101,1
+GO:1904717,regulation of AMPA glutamate receptor clustering,1,1,0.01,0.0101,1
+GO:0060385,axonogenesis involved in innervation,1,1,0.01,0.0101,1
+GO:1903760,regulation of voltage-gated potassium channel activity involved in ventricular cardiac muscle cell action potential repolarization,1,1,0.01,0.0101,1
+GO:1902287,semaphorin-plexin signaling pathway involved in axon guidance,1,1,0.01,0.0101,1
+GO:0030432,peristalsis,1,1,0.01,0.0101,1
+GO:0097324,melanocyte migration,1,1,0.01,0.0101,1
+GO:0097326,melanocyte adhesion,1,1,0.01,0.0101,1
+GO:0032571,response to vitamin K,1,1,0.01,0.0101,1
+GO:0097492,sympathetic neuron axon guidance,1,1,0.01,0.0101,1
+GO:0010879,cholesterol transport involved in cholesterol storage,1,1,0.01,0.0101,1
+GO:0010816,calcitonin catabolic process,1,1,0.01,0.0101,1
+GO:0044849,estrous cycle,1,1,0.01,0.0101,1
+GO:0008360,regulation of cell shape,47,3,0.48,0.0117,1
+GO:0006952,defense response,430,5,4.35,0.0144,1
+GO:0140112,extracellular vesicle biogenesis,13,2,0.13,0.0199,1
+GO:1903553,positive regulation of extracellular exosome assembly,2,1,0.02,0.0201,1
+GO:0060022,hard palate development,2,1,0.02,0.0201,1
+GO:0060235,lens induction in camera-type eye,2,1,0.02,0.0201,1
+GO:0098962,regulation of postsynaptic neurotransmitter receptor activity,2,1,0.02,0.0201,1
+GO:0032765,positive regulation of mast cell cytokine production,2,1,0.02,0.0201,1
+GO:0032782,bile acid secretion,2,1,0.02,0.0201,1
+GO:0045578,negative regulation of B cell differentiation,2,1,0.02,0.0201,1
+GO:2000182,regulation of progesterone biosynthetic process,2,1,0.02,0.0201,1
+GO:0050965,detection of temperature stimulus involved in sensory perception of pain,2,1,0.02,0.0201,1
+GO:0060374,mast cell differentiation,2,1,0.02,0.0201,1
+GO:1903764,regulation of potassium ion export across plasma membrane,2,1,0.02,0.0201,1
+GO:2001311,lysobisphosphatidic acid metabolic process,2,1,0.02,0.0201,1
+GO:0033693,neurofilament bundle assembly,2,1,0.02,0.0201,1
+GO:0030187,melatonin biosynthetic process,2,1,0.02,0.0201,1
+GO:0006788,heme oxidation,2,1,0.02,0.0201,1
+GO:0010814,substance P catabolic process,2,1,0.02,0.0201,1
+GO:0042130,negative regulation of T cell proliferation,23,2,0.23,0.0223,1
+GO:0006281,DNA repair,244,7,2.47,0.0235,1
+GO:0060059,embryonic retina morphogenesis in camera-type eye,3,1,0.03,0.0301,1

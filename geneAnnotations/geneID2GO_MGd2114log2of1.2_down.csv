@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,4,0.29,2.7e-05,0.3219
+GO:0030509,BMP signaling pathway,55,11,3.96,0.00032,1
+GO:0086091,regulation of heart rate by cardiac conduction,7,4,0.5,0.00078,1
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.29,0.00141,1
+GO:0006541,glutamine metabolic process,8,4,0.58,0.00147,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,5,1.01,0.00220,1
+GO:0051571,positive regulation of histone H3-K4 methylation,15,5,1.08,0.00311,1
+GO:0045603,positive regulation of endothelial cell differentiation,5,3,0.36,0.00333,1
+GO:0051694,pointed-end actin filament capping,5,3,0.36,0.00333,1
+GO:0060307,regulation of ventricular cardiac muscle cell membrane repolarization,5,3,0.36,0.00333,1
+GO:0030325,adrenal gland development,5,3,0.36,0.00333,1
+GO:0007586,digestion,22,5,1.58,0.00515,1
+GO:0097623,potassium ion export across plasma membrane,4,3,0.29,0.00516,1
+GO:0000294,nuclear-transcribed mRNA catabolic process; endonucleolytic cleavage-dependent decay,2,2,0.14,0.00518,1
+GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.14,0.00518,1
+GO:0030644,cellular chloride ion homeostasis,2,2,0.14,0.00518,1
+GO:0042487,regulation of odontogenesis of dentin-containing tooth,2,2,0.14,0.00518,1
+GO:0032286,central nervous system myelin maintenance,2,2,0.14,0.00518,1
+GO:0030916,otic vesicle formation,2,2,0.14,0.00518,1
+GO:0098708,glucose import across plasma membrane,2,2,0.14,0.00518,1
+GO:1903281,positive regulation of calcium:sodium antiporter activity,2,2,0.14,0.00518,1
+GO:0098915,membrane repolarization during ventricular cardiac muscle cell action potential,2,2,0.14,0.00518,1
+GO:0042158,lipoprotein biosynthetic process,57,5,4.11,0.00520,1
+GO:0043981,histone H4-K5 acetylation,11,4,0.79,0.00584,1
+GO:0043982,histone H4-K8 acetylation,11,4,0.79,0.00584,1
+GO:0070886,positive regulation of calcineurin-NFAT signaling cascade,6,3,0.43,0.00630,1
+GO:0032754,positive regulation of interleukin-5 production,6,3,0.43,0.00630,1
+GO:0055072,iron ion homeostasis,42,8,3.03,0.00815,1
+GO:0032689,negative regulation of interferon-gamma production,7,3,0.5,0.01044,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.5,0.01044,1
+GO:0007204,positive regulation of cytosolic calcium ion concentration,51,5,3.67,0.01051,1
+GO:0051726,regulation of cell cycle,441,37,31.77,0.01098,1
+GO:2000648,positive regulation of stem cell proliferation,16,5,1.15,0.01120,1
+GO:0006936,muscle contraction,68,14,4.9,0.01436,1
+GO:1901381,positive regulation of potassium ion transmembrane transport,7,4,0.5,0.01469,1
+GO:0070837,dehydroascorbic acid transport,3,2,0.22,0.01479,1
+GO:1903003,positive regulation of protein deubiquitination,3,2,0.22,0.01479,1
+GO:0032927,positive regulation of activin receptor signaling pathway,3,2,0.22,0.01479,1
+GO:2000627,positive regulation of miRNA catabolic process,3,2,0.22,0.01479,1
+GO:0046549,retinal cone cell development,3,2,0.22,0.01479,1
+GO:0098914,membrane repolarization during atrial cardiac muscle cell action potential,3,2,0.22,0.01479,1
+GO:0051028,mRNA transport,34,4,2.45,0.01481,1
+GO:0032508,DNA duplex unwinding,37,7,2.67,0.01495,1
+GO:0010804,negative regulation of tumor necrosis factor-mediated signaling pathway,8,3,0.58,0.01583,1
+GO:0006013,mannose metabolic process,8,3,0.58,0.01583,1
+GO:0071897,DNA biosynthetic process,129,16,9.29,0.02195,1
+GO:0043984,histone H4-K16 acetylation,12,4,0.86,0.02239,1
+GO:0042953,lipoprotein transport,9,3,0.65,0.02249,1
+GO:0034765,regulation of ion transmembrane transport,123,14,8.86,0.02780,1
+GO:0048644,muscle organ morphogenesis,17,4,1.22,0.02807,1

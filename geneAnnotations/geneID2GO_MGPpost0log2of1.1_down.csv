@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006412,translation,352,152,83.71,3.2e-15,0
+GO:0006310,DNA recombination,161,42,38.29,4.8e-06,0.0286
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,23,9.75,8.3e-06,0.0328
+GO:0006278,RNA-dependent DNA biosynthetic process,79,28,18.79,1.1e-05,0.0328
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,22,9.75,1.6e-05,0.0382
+GO:0006413,translational initiation,74,31,17.6,2.3e-05,0.0457
+GO:0015074,DNA integration,33,19,7.85,3.1e-05,0.0528
+GO:0042274,ribosomal small subunit biogenesis,25,14,5.95,7.1e-05,0.1058
+GO:0075713,establishment of integrated proviral latency,20,13,4.76,0.00010,0.1192
+GO:0044826,viral genome integration into host DNA,20,13,4.76,0.00010,0.1192
+GO:0006414,translational elongation,27,18,6.42,0.00018,0.1951
+GO:0001682,tRNA 5'-leader removal,8,7,1.9,0.00027,0.2682
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,11,4.04,0.00039,0.3577
+GO:0046718,viral entry into host cell,50,22,11.89,0.00054,0.4598
+GO:0033617,mitochondrial cytochrome c oxidase assembly,7,6,1.66,0.00100,0.7948
+GO:0006749,glutathione metabolic process,35,17,8.32,0.00124,0.924
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,9,3.33,0.00146,1
+GO:0006364,rRNA processing,85,32,20.21,0.00174,1
+GO:0046079,dUMP catabolic process,4,4,0.95,0.00319,1
+GO:0106035,protein maturation by [4Fe-4S] cluster transfer,4,4,0.95,0.00319,1
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,6,1.9,0.00320,1
+GO:0006123,mitochondrial electron transport; cytochrome c to oxygen,6,5,1.43,0.00365,1
+GO:0006281,DNA repair,244,63,58.03,0.00662,1
+GO:0006783,heme biosynthetic process,10,8,2.38,0.01019,1
+GO:0045494,photoreceptor cell maintenance,12,7,2.85,0.01067,1
+GO:0042744,hydrogen peroxide catabolic process,5,4,1.19,0.01292,1
+GO:0045329,carnitine biosynthetic process,5,4,1.19,0.01292,1
+GO:2000436,positive regulation of protein neddylation,5,4,1.19,0.01292,1
+GO:0007130,synaptonemal complex assembly,5,4,1.19,0.01292,1
+GO:0009650,UV protection,5,4,1.19,0.01292,1
+GO:0006122,mitochondrial electron transport; ubiquinol to cytochrome c,5,4,1.19,0.01292,1
+GO:0006249,dCMP catabolic process,3,3,0.71,0.01343,1
+GO:1990592,protein K69-linked ufmylation,3,3,0.71,0.01343,1
+GO:0046050,UMP catabolic process,3,3,0.71,0.01343,1
+GO:0035723,interleukin-15-mediated signaling pathway,3,3,0.71,0.01343,1
+GO:0035616,histone H2B conserved C-terminal lysine deubiquitination,3,3,0.71,0.01343,1
+GO:2000435,negative regulation of protein neddylation,3,3,0.71,0.01343,1
+GO:0060271,cilium assembly,129,41,30.68,0.01529,1
+GO:0035269,protein O-linked mannosylation,10,6,2.38,0.01533,1
+GO:0002181,cytoplasmic translation,41,18,9.75,0.02028,1
+GO:0042273,ribosomal large subunit biogenesis,26,14,6.18,0.02174,1
+GO:0032024,positive regulation of insulin secretion,16,8,3.81,0.02195,1
+GO:0016558,protein import into peroxisome matrix,11,6,2.62,0.02702,1
+GO:0090314,positive regulation of protein targeting to membrane,11,6,2.62,0.02702,1
+GO:0040029,regulation of gene expression; epigenetic,50,15,11.89,0.02704,1
+GO:0032259,methylation,168,40,39.95,0.02977,1
+GO:0045116,protein neddylation,15,11,3.57,0.03114,1
+GO:0021549,cerebellum development,27,6,6.42,0.03168,1
+GO:0006869,lipid transport,134,25,31.87,0.03214,1
+GO:0006508,proteolysis,735,156,174.8,0.03428,1

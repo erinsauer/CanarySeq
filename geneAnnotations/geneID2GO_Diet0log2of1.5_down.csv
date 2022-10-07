@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006334,nucleosome assembly,49,7,0.82,1.5e-05,0.0536
+GO:0030509,BMP signaling pathway,55,6,0.92,1.5e-05,0.0536
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.07,1.8e-05,0.0536
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.07,1.8e-05,0.0536
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,6,0.69,5.4e-05,0.1288
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.12,0.00015,0.298
+GO:0015074,DNA integration,33,5,0.55,0.00020,0.3406
+GO:0006541,glutamine metabolic process,8,3,0.13,0.00024,0.3577
+GO:0006952,defense response,430,11,7.19,0.00049,0.6491
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,3,0.23,0.00145,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,6,1.32,0.00198,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,11,3.71,0.00254,1
+GO:0042981,regulation of apoptotic process,519,11,8.68,0.00505,1
+GO:0055072,iron ion homeostasis,42,4,0.7,0.00509,1
+GO:0007154,cell communication,1901,42,31.79,0.00749,1
+GO:0045820,negative regulation of glycolytic process,10,2,0.17,0.01143,1
+GO:0001666,response to hypoxia,72,5,1.2,0.01177,1
+GO:0050790,regulation of catalytic activity,671,11,11.22,0.01300,1
+GO:0006310,DNA recombination,161,7,2.69,0.01453,1
+GO:0007155,cell adhesion,353,8,5.9,0.01602,1
+GO:0033301,cell cycle comprising mitosis without cytokinesis,1,1,0.02,0.01673,1
+GO:0060212,negative regulation of nuclear-transcribed mRNA poly(A) tail shortening,1,1,0.02,0.01673,1
+GO:0001971,negative regulation of activation of membrane attack complex,1,1,0.02,0.01673,1
+GO:0098759,cellular response to interleukin-8,1,1,0.02,0.01673,1
+GO:0038162,erythropoietin-mediated signaling pathway,1,1,0.02,0.01673,1
+GO:0120229,protein localization to motile cilium,1,1,0.02,0.01673,1
+GO:0097324,melanocyte migration,1,1,0.02,0.01673,1
+GO:0097326,melanocyte adhesion,1,1,0.02,0.01673,1
+GO:0044849,estrous cycle,1,1,0.02,0.01673,1
+GO:0034337,RNA folding,1,1,0.02,0.01673,1
+GO:0032877,positive regulation of DNA endoreduplication,1,1,0.02,0.01673,1
+GO:0010989,negative regulation of low-density lipoprotein particle clearance,1,1,0.02,0.01673,1
+GO:0043163,cell envelope organization,1,1,0.02,0.01673,1
+GO:0019230,proprioception,1,1,0.02,0.01673,1
+GO:0036254,cellular response to amiloride,1,1,0.02,0.01673,1
+GO:0051497,negative regulation of stress fiber assembly,14,2,0.23,0.02213,1
+GO:1901673,regulation of mitotic spindle assembly,15,2,0.25,0.02526,1
+GO:0045292,mRNA cis splicing; via spliceosome,17,2,0.28,0.03202,1
+GO:0120197,mucociliary clearance,2,1,0.03,0.03317,1
+GO:0060287,epithelial cilium movement involved in determination of left/right asymmetry,2,1,0.03,0.03317,1
+GO:1900748,positive regulation of vascular endothelial growth factor signaling pathway,2,1,0.03,0.03317,1
+GO:2000255,negative regulation of male germ cell proliferation,2,1,0.03,0.03317,1
+GO:0045578,negative regulation of B cell differentiation,2,1,0.03,0.03317,1
+GO:0032765,positive regulation of mast cell cytokine production,2,1,0.03,0.03317,1
+GO:0070194,synaptonemal complex disassembly,2,1,0.03,0.03317,1
+GO:0032782,bile acid secretion,2,1,0.03,0.03317,1
+GO:0090660,cerebrospinal fluid circulation,2,1,0.03,0.03317,1
+GO:0006788,heme oxidation,2,1,0.03,0.03317,1
+GO:2001311,lysobisphosphatidic acid metabolic process,2,1,0.03,0.03317,1
+GO:1904158,axonemal central apparatus assembly,2,1,0.03,0.03317,1

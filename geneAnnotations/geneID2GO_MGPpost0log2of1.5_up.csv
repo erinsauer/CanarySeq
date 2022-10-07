@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0010226,response to lithium ion,6,3,0.14,0.00050,1
+GO:0000050,urea cycle,2,2,0.05,0.00051,1
+GO:0032286,central nervous system myelin maintenance,2,2,0.05,0.00051,1
+GO:0060971,embryonic heart tube left/right pattern formation,2,2,0.05,0.00051,1
+GO:0032696,negative regulation of interleukin-13 production,2,2,0.05,0.00051,1
+GO:0006952,defense response,430,22,9.72,0.00070,1
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,3,0.2,0.00086,1
+GO:0048731,system development,1383,52,31.25,0.00107,1
+GO:0051602,response to electrical stimulus,3,2,0.07,0.00150,1
+GO:0030913,paranodal junction assembly,3,2,0.07,0.00150,1
+GO:1900745,positive regulation of p38MAPK cascade,13,3,0.29,0.00274,1
+GO:0051591,response to cAMP,18,3,0.41,0.00293,1
+GO:0042450,arginine biosynthetic process via ornithine,4,2,0.09,0.00295,1
+GO:0046697,decidualization,4,2,0.09,0.00295,1
+GO:0030851,granulocyte differentiation,22,4,0.5,0.00415,1
+GO:0032287,peripheral nervous system myelin maintenance,5,2,0.11,0.00485,1
+GO:0033234,negative regulation of protein sumoylation,6,2,0.14,0.00717,1
+GO:1902231,positive regulation of intrinsic apoptotic signaling pathway in response to DNA damage,6,2,0.14,0.00717,1
+GO:0001556,oocyte maturation,6,2,0.14,0.00717,1
+GO:0043507,positive regulation of JUN kinase activity,18,3,0.41,0.00719,1
+GO:0071356,cellular response to tumor necrosis factor,71,5,1.6,0.00758,1
+GO:0007409,axonogenesis,93,9,2.1,0.00898,1
+GO:0031666,positive regulation of lipopolysaccharide-mediated signaling pathway,7,2,0.16,0.00989,1
+GO:0002040,sprouting angiogenesis,41,3,0.93,0.01295,1
+GO:0009653,anatomical structure morphogenesis,771,29,17.42,0.01427,1
+GO:0006811,ion transport,1075,14,24.29,0.01539,1
+GO:0045471,response to ethanol,9,2,0.2,0.01645,1
+GO:2001222,regulation of neuron migration,9,2,0.2,0.01645,1
+GO:0007010,cytoskeleton organization,540,13,12.2,0.01911,1
+GO:0030225,macrophage differentiation,18,3,0.41,0.02006,1
+GO:0050860,negative regulation of T cell receptor signaling pathway,10,2,0.23,0.02026,1
+GO:0007166,cell surface receptor signaling pathway,781,29,17.65,0.02250,1
+GO:0061371,determination of heart left/right asymmetry,19,2,0.43,0.02251,1
+GO:1990227,paranodal junction maintenance,1,1,0.02,0.02259,1
+GO:0002760,positive regulation of antimicrobial humoral response,1,1,0.02,0.02259,1
+GO:0051866,general adaptation syndrome,1,1,0.02,0.02259,1
+GO:0000053,argininosuccinate metabolic process,1,1,0.02,0.02259,1
+GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0.02,0.02259,1
+GO:1904002,regulation of sebum secreting cell proliferation,1,1,0.02,0.02259,1
+GO:0001949,sebaceous gland cell differentiation,1,1,0.02,0.02259,1
+GO:0071641,negative regulation of macrophage inflammatory protein 1 alpha production,1,1,0.02,0.02259,1
+GO:0071644,negative regulation of chemokine (C-C motif) ligand 4 production,1,1,0.02,0.02259,1
+GO:0035902,response to immobilization stress,1,1,0.02,0.02259,1
+GO:0016104,triterpenoid biosynthetic process,1,1,0.02,0.02259,1
+GO:0061670,evoked neurotransmitter secretion,1,1,0.02,0.02259,1
+GO:0048790,maintenance of presynaptic active zone structure,1,1,0.02,0.02259,1
+GO:0032423,regulation of mismatch repair,1,1,0.02,0.02259,1
+GO:0031630,regulation of synaptic vesicle fusion to presynaptic active zone membrane,1,1,0.02,0.02259,1
+GO:0055113,epiboly involved in gastrulation with mouth forming second,1,1,0.02,0.02259,1
+GO:0009114,hypoxanthine catabolic process,1,1,0.02,0.02259,1

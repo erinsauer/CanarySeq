@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006412,translation,352,251,164.33,8.1e-18,0
+GO:0002181,cytoplasmic translation,41,30,19.14,2.3e-05,0.1073
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,33,19.14,3.1e-05,0.1073
+GO:0006413,translational initiation,74,53,34.55,3.6e-05,0.1073
+GO:0015074,DNA integration,33,26,15.41,0.00016,0.3815
+GO:0006310,DNA recombination,161,73,75.16,0.00021,0.4173
+GO:0075713,establishment of integrated proviral latency,20,17,9.34,0.00047,0.6756
+GO:0044826,viral genome integration into host DNA,20,17,9.34,0.00047,0.6756
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,30,19.14,0.00051,0.6756
+GO:0042274,ribosomal small subunit biogenesis,25,19,11.67,0.00104,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,41,36.88,0.00124,1
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,13,7.94,0.00315,1
+GO:0032418,lysosome localization,33,17,15.41,0.00432,1
+GO:0033617,mitochondrial cytochrome c oxidase assembly,7,7,3.27,0.00482,1
+GO:0046718,viral entry into host cell,50,30,23.34,0.00483,1
+GO:0006338,chromatin remodeling,94,56,43.88,0.00577,1
+GO:0000398,mRNA splicing; via spliceosome,140,89,65.36,0.00649,1
+GO:0060271,cilium assembly,129,79,60.22,0.00682,1
+GO:0019827,stem cell population maintenance,68,35,31.75,0.00933,1
+GO:0006414,translational elongation,27,21,12.6,0.01022,1
+GO:0000086,G2/M transition of mitotic cell cycle,57,25,26.61,0.01092,1
+GO:0000338,protein deneddylation,9,8,4.2,0.01183,1
+GO:0006887,exocytosis,99,37,46.22,0.01636,1
+GO:0006281,DNA repair,244,112,113.91,0.01687,1
+GO:0006368,transcription elongation from RNA polymerase II promoter,32,20,14.94,0.01945,1
+GO:0043010,camera-type eye development,80,34,37.35,0.01984,1
+GO:0006364,rRNA processing,85,52,39.68,0.02076,1
+GO:0034101,erythrocyte homeostasis,76,41,35.48,0.02204,1
+GO:0051694,pointed-end actin filament capping,5,5,2.33,0.02214,1
+GO:0042744,hydrogen peroxide catabolic process,5,5,2.33,0.02214,1
+GO:0045329,carnitine biosynthetic process,5,5,2.33,0.02214,1
+GO:0031669,cellular response to nutrient levels,87,39,40.62,0.02229,1
+GO:0042273,ribosomal large subunit biogenesis,26,19,12.14,0.02264,1
+GO:0048025,negative regulation of mRNA splicing; via spliceosome,8,7,3.73,0.02281,1
+GO:0010804,negative regulation of tumor necrosis factor-mediated signaling pathway,8,7,3.73,0.02281,1
+GO:0031507,heterochromatin assembly,31,17,14.47,0.02284,1
+GO:0045740,positive regulation of DNA replication,16,8,7.47,0.02293,1
+GO:0006979,response to oxidative stress,162,69,75.63,0.02517,1
+GO:0006511,ubiquitin-dependent protein catabolic process,324,168,151.26,0.02695,1
+GO:0045292,mRNA cis splicing; via spliceosome,17,13,7.94,0.03415,1
+GO:0071539,protein localization to centrosome,22,13,10.27,0.03436,1
+GO:1905515,non-motile cilium assembly,27,17,12.6,0.03479,1
+GO:0030218,erythrocyte differentiation,71,36,33.15,0.03496,1
+GO:0032508,DNA duplex unwinding,37,21,17.27,0.03901,1
+GO:0006325,chromatin organization,344,191,160.59,0.04130,1
+GO:0016032,viral process,170,89,79.36,0.04287,1
+GO:0036444,calcium import into the mitochondrion,9,7,4.2,0.04338,1
+GO:0048026,positive regulation of mRNA splicing; via spliceosome,7,6,3.27,0.04339,1
+GO:0031293,membrane protein intracellular domain proteolysis,7,6,3.27,0.04339,1
+GO:0060213,positive regulation of nuclear-transcribed mRNA poly(A) tail shortening,7,6,3.27,0.04339,1

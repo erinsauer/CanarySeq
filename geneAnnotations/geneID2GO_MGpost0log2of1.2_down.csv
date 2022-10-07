@@ -1,7 +1,7 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
 GO:0006412,translation,352,85,36.98,6.6e-21,0
 GO:0015074,DNA integration,33,19,3.47,4.0e-11,0
-GO:0090502,RNA phosphodiester bond hydrolysis, endonucleolytic,41,21,4.31,5.8e-11,0
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,21,4.31,5.8e-11,0
 GO:0006278,RNA-dependent DNA biosynthetic process,79,22,8.3,4.4e-10,0
 GO:0044826,viral genome integration into host DNA,20,13,2.1,6.6e-09,0
 GO:0075713,establishment of integrated proviral latency,20,13,2.1,6.6e-09,0
@@ -27,7 +27,7 @@ GO:0042104,positive regulation of activated T cell proliferation,5,3,0.53,0.0098
 GO:0007130,synaptonemal complex assembly,5,3,0.53,0.00981,1
 GO:0048016,inositol phosphate-mediated signaling,22,6,2.31,0.01096,1
 GO:1902473,regulation of protein localization to synapse,6,3,0.63,0.01100,1
-GO:0035998,7,8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.21,0.01102,1
+GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.21,0.01102,1
 GO:0007021,tubulin complex assembly,2,2,0.21,0.01102,1
 GO:1903028,positive regulation of opsonization,2,2,0.21,0.01102,1
 GO:0030916,otic vesicle formation,2,2,0.21,0.01102,1

@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0002250,adaptive immune response,115,6,1.86,7.4e-07,0.0088
+GO:0007010,cytoskeleton organization,540,13,8.71,1.8e-05,0.1073
+GO:0002504,antigen processing and presentation of peptide or polysaccharide antigen via MHC class II,9,3,0.15,0.00032,1
+GO:0070106,interleukin-27-mediated signaling pathway,3,2,0.05,0.00077,1
+GO:0045071,negative regulation of viral genome replication,14,3,0.23,0.00131,1
+GO:0033153,T cell receptor V(D)J recombination,4,2,0.06,0.00152,1
+GO:0031666,positive regulation of lipopolysaccharide-mediated signaling pathway,7,2,0.11,0.00514,1
+GO:0007156,homophilic cell adhesion via plasma membrane adhesion molecules,10,2,0.16,0.01067,1
+GO:0070098,chemokine-mediated signaling pathway,12,2,0.19,0.01533,1
+GO:0036297,interstrand cross-link repair,12,2,0.19,0.01533,1
+GO:0061371,determination of heart left/right asymmetry,19,2,0.31,0.01603,1
+GO:0032962,positive regulation of inositol trisphosphate biosynthetic process,1,1,0.02,0.01614,1
+GO:0055113,epiboly involved in gastrulation with mouth forming second,1,1,0.02,0.01614,1
+GO:1902771,positive regulation of choline O-acetyltransferase activity,1,1,0.02,0.01614,1
+GO:0071205,protein localization to juxtaparanode region of axon,1,1,0.02,0.01614,1
+GO:1990227,paranodal junction maintenance,1,1,0.02,0.01614,1
+GO:0060054,positive regulation of epithelial cell proliferation involved in wound healing,1,1,0.02,0.01614,1
+GO:0097535,lymphoid lineage cell migration into thymus,1,1,0.02,0.01614,1
+GO:0061525,hindgut development,1,1,0.02,0.01614,1
+GO:0033132,negative regulation of glucokinase activity,1,1,0.02,0.01614,1
+GO:0002175,protein localization to paranode region of axon,1,1,0.02,0.01614,1
+GO:0098529,neuromuscular junction development; skeletal muscle fiber,1,1,0.02,0.01614,1
+GO:0038020,insulin receptor recycling,1,1,0.02,0.01614,1
+GO:1904992,positive regulation of adenylate cyclase-inhibiting dopamine receptor signaling pathway,1,1,0.02,0.01614,1
+GO:0002760,positive regulation of antimicrobial humoral response,1,1,0.02,0.01614,1
+GO:0097155,fasciculation of sensory neuron axon,1,1,0.02,0.01614,1
+GO:0021773,striatal medium spiny neuron differentiation,1,1,0.02,0.01614,1
+GO:0010760,negative regulation of macrophage chemotaxis,1,1,0.02,0.01614,1
+GO:1905835,cellular response to pyrimidine ribonucleotide,1,1,0.02,0.01614,1
+GO:0071678,olfactory bulb axon guidance,1,1,0.02,0.01614,1
+GO:0071641,negative regulation of macrophage inflammatory protein 1 alpha production,1,1,0.02,0.01614,1
+GO:0071644,negative regulation of chemokine (C-C motif) ligand 4 production,1,1,0.02,0.01614,1
+GO:0010897,negative regulation of triglyceride catabolic process,1,1,0.02,0.01614,1
+GO:1900168,positive regulation of glial cell-derived neurotrophic factor production,1,1,0.02,0.01614,1
+GO:0016338,calcium-independent cell-cell adhesion via plasma membrane cell-adhesion molecules,1,1,0.02,0.01614,1
+GO:0045053,protein retention in Golgi apparatus,1,1,0.02,0.01614,1
+GO:0050957,equilibrioception,1,1,0.02,0.01614,1
+GO:1903612,positive regulation of calcium-dependent ATPase activity,1,1,0.02,0.01614,1
+GO:1902997,negative regulation of neurofibrillary tangle assembly,1,1,0.02,0.01614,1
+GO:0061078,positive regulation of prostaglandin secretion involved in immune response,1,1,0.02,0.01614,1
+GO:1902955,positive regulation of early endosome to recycling endosome transport,1,1,0.02,0.01614,1
+GO:1902948,negative regulation of tau-protein kinase activity,1,1,0.02,0.01614,1
+GO:0045879,negative regulation of smoothened signaling pathway,13,2,0.21,0.01793,1
+GO:0006952,defense response,430,14,6.94,0.03024,1
+GO:0090209,negative regulation of triglyceride metabolic process,3,2,0.05,0.03173,1
+GO:0034331,cell junction maintenance,8,2,0.13,0.03176,1
+GO:0035634,response to stilbenoid,2,1,0.03,0.03202,1
+GO:1905403,negative regulation of activated CD8-positive; alpha-beta T cell apoptotic process,2,1,0.03,0.03202,1
+GO:0060971,embryonic heart tube left/right pattern formation,2,1,0.03,0.03202,1
+GO:0071907,determination of digestive tract left/right asymmetry,2,1,0.03,0.03202,1

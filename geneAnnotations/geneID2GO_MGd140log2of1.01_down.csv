@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006412,translation,352,241,167.84,5.5e-19,0
+GO:0002181,cytoplasmic translation,41,26,19.55,3.1e-05,0.1848
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,31,19.55,0.00024,0.7451
+GO:0015074,DNA integration,33,26,15.74,0.00025,0.7451
+GO:0006310,DNA recombination,161,83,76.77,0.00049,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,30,19.55,0.00077,1
+GO:0042274,ribosomal small subunit biogenesis,25,21,11.92,0.00125,1
+GO:0031295,T cell costimulation,9,9,4.29,0.00557,1
+GO:0033617,mitochondrial cytochrome c oxidase assembly,7,7,3.34,0.00558,1
+GO:0006749,glutathione metabolic process,35,26,16.69,0.00598,1
+GO:0035269,protein O-linked mannosylation,10,9,4.77,0.00724,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,45,37.67,0.01118,1
+GO:0001881,receptor recycling,20,15,9.54,0.01167,1
+GO:0075713,establishment of integrated proviral latency,20,15,9.54,0.01224,1
+GO:0044826,viral genome integration into host DNA,20,15,9.54,0.01224,1
+GO:0007020,microtubule nucleation,13,10,6.2,0.01380,1
+GO:0006275,regulation of DNA replication,64,37,30.52,0.01438,1
+GO:0060271,cilium assembly,129,77,61.51,0.01528,1
+GO:1905515,non-motile cilium assembly,27,17,12.87,0.01546,1
+GO:0006413,translational initiation,74,44,35.28,0.01664,1
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,12,8.11,0.01898,1
+GO:0042255,ribosome assembly,28,18,13.35,0.02453,1
+GO:0006986,response to unfolded protein,56,30,26.7,0.02458,1
+GO:0034101,erythrocyte homeostasis,76,39,36.24,0.02460,1
+GO:0014029,neural crest formation,5,5,2.38,0.02461,1
+GO:0033539,fatty acid beta-oxidation using acyl-CoA dehydrogenase,5,5,2.38,0.02461,1
+GO:0033615,mitochondrial proton-transporting ATP synthase complex assembly,5,5,2.38,0.02461,1
+GO:0042744,hydrogen peroxide catabolic process,5,5,2.38,0.02461,1
+GO:0045792,negative regulation of cell size,5,5,2.38,0.02461,1
+GO:0042273,ribosomal large subunit biogenesis,26,17,12.4,0.02599,1
+GO:0042532,negative regulation of tyrosine phosphorylation of STAT protein,8,7,3.81,0.02606,1
+GO:0001682,tRNA 5'-leader removal,8,7,3.81,0.02606,1
+GO:0036211,protein modification process,1660,744,791.52,0.02721,1
+GO:0032543,mitochondrial translation,35,25,16.69,0.03160,1
+GO:0007224,smoothened signaling pathway,57,36,27.18,0.03616,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,104,105.85,0.03684,1
+GO:0046718,viral entry into host cell,50,29,23.84,0.03698,1
+GO:0050860,negative regulation of T cell receptor signaling pathway,10,8,4.77,0.04007,1
+GO:0015937,coenzyme A biosynthetic process,10,8,4.77,0.04007,1
+GO:0031397,negative regulation of protein ubiquitination,42,26,20.03,0.04774,1
+GO:0030488,tRNA methylation,15,13,7.15,0.04831,1
+GO:0045582,positive regulation of T cell differentiation,36,23,17.17,0.04831,1
+GO:0045060,negative thymic T cell selection,7,6,3.34,0.04856,1
+GO:0014032,neural crest cell development,17,10,8.11,0.04862,1
+GO:0045454,cell redox homeostasis,17,12,8.11,0.04872,1
+GO:0008631,intrinsic apoptotic signaling pathway in response to oxidative stress,25,11,11.92,0.04884,1
+GO:0060828,regulation of canonical Wnt signaling pathway,98,41,46.73,0.04924,1
+GO:0070585,protein localization to mitochondrion,46,27,21.93,0.05145,1
+GO:0006750,glutathione biosynthetic process,5,5,2.38,0.05161,1
+GO:0006361,transcription initiation from RNA polymerase I promoter,6,5,2.86,0.05164,1
