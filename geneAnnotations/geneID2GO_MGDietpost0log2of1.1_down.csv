@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006412,translation,352,111,59.72,1.9e-22,0
+GO:0042274,ribosomal small subunit biogenesis,24,13,4.07,1.1e-07,7e-04
+GO:0006278,RNA-dependent DNA biosynthetic process,79,27,13.4,3.8e-05,0.1507
+GO:0006364,rRNA processing,84,26,14.25,8.4e-05,0.238
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,9,2.38,0.00010,0.238
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,17,6.96,0.00018,0.357
+GO:0042273,ribosomal large subunit biogenesis,29,13,4.92,0.00068,1
+GO:0007094,mitotic spindle assembly checkpoint,24,10,4.07,0.00076,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,18,6.96,0.00138,1
+GO:0015074,DNA integration,33,13,5.6,0.00181,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,5,1.19,0.00216,1
+GO:0006310,DNA recombination,160,34,27.14,0.00321,1
+GO:0006334,nucleosome assembly,48,16,8.14,0.00340,1
+GO:0042572,retinol metabolic process,5,4,0.85,0.00357,1
+GO:0002181,cytoplasmic translation,42,16,7.13,0.00368,1
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,8,2.88,0.00450,1
+GO:1901798,positive regulation of signal transduction by p53 class mediator,11,6,1.87,0.00485,1
+GO:0031145,anaphase-promoting complex-dependent catabolic process,8,5,1.36,0.00497,1
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,1.36,0.00497,1
+GO:0042254,ribosome biogenesis,132,44,22.39,0.00664,1
+GO:0006406,mRNA export from nucleus,31,11,5.26,0.00866,1
+GO:0071897,DNA biosynthetic process,129,42,21.88,0.00902,1
+GO:0042026,protein refolding,6,4,1.02,0.00926,1
+GO:0006281,DNA repair,244,46,41.39,0.00929,1
+GO:0075713,establishment of integrated proviral latency,20,8,3.39,0.01239,1
+GO:0044826,viral genome integration into host DNA,20,8,3.39,0.01239,1
+GO:0051321,meiotic cell cycle,60,18,10.18,0.01678,1
+GO:0007023,post-chaperonin tubulin folding pathway,4,3,0.68,0.01701,1
+GO:0040016,embryonic cleavage,4,3,0.68,0.01701,1
+GO:0000480,endonucleolytic cleavage in 5'-ETS of tricistronic rRNA transcript (SSU-rRNA; 5.8S rRNA; LSU-rRNA),4,3,0.68,0.01701,1
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.68,0.01701,1
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.68,0.01701,1
+GO:0015671,oxygen transport,4,3,0.68,0.01701,1
+GO:0051697,protein delipidation,4,3,0.68,0.01701,1
+GO:0039529,RIG-I signaling pathway,14,4,2.38,0.01704,1
+GO:0034765,regulation of ion transmembrane transport,123,17,20.87,0.01728,1
+GO:0007062,sister chromatid cohesion,38,11,6.45,0.01862,1
+GO:0060261,positive regulation of transcription initiation from RNA polymerase II promoter,26,9,4.41,0.02267,1
+GO:0007601,visual perception,26,9,4.41,0.02267,1
+GO:0031647,regulation of protein stability,157,35,26.64,0.02362,1
+GO:0008152,metabolic process,4746,818,805.16,0.02691,1
+GO:0006979,response to oxidative stress,158,28,26.8,0.02808,1
+GO:0071500,cellular response to nitrosative stress,4,3,0.68,0.02873,1
+GO:0006309,apoptotic DNA fragmentation,7,3,1.19,0.02875,1
+GO:0070574,cadmium ion transmembrane transport,2,2,0.34,0.02876,1
+GO:1902949,positive regulation of tau-protein kinase activity,2,2,0.34,0.02876,1
+GO:0007021,tubulin complex assembly,2,2,0.34,0.02876,1
+GO:0052472,modulation by host of symbiont transcription,2,2,0.34,0.02876,1
+GO:1904158,axonemal central apparatus assembly,2,2,0.34,0.02876,1
+GO:2001311,lysobisphosphatidic acid metabolic process,2,2,0.34,0.02876,1

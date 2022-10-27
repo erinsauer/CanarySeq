@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:0007229,integrin-mediated signaling pathway,40,31,17.82,1.0e-05,0.1192
-GO:0006954,inflammatory response,196,130,87.3,3.5e-05,0.2086
-GO:0050731,positive regulation of peptidyl-tyrosine phosphorylation,54,40,24.05,0.00011,0.4173
-GO:0032760,positive regulation of tumor necrosis factor production,29,23,12.92,0.00014,0.4173
-GO:0045944,positive regulation of transcription by RNA polymerase II,433,234,192.87,0.00024,0.4428
-GO:0030335,positive regulation of cell migration,179,117,79.73,0.00025,0.4428
-GO:0051897,positive regulation of protein kinase B signaling,33,25,14.7,0.00026,0.4428
-GO:0045766,positive regulation of angiogenesis,50,35,22.27,0.00060,0.8226
-GO:2000249,regulation of actin cytoskeleton reorganization,16,14,7.13,0.00068,0.8226
-GO:0045429,positive regulation of nitric oxide biosynthetic process,9,9,4.01,0.00069,0.8226
-GO:0043123,positive regulation of I-kappaB kinase/NF-kappaB signaling,65,42,28.95,0.00084,0.9104
-GO:0008360,regulation of cell shape,47,32,20.93,0.00093,0.924
-GO:0035987,endodermal cell differentiation,15,11,6.68,0.00154,1
-GO:0071260,cellular response to mechanical stimulus,22,17,9.8,0.00184,1
-GO:0032755,positive regulation of interleukin-6 production,34,24,15.14,0.00189,1
-GO:0035855,megakaryocyte development,14,12,6.24,0.00191,1
-GO:0070374,positive regulation of ERK1 and ERK2 cascade,56,37,24.94,0.00205,1
-GO:0006654,phosphatidic acid biosynthetic process,7,7,3.12,0.00347,1
-GO:0050729,positive regulation of inflammatory response,41,30,18.26,0.00356,1
-GO:0009952,anterior/posterior pattern specification,51,33,22.72,0.00366,1
-GO:0003151,outflow tract morphogenesis,20,16,8.91,0.00408,1
-GO:0071526,semaphorin-plexin signaling pathway,12,11,5.35,0.00410,1
-GO:1904646,cellular response to amyloid-beta,10,9,4.45,0.00411,1
-GO:0045669,positive regulation of osteoblast differentiation,23,17,10.24,0.00414,1
-GO:0045600,positive regulation of fat cell differentiation,25,17,11.14,0.00433,1
-GO:0010628,positive regulation of gene expression,410,223,182.62,0.00472,1
-GO:0043065,positive regulation of apoptotic process,182,101,81.07,0.00531,1
-GO:0006909,phagocytosis,72,46,32.07,0.00551,1
-GO:0008217,regulation of blood pressure,35,23,15.59,0.00563,1
-GO:0001938,positive regulation of endothelial cell proliferation,33,22,14.7,0.00564,1
-GO:1901224,positive regulation of NIK/NF-kappaB signaling,27,19,12.03,0.00594,1
-GO:0043491,protein kinase B signaling,72,51,32.07,0.00688,1
-GO:0045453,bone resorption,25,18,11.14,0.00712,1
-GO:0030501,positive regulation of bone mineralization,12,10,5.35,0.00717,1
-GO:0010862,positive regulation of pathway-restricted SMAD protein phosphorylation,12,10,5.35,0.00717,1
-GO:0006952,defense response,430,254,191.53,0.00720,1
-GO:0043536,positive regulation of blood vessel endothelial cell migration,25,18,11.14,0.00767,1
-GO:1902895,positive regulation of pri-miRNA transcription by RNA polymerase II,17,13,7.57,0.00770,1
-GO:0003382,epithelial cell morphogenesis,12,10,5.35,0.00777,1
-GO:0002281,macrophage activation involved in immune response,7,7,3.12,0.00778,1
-GO:0035729,cellular response to hepatocyte growth factor stimulus,6,6,2.67,0.00779,1
-GO:0033690,positive regulation of osteoblast proliferation,6,6,2.67,0.00779,1
-GO:0046834,lipid phosphorylation,25,14,11.14,0.00780,1
-GO:0060041,retina development in camera-type eye,31,24,13.81,0.00826,1
-GO:1900017,positive regulation of cytokine production involved in inflammatory response,9,8,4.01,0.00839,1
-GO:0061484,hematopoietic stem cell homeostasis,9,8,4.01,0.00839,1
-GO:0045618,positive regulation of keratinocyte differentiation,9,8,4.01,0.00839,1
-GO:0002092,positive regulation of receptor internalization,9,8,4.01,0.00839,1
-GO:0051092,positive regulation of NF-kappaB transcription factor activity,69,41,30.73,0.00888,1
-GO:0043524,negative regulation of neuron apoptotic process,46,28,20.49,0.00929,1
+GO:0007229,integrin-mediated signaling pathway,40,31,17.78,9.7e-06,0.1154
+GO:0006954,inflammatory response,195,128,86.68,3.3e-05,0.1964
+GO:0050731,positive regulation of peptidyl-tyrosine phosphorylation,54,40,24,0.00010,0.3332
+GO:0032760,positive regulation of tumor necrosis factor production,29,23,12.89,0.00013,0.3332
+GO:0051897,positive regulation of protein kinase B signaling,34,26,15.11,0.00014,0.3332
+GO:0030335,positive regulation of cell migration,182,119,80.9,0.00024,0.476
+GO:0045944,positive regulation of transcription by RNA polymerase II,430,231,191.15,0.00046,0.7821
+GO:0008360,regulation of cell shape,48,33,21.34,0.00056,0.7974
+GO:2000249,regulation of actin cytoskeleton reorganization,16,14,7.11,0.00067,0.7974
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,9,4,0.00067,0.7974
+GO:0043123,positive regulation of I-kappaB kinase/NF-kappaB signaling,65,42,28.89,0.00080,0.8655
+GO:0045766,positive regulation of angiogenesis,51,35,22.67,0.00107,1
+GO:0032755,positive regulation of interleukin-6 production,35,25,15.56,0.00111,1
+GO:0035987,endodermal cell differentiation,15,11,6.67,0.00152,1
+GO:0071260,cellular response to mechanical stimulus,22,17,9.78,0.00179,1
+GO:0035855,megakaryocyte development,14,12,6.22,0.00187,1
+GO:1902895,positive regulation of pri-miRNA transcription by RNA polymerase II,19,15,8.45,0.00235,1
+GO:0043065,positive regulation of apoptotic process,182,102,80.9,0.00263,1
+GO:0006654,phosphatidic acid biosynthetic process,7,7,3.11,0.00342,1
+GO:0030214,hyaluronan catabolic process,7,7,3.11,0.00342,1
+GO:0050729,positive regulation of inflammatory response,41,30,18.23,0.00346,1
+GO:0009952,anterior/posterior pattern specification,51,33,22.67,0.00359,1
+GO:0003151,outflow tract morphogenesis,20,16,8.89,0.00402,1
+GO:0071526,semaphorin-plexin signaling pathway,12,11,5.33,0.00403,1
+GO:0045669,positive regulation of osteoblast differentiation,23,17,10.22,0.00403,1
+GO:0045600,positive regulation of fat cell differentiation,25,17,11.11,0.00424,1
+GO:0051092,positive regulation of NF-kappaB transcription factor activity,69,42,30.67,0.00428,1
+GO:0010628,positive regulation of gene expression,413,226,183.59,0.00438,1
+GO:0070374,positive regulation of ERK1 and ERK2 cascade,58,37,25.78,0.00480,1
+GO:1901224,positive regulation of NIK/NF-kappaB signaling,25,18,11.11,0.00491,1
+GO:0006909,phagocytosis,72,46,32.01,0.00540,1
+GO:0008217,regulation of blood pressure,35,23,15.56,0.00552,1
+GO:0043491,protein kinase B signaling,73,52,32.45,0.00675,1
+GO:0045453,bone resorption,25,18,11.11,0.00700,1
+GO:0030593,neutrophil chemotaxis,26,17,11.56,0.00703,1
+GO:0030501,positive regulation of bone mineralization,12,10,5.33,0.00705,1
+GO:0010862,positive regulation of pathway-restricted SMAD protein phosphorylation,12,10,5.33,0.00705,1
+GO:0006952,defense response,434,253,192.92,0.00713,1
+GO:0003382,epithelial cell morphogenesis,12,10,5.33,0.00767,1
+GO:0035729,cellular response to hepatocyte growth factor stimulus,6,6,2.67,0.00769,1
+GO:0002281,macrophage activation involved in immune response,6,6,2.67,0.00769,1
+GO:0033690,positive regulation of osteoblast proliferation,6,6,2.67,0.00769,1
+GO:0046834,lipid phosphorylation,25,14,11.11,0.00770,1
+GO:0007165,signal transduction,1751,906,778.36,0.00822,1
+GO:1900017,positive regulation of cytokine production involved in inflammatory response,9,8,4,0.00827,1
+GO:1904646,cellular response to amyloid-beta,9,8,4,0.00827,1
+GO:0002092,positive regulation of receptor internalization,9,8,4,0.00827,1
+GO:0006935,chemotaxis,143,92,63.57,0.00947,1
+GO:0001938,positive regulation of endothelial cell proliferation,32,21,14.22,0.00949,1
+GO:0045087,innate immune response,173,102,76.9,0.01011,1

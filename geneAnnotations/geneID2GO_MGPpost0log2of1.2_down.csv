@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0006412,translation,352,67,36.15,1.4e-08,2e-04
-GO:0006278,RNA-dependent DNA biosynthetic process,79,20,8.11,1.1e-07,7e-04
-GO:0006310,DNA recombination,161,22,16.53,7.0e-07,0.0028
-GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,16,4.21,1.1e-06,0.0032
-GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,9,1.44,1.5e-06,0.0032
-GO:0015074,DNA integration,33,14,3.39,1.6e-06,0.0032
-GO:0044826,viral genome integration into host DNA,20,10,2.05,8.7e-06,0.013
-GO:0075713,establishment of integrated proviral latency,20,10,2.05,8.7e-06,0.013
-GO:0046718,viral entry into host cell,50,14,5.13,0.00015,0.1987
-GO:0007130,synaptonemal complex assembly,5,4,0.51,0.00051,0.608
-GO:0046050,UMP catabolic process,3,3,0.31,0.00108,0.9904
-GO:2000435,negative regulation of protein neddylation,3,3,0.31,0.00108,0.9904
-GO:0006249,dCMP catabolic process,3,3,0.31,0.00108,0.9904
-GO:0007186,G protein-coupled receptor signaling pathway,222,36,22.8,0.00169,1
-GO:0006749,glutathione metabolic process,35,10,3.59,0.00182,1
-GO:0010890,positive regulation of sequestering of triglyceride,4,3,0.41,0.00398,1
-GO:0046079,dUMP catabolic process,4,3,0.41,0.00398,1
-GO:0006364,rRNA processing,85,15,8.73,0.00400,1
-GO:0006508,proteolysis,735,61,75.48,0.00494,1
-GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,6,1.75,0.00527,1
-GO:0001682,tRNA 5'-leader removal,8,4,0.82,0.00550,1
-GO:0006811,ion transport,1075,111,110.4,0.00559,1
-GO:0090305,nucleic acid phosphodiester bond hydrolysis,87,26,8.93,0.00882,1
-GO:0042744,hydrogen peroxide catabolic process,5,3,0.51,0.00920,1
-GO:0051694,pointed-end actin filament capping,5,3,0.51,0.00920,1
-GO:0006527,arginine catabolic process,3,3,0.31,0.01051,1
-GO:0018057,peptidyl-lysine oxidation,2,2,0.21,0.01053,1
-GO:0071314,cellular response to cocaine,2,2,0.21,0.01053,1
-GO:0046074,dTMP catabolic process,2,2,0.21,0.01053,1
-GO:0030916,otic vesicle formation,2,2,0.21,0.01053,1
-GO:0042866,pyruvate biosynthetic process,2,2,0.21,0.01053,1
-GO:0033693,neurofilament bundle assembly,2,2,0.21,0.01053,1
-GO:0006248,CMP catabolic process,2,2,0.21,0.01053,1
-GO:0006597,spermine biosynthetic process,2,2,0.21,0.01053,1
-GO:0120197,mucociliary clearance,2,2,0.21,0.01053,1
-GO:0009231,riboflavin biosynthetic process,2,2,0.21,0.01053,1
-GO:0032259,methylation,168,14,17.25,0.01067,1
-GO:0042832,defense response to protozoan,7,3,0.72,0.02752,1
-GO:0033617,mitochondrial cytochrome c oxidase assembly,7,3,0.72,0.02752,1
-GO:0045494,photoreceptor cell maintenance,12,4,1.23,0.02788,1
-GO:0006413,translational initiation,74,13,7.6,0.02879,1
-GO:0019835,cytolysis,4,3,0.41,0.02937,1
-GO:0006936,muscle contraction,68,9,6.98,0.02942,1
-GO:0035617,stress granule disassembly,3,2,0.31,0.02944,1
-GO:2001214,positive regulation of vasculogenesis,3,2,0.31,0.02944,1
-GO:0050910,detection of mechanical stimulus involved in sensory perception of sound,3,2,0.31,0.02944,1
-GO:0044597,daunorubicin metabolic process,3,2,0.31,0.02944,1
-GO:0044598,doxorubicin metabolic process,3,2,0.31,0.02944,1
-GO:0043622,cortical microtubule organization,3,2,0.31,0.02944,1
-GO:0061644,protein localization to CENP-A containing chromatin,3,2,0.31,0.02944,1
+GO:0006412,translation,352,68,36.06,1.7e-11,0
+GO:0006278,RNA-dependent DNA biosynthetic process,79,20,8.09,1.0e-07,6e-04
+GO:0006310,DNA recombination,160,22,16.39,6.8e-07,0.0027
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,16,4.2,1.1e-06,0.0032
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,9,1.43,1.5e-06,0.0032
+GO:0015074,DNA integration,33,14,3.38,1.6e-06,0.0032
+GO:0044826,viral genome integration into host DNA,20,10,2.05,8.5e-06,0.0126
+GO:0075713,establishment of integrated proviral latency,20,10,2.05,8.5e-06,0.0126
+GO:0046718,viral entry into host cell,51,14,5.22,0.00011,0.1455
+GO:0007130,synaptonemal complex assembly,5,4,0.51,0.00050,0.595
+GO:0046050,UMP catabolic process,3,3,0.31,0.00107,0.9795
+GO:2000435,negative regulation of protein neddylation,3,3,0.31,0.00107,0.9795
+GO:0006249,dCMP catabolic process,3,3,0.31,0.00107,0.9795
+GO:0007186,G protein-coupled receptor signaling pathway,222,36,22.74,0.00163,1
+GO:0006364,rRNA processing,84,15,8.6,0.00392,1
+GO:0010890,positive regulation of sequestering of triglyceride,4,3,0.41,0.00396,1
+GO:0046079,dUMP catabolic process,4,3,0.41,0.00396,1
+GO:0006508,proteolysis,739,59,75.7,0.00409,1
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,6,1.74,0.00520,1
+GO:0001682,tRNA 5'-leader removal,8,4,0.82,0.00545,1
+GO:0006811,ion transport,1073,111,109.91,0.00552,1
+GO:0090305,nucleic acid phosphodiester bond hydrolysis,86,26,8.81,0.00870,1
+GO:0042744,hydrogen peroxide catabolic process,5,3,0.51,0.00914,1
+GO:0051694,pointed-end actin filament capping,5,3,0.51,0.00914,1
+GO:0006527,arginine catabolic process,3,3,0.31,0.01045,1
+GO:0018057,peptidyl-lysine oxidation,2,2,0.2,0.01048,1
+GO:0071314,cellular response to cocaine,2,2,0.2,0.01048,1
+GO:0046074,dTMP catabolic process,2,2,0.2,0.01048,1
+GO:0030916,otic vesicle formation,2,2,0.2,0.01048,1
+GO:0042866,pyruvate biosynthetic process,2,2,0.2,0.01048,1
+GO:0033693,neurofilament bundle assembly,2,2,0.2,0.01048,1
+GO:0006248,CMP catabolic process,2,2,0.2,0.01048,1
+GO:0006597,spermine biosynthetic process,2,2,0.2,0.01048,1
+GO:0120197,mucociliary clearance,2,2,0.2,0.01048,1
+GO:0009231,riboflavin biosynthetic process,2,2,0.2,0.01048,1
+GO:0032259,methylation,167,14,17.11,0.01055,1
+GO:0030218,erythrocyte differentiation,72,10,7.38,0.01659,1
+GO:0006413,translational initiation,75,14,7.68,0.02369,1
+GO:0042832,defense response to protozoan,7,3,0.72,0.02733,1
+GO:0045494,photoreceptor cell maintenance,12,4,1.23,0.02764,1
+GO:0019835,cytolysis,4,3,0.41,0.02922,1
+GO:0035617,stress granule disassembly,3,2,0.31,0.02930,1
+GO:2001214,positive regulation of vasculogenesis,3,2,0.31,0.02930,1
+GO:0106035,protein maturation by [4Fe-4S] cluster transfer,3,2,0.31,0.02930,1
+GO:0072488,ammonium transmembrane transport,3,2,0.31,0.02930,1
+GO:0050910,detection of mechanical stimulus involved in sensory perception of sound,3,2,0.31,0.02930,1
+GO:0044597,daunorubicin metabolic process,3,2,0.31,0.02930,1
+GO:0044598,doxorubicin metabolic process,3,2,0.31,0.02930,1
+GO:0043622,cortical microtubule organization,3,2,0.31,0.02930,1
+GO:0061644,protein localization to CENP-A containing chromatin,3,2,0.31,0.02930,1

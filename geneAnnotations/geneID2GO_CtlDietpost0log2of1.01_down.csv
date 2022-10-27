@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0034063,stress granule assembly,15,14,6.96,0.00073,1
+GO:0006412,translation,352,199,163.29,0.00107,1
+GO:0035871,protein K11-linked deubiquitination,8,8,3.71,0.00213,1
+GO:0035855,megakaryocyte development,14,12,6.49,0.00294,1
+GO:0051497,negative regulation of stress fiber assembly,14,12,6.49,0.00294,1
+GO:0045717,negative regulation of fatty acid biosynthetic process,9,8,4.18,0.00461,1
+GO:2000009,negative regulation of protein localization to cell surface,7,7,3.25,0.00461,1
+GO:0006641,triglyceride metabolic process,30,17,13.92,0.00461,1
+GO:0030032,lamellipodium assembly,33,21,15.31,0.00476,1
+GO:0043409,negative regulation of MAPK cascade,57,30,26.44,0.00578,1
+GO:0016310,phosphorylation,843,377,391.07,0.00586,1
+GO:0007166,cell surface receptor signaling pathway,786,376,364.62,0.00879,1
+GO:0006812,cation transport,320,158,148.45,0.00981,1
+GO:0014898,cardiac muscle hypertrophy in response to stress,9,8,4.18,0.00993,1
+GO:0060236,regulation of mitotic spindle organization,27,15,12.53,0.01023,1
+GO:0071549,cellular response to dexamethasone stimulus,9,8,4.18,0.01130,1
+GO:0045765,regulation of angiogenesis,86,43,39.9,0.01132,1
+GO:0090263,positive regulation of canonical Wnt signaling pathway,42,27,19.48,0.01463,1
+GO:0008610,lipid biosynthetic process,234,116,108.55,0.01842,1
+GO:0006954,inflammatory response,195,95,90.46,0.01911,1
+GO:0030534,adult behavior,40,25,18.56,0.02132,1
+GO:0030318,melanocyte differentiation,7,6,3.25,0.02144,1
+GO:0036158,outer dynein arm assembly,5,5,2.32,0.02145,1
+GO:0032956,regulation of actin cytoskeleton organization,134,75,62.16,0.02149,1
+GO:0033627,cell adhesion mediated by integrin,23,11,10.67,0.02153,1
+GO:0030168,platelet activation,35,21,16.24,0.02185,1
+GO:0051443,positive regulation of ubiquitin-protein transferase activity,14,10,6.49,0.02190,1
+GO:0045859,regulation of protein kinase activity,222,106,102.99,0.02192,1
+GO:0060271,cilium assembly,130,70,60.31,0.02374,1
+GO:0043536,positive regulation of blood vessel endothelial cell migration,26,17,12.06,0.02419,1
+GO:0032007,negative regulation of TOR signaling,31,18,14.38,0.02428,1
+GO:0035176,social behavior,13,10,6.03,0.02577,1
+GO:0032092,positive regulation of protein binding,43,26,19.95,0.02593,1
+GO:0008286,insulin receptor signaling pathway,47,25,21.8,0.02870,1
+GO:0035264,multicellular organism growth,67,37,31.08,0.02942,1
+GO:0071347,cellular response to interleukin-1,26,16,12.06,0.03254,1
+GO:0030514,negative regulation of BMP signaling pathway,22,15,10.21,0.03266,1
+GO:0007601,visual perception,26,16,12.06,0.03275,1
+GO:1903076,regulation of protein localization to plasma membrane,51,29,23.66,0.03330,1
+GO:0030220,platelet formation,10,8,4.64,0.03344,1
+GO:0050821,protein stabilization,91,51,42.21,0.03993,1
+GO:0048661,positive regulation of smooth muscle cell proliferation,18,12,8.35,0.04188,1
+GO:0010259,multicellular organism aging,17,11,7.89,0.04192,1
+GO:0006488,dolichol-linked oligosaccharide biosynthetic process,9,7,4.18,0.04194,1
+GO:0046716,muscle cell cellular homeostasis,7,6,3.25,0.04195,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,6,3.25,0.04195,1
+GO:0016358,dendrite development,57,27,26.44,0.04210,1
+GO:0007052,mitotic spindle organization,61,37,28.3,0.04331,1
+GO:0090316,positive regulation of intracellular protein transport,62,34,28.76,0.04364,1
+GO:0045494,photoreceptor cell maintenance,12,9,5.57,0.04382,1

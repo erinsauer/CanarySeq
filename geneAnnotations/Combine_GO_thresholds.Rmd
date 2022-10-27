@@ -112,6 +112,36 @@ Diet0log2of1.1_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/ge
 Diet0log2of1.2_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_Diet0log2of1.2_down.csv") %>% mutate(direction = "down", lfc = 1.2, contrast = "Diet0") %>% rename("p.adj_down" = "p.adj")
 Diet0log2of1.5_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_Diet0log2of1.5_down.csv") %>% mutate(direction = "down", lfc = 1.5, contrast = "Diet0") %>% rename("p.adj_down" = "p.adj")
 Diet0log2of2_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_Diet0log2of2_down.csv") %>% mutate(direction = "down", lfc = 2, contrast = "Diet0") %>% rename("p.adj_down" = "p.adj")
+
+
+
+# add MGDietpost0 contrast
+MGDietpost0log2of1.01_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.01_up.csv") %>% mutate(direction = "up", lfc = 1.01, contrast = "MGDietpost0") %>% rename("p.adj_up" = "p.adj")
+MGDietpost0log2of1.1_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.1_up.csv") %>% mutate(direction = "up", lfc = 1.1, contrast = "MGDietpost0") %>% rename("p.adj_up" = "p.adj")
+MGDietpost0log2of1.2_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.2_up.csv") %>% mutate(direction = "up", lfc = 1.2, contrast = "MGDietpost0") %>% rename("p.adj_up" = "p.adj")
+MGDietpost0log2of1.5_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.5_up.csv") %>% mutate(direction = "up", lfc = 1.5, contrast = "MGDietpost0") %>% rename("p.adj_up" = "p.adj")
+MGDietpost0log2of2_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of2_up.csv") %>% mutate(direction = "up", lfc = 2, contrast = "MGDietpost0") %>% rename("p.adj_up" = "p.adj")
+
+MGDietpost0log2of1.01_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.1_down.csv") %>% mutate(direction = "down", lfc = 1.01, contrast = "MGDietpost0") %>% rename("p.adj_down" = "p.adj")
+MGDietpost0log2of1.1_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.1_down.csv") %>% mutate(direction = "down", lfc = 1.1, contrast = "MGDietpost0") %>% rename("p.adj_down" = "p.adj")
+MGDietpost0log2of1.2_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.2_down.csv") %>% mutate(direction = "down", lfc = 1.2, contrast = "MGDietpost0") %>% rename("p.adj_down" = "p.adj")
+MGDietpost0log2of1.5_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of1.5_down.csv") %>% mutate(direction = "down", lfc = 1.5, contrast = "MGDietpost0") %>% rename("p.adj_down" = "p.adj")
+MGDietpost0log2of2_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_MGDietpost0log2of2_down.csv") %>% mutate(direction = "down", lfc = 2, contrast = "MGDietpost0") %>% rename("p.adj_down" = "p.adj")
+
+
+# add CtlDietpost0 contrast as control
+CtlDietpost0log2of1.01_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.01_up.csv") %>% mutate(direction = "up", lfc = 1.01, contrast = "CtlDietpost0") %>% rename("p.adj_up" = "p.adj")
+CtlDietpost0log2of1.1_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.1_up.csv") %>% mutate(direction = "up", lfc = 1.1, contrast = "CtlDietpost0") %>% rename("p.adj_up" = "p.adj")
+CtlDietpost0log2of1.2_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.2_up.csv") %>% mutate(direction = "up", lfc = 1.2, contrast = "CtlDietpost0") %>% rename("p.adj_up" = "p.adj")
+CtlDietpost0log2of1.5_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.5_up.csv") %>% mutate(direction = "up", lfc = 1.5, contrast = "CtlDietpost0") %>% rename("p.adj_up" = "p.adj")
+# CtlDietpost0log2of2_up <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of2_up.csv") %>% mutate(direction = "up", lfc = 2, contrast = "CtlDietpost0") %>% rename("p.adj_up" = "p.adj")
+
+CtlDietpost0log2of1.01_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.1_down.csv") %>% mutate(direction = "down", lfc = 1.01, contrast = "CtlDietpost0") %>% rename("p.adj_down" = "p.adj")
+CtlDietpost0log2of1.1_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.1_down.csv") %>% mutate(direction = "down", lfc = 1.1, contrast = "CtlDietpost0") %>% rename("p.adj_down" = "p.adj")
+CtlDietpost0log2of1.2_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.2_down.csv") %>% mutate(direction = "down", lfc = 1.2, contrast = "CtlDietpost0") %>% rename("p.adj_down" = "p.adj")
+CtlDietpost0log2of1.5_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of1.5_down.csv") %>% mutate(direction = "down", lfc = 1.5, contrast = "CtlDietpost0") %>% rename("p.adj_down" = "p.adj")
+# CtlDietpost0log2of2_down <- read_csv("~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_CtlDietpost0log2of2_down.csv") %>% mutate(direction = "down", lfc = 2, contrast = "CtlDietpost0") %>% rename("p.adj_down" = "p.adj")
+
 ```
 Combine the raw data
 ```{r}
@@ -165,7 +195,17 @@ MG_all <- rbind(
   MGPpost0log2of1.1_down,
   MGPpost0log2of1.2_down,
   MGPpost0log2of1.5_down,
-  MGPpost0log2of2_down
+  MGPpost0log2of2_down,
+  MGDietpost0log2of1.01_up,
+  MGDietpost0log2of1.1_up,
+  MGDietpost0log2of1.2_up,
+  MGDietpost0log2of1.5_up,
+  MGDietpost0log2of2_up,
+  MGDietpost0log2of1.01_down,
+  MGDietpost0log2of1.1_down,
+  MGDietpost0log2of1.2_down,
+  MGDietpost0log2of1.5_down,
+  MGDietpost0log2of2_down
 )
 
 Diet0_all <- rbind(
@@ -179,6 +219,19 @@ Diet0_all <- rbind(
   Diet0log2of1.2_down,
   Diet0log2of1.5_down,
   Diet0log2of2_down
+)
+
+Ctl_all <- rbind(
+  CtlDietpost0log2of1.01_up,
+  CtlDietpost0log2of1.1_up,
+  CtlDietpost0log2of1.2_up,
+  CtlDietpost0log2of1.5_up,
+  # CtlDietpost0log2of2_up,
+  CtlDietpost0log2of1.01_down,
+  CtlDietpost0log2of1.1_down,
+  CtlDietpost0log2of1.2_down,
+  CtlDietpost0log2of1.5_down#,
+  # CtlDietpost0log2of2_down
 )
 ```
 

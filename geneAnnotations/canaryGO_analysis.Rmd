@@ -30,20 +30,30 @@ MGd140 <- readr::read_csv("~/Desktop/canary/contrasts/MGd140.csv")
 MGPpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGPpost0.csv")
 MGd2114 <- readr::read_csv("~/Desktop/canary/contrasts/MGd2114.csv")
 Diet0 <- readr::read_csv("~/Desktop/canary/contrasts/Diet0.csv")
+MGDietpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/MGDietpost0.csv")
+CtlDietpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/CtlDietpost0.csv")
+CtlLpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/CtlLpost0.csv")
+CtlPpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/CtlPpost0.csv")
 
-MGDietpost0 <- (((groupMG.lipid.14 + groupMG.lipid.21)/2) - (groupMG.lipid.0)) - 
-  (((groupMG.protein.14 + groupMG.protein.21)/2) - (groupMG.protein.0))
-
+# need to add this contrast for analysis!
+######
+# MGDietpost0 <- (((groupMG.lipid.14 + groupMG.lipid.21)/2) - (groupMG.lipid.0)) - 
+#   (((groupMG.protein.14 + groupMG.protein.21)/2) - (groupMG.protein.0))
+#######
 # DietMGpost0
 
 
 contrasts <- list(
-  MGLpost0 = MGLpost0,
-  MGpost0 = MGpost0,
-  MGd140 = MGd140,
-  MGPpost0 = MGPpost0,
-  MGd2114 = MGd2114,
-  Diet0 = Diet0
+  # MGLpost0 = MGLpost0,
+  # MGpost0 = MGpost0,
+  # MGd140 = MGd140,
+  # MGPpost0 = MGPpost0,
+  # MGd2114 = MGd2114,
+  # Diet0 = Diet0,
+  # MGDietpost0 = MGDietpost0,
+  # CtlDietpost0 = CtlDietpost0,
+  CtlLpost0 = CtlLpost0,
+  CtlPpost0 = CtlPpost0
 )
 ```
 
@@ -167,9 +177,14 @@ for(i in 1:length(contrasts)) {
   genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
   
   # loop through different lfc cutoffs I want to compare (and up v down)
-  for (j in c(1.01,1.1,1.2,1.5,2)) {
+  # for (j in c(1.1,1.2,1.5)) {
+  # for (j in c(1.01,2)) {
+  for (j in c(1.01,1.1,1.2,1.5)) {
     DEgenes_up <- filter(as.data.frame(contrasts[[i]]), logFC > log2(j)) %>% pull(`...1`)
     DEgenes_down <- filter(contrasts[[i]], logFC < -log2(j)) %>% pull(`...1`)
+    
+    # DEgenes_up <- filter(as.data.frame(contrasts[[i]]), logFC > j) %>% pull(`...1`)
+    # DEgenes_down <- filter(contrasts[[i]], logFC < -j) %>% pull(`...1`)
     
     # genes names with GO terms and DE.
     DEgeneswithGO_up <- which(DEgenes_up %in% genesMatched)
@@ -268,26 +283,30 @@ for(i in 1:length(contrasts)) {
     #save first top 50 ontolgies sorted by adjusted pvalues
     write.table(all_res_final_up[1:50,],
                   file = paste(
-                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_", 
+                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_",
                     names(contrasts)[i], "log2of", as.character(j), "_up.csv", sep= ""),
                   # "~/Desktop/canary/summary_topGO_analysis.csv",
                   sep=",",
                   quote=FALSE,
                   row.names=FALSE)
-    
+
     write.table(all_res_final_down[1:50,],
                   file = paste(
-                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_", 
+                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_",
                     names(contrasts)[i], "log2of", as.character(j), "_down.csv", sep= ""),
                   # "~/Desktop/canary/summary_topGO_analysis.csv",
                   sep=",",
                   quote=FALSE,
                   row.names=FALSE)
      
+    
+    
+    
+    
     # PLOT the GO hierarchy plot: the enriched GO terms are colored in yellow/red according to significance level
      
     # pdf(file='~/Desktop/canary/topGOPlot_fullnames.pdf', height=12, width=12, paper='special', pointsize=18)
-    # showSigOfNodes(GOdata, score(weight_fisher_result_up), useInfo = "none", sigForAll=FALSE, firstSigNodes=2,.NO.CHAR=50)
+    # showSigOfNodes(GOdata_down, score(weight_fisher_result_up), useInfo = "none", sigForAll=FALSE, firstSigNodes=2,.NO.CHAR=50)
     # dev.off()
   }
   
@@ -365,7 +384,7 @@ weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher')
     #save first top 50 ontolgies sorted by adjusted pvalues
     write.table(all_res_final[1:50,],
                   file = paste(
-                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_", 
+                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_",
                     "cluster_chunks", ".csv", sep= ""),
                   # "~/Desktop/canary/summary_topGO_analysis.csv",
                   sep=",",
@@ -373,5 +392,55 @@ weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher')
                   row.names=FALSE)
 
 
+```
+
+
+```{r visualizing results}
+library(scales)
+
+ntop <- 30
+ggdata <- goEnrichment[1:ntop,]
+ggdata$Term <- factor(ggdata$Term, levels = rev(ggdata$Term)) # fixes order
+gg1 <- ggplot(ggdata,
+  aes(x = Term, y = -log10(KS), size = -log10(KS), fill = -log10(KS))) +
+
+  expand_limits(y = 1) +
+  geom_point(shape = 21) +
+  scale_size(range = c(2.5,12.5)) +
+  scale_fill_continuous(low = 'royalblue', high = 'red4') +
+
+  xlab('') + ylab('Enrichment score') +
+  labs(
+    title = 'GO Biological processes',
+    subtitle = 'Top 30 terms ordered by Kolmogorov-Smirnov p-value',
+    caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+    linetype = c("dotted", "longdash", "solid"),
+    colour = c("black", "black", "black"),
+    size = c(0.5, 1.5, 3)) +
+
+  theme_bw(base_size = 24) +
+  theme(
+    legend.position = 'right',
+    legend.background = element_rect(),
+    plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1),
+    plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+    plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+
+    axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+    axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+    axis.title = element_text(size = 12, face = 'bold'),
+    axis.title.x = element_text(size = 12, face = 'bold'),
+    axis.title.y = element_text(size = 12, face = 'bold'),
+    axis.line = element_line(colour = 'black'),
+
+    #Legend
+    legend.key = element_blank(), # removes the border
+    legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+    legend.text = element_text(size = 14, face = "bold"), # Text size
+    title = element_text(size = 14, face = "bold")) +
+
+  coord_flip()
 ```
 

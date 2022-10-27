@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0050853,B cell receptor signaling pathway,27,25,12.41,1.8e-05,0.2083
+GO:0007015,actin filament organization,162,93,74.44,3.5e-05,0.2083
+GO:0071526,semaphorin-plexin signaling pathway,12,11,5.51,0.00042,1
+GO:0032753,positive regulation of interleukin-4 production,13,12,5.97,0.00066,1
+GO:0010595,positive regulation of endothelial cell migration,48,35,22.06,0.00108,1
+GO:0007165,signal transduction,1751,909,804.58,0.00133,1
+GO:0014065,phosphatidylinositol 3-kinase signaling,43,31,19.76,0.00137,1
+GO:0001658,branching involved in ureteric bud morphogenesis,10,10,4.59,0.00197,1
+GO:1900016,negative regulation of cytokine production involved in inflammatory response,8,8,3.68,0.00198,1
+GO:0060907,positive regulation of macrophage cytokine production,11,10,5.05,0.00267,1
+GO:0051179,localization,2236,1064,1027.43,0.00385,1
+GO:0001570,vasculogenesis,24,18,11.03,0.00428,1
+GO:0032689,negative regulation of interferon-gamma production,7,7,3.22,0.00431,1
+GO:0050850,positive regulation of calcium-mediated signaling,13,9,5.97,0.00432,1
+GO:0032743,positive regulation of interleukin-2 production,21,16,9.65,0.00478,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,137,102.01,0.00517,1
+GO:0097191,extrinsic apoptotic signaling pathway,82,43,37.68,0.00531,1
+GO:0050852,T cell receptor signaling pathway,51,34,23.43,0.00857,1
+GO:0045766,positive regulation of angiogenesis,51,34,23.43,0.00858,1
+GO:0002250,adaptive immune response,116,82,53.3,0.00876,1
+GO:0048704,embryonic skeletal system morphogenesis,22,18,10.11,0.00930,1
+GO:0015012,heparan sulfate proteoglycan biosynthetic process,16,15,7.35,0.00931,1
+GO:0016051,carbohydrate biosynthetic process,80,43,36.76,0.00933,1
+GO:0016064,immunoglobulin mediated immune response,41,25,18.84,0.00933,1
+GO:0003382,epithelial cell morphogenesis,12,11,5.51,0.00935,1
+GO:0055119,relaxation of cardiac muscle,7,7,3.22,0.00938,1
+GO:0032715,negative regulation of interleukin-6 production,12,10,5.51,0.00938,1
+GO:0002314,germinal center B cell differentiation,6,6,2.76,0.00939,1
+GO:0007218,neuropeptide signaling pathway,6,6,2.76,0.00939,1
+GO:0090026,positive regulation of monocyte chemotaxis,6,6,2.76,0.00939,1
+GO:0002091,negative regulation of receptor internalization,6,6,2.76,0.00939,1
+GO:0090331,negative regulation of platelet aggregation,6,6,2.76,0.00939,1
+GO:0033173,calcineurin-NFAT signaling cascade,20,12,9.19,0.00940,1
+GO:0007229,integrin-mediated signaling pathway,40,27,18.38,0.00966,1
+GO:0071260,cellular response to mechanical stimulus,22,16,10.11,0.01008,1
+GO:0008360,regulation of cell shape,48,31,22.06,0.01009,1
+GO:0010628,positive regulation of gene expression,413,211,189.77,0.01270,1
+GO:0046854,phosphatidylinositol phosphorylation,19,14,8.73,0.01347,1
+GO:0032733,positive regulation of interleukin-10 production,14,11,6.43,0.01368,1
+GO:0032755,positive regulation of interleukin-6 production,35,23,16.08,0.01446,1
+GO:0050729,positive regulation of inflammatory response,41,27,18.84,0.01583,1
+GO:0051092,positive regulation of NF-kappaB transcription factor activity,69,41,31.71,0.01647,1
+GO:0097202,activation of cysteine-type endopeptidase activity,11,9,5.05,0.01729,1
+GO:0035556,intracellular signal transduction,900,459,413.55,0.01893,1
+GO:0045669,positive regulation of osteoblast differentiation,23,16,10.57,0.01909,1
+GO:0050731,positive regulation of peptidyl-tyrosine phosphorylation,54,34,24.81,0.01934,1
+GO:0001657,ureteric bud development,22,20,10.11,0.02036,1
+GO:0050901,leukocyte tethering or rolling,10,10,4.59,0.02036,1
+GO:0035767,endothelial cell chemotaxis,11,9,5.05,0.02041,1
+GO:0050832,defense response to fungus,11,9,5.05,0.02041,1

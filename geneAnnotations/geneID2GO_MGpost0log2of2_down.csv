@@ -1,15 +1,15 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0007010,cytoskeleton organization,540,9,2.3,5.4e-06,0.0644
+GO:0007010,cytoskeleton organization,542,9,2.31,6.9e-06,0.0821
 GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,3,0.17,0.00066,1
 GO:0008645,hexose transmembrane transport,32,2,0.14,0.00413,1
-GO:0097324,melanocyte migration,1,1,0,0.00425,1
-GO:0097326,melanocyte adhesion,1,1,0,0.00425,1
-GO:0038162,erythropoietin-mediated signaling pathway,1,1,0,0.00425,1
-GO:0030432,peristalsis,1,1,0,0.00425,1
-GO:0032571,response to vitamin K,1,1,0,0.00425,1
-GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0,0.00425,1
-GO:0060992,response to fungicide,1,1,0,0.00425,1
-GO:1903760,regulation of voltage-gated potassium channel activity involved in ventricular cardiac muscle cell action potential repolarization,1,1,0,0.00425,1
+GO:0097324,melanocyte migration,1,1,0,0.00426,1
+GO:0097326,melanocyte adhesion,1,1,0,0.00426,1
+GO:0038162,erythropoietin-mediated signaling pathway,1,1,0,0.00426,1
+GO:0030432,peristalsis,1,1,0,0.00426,1
+GO:0032571,response to vitamin K,1,1,0,0.00426,1
+GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0,0.00426,1
+GO:0060992,response to fungicide,1,1,0,0.00426,1
+GO:1903760,regulation of voltage-gated potassium channel activity involved in ventricular cardiac muscle cell action potential repolarization,1,1,0,0.00426,1
 GO:0060374,mast cell differentiation,2,1,0.01,0.00849,1
 GO:0071314,cellular response to cocaine,2,1,0.01,0.00849,1
 GO:0060022,hard palate development,2,1,0.01,0.00849,1
@@ -21,31 +21,31 @@ GO:0032782,bile acid secretion,2,1,0.01,0.00849,1
 GO:2001311,lysobisphosphatidic acid metabolic process,2,1,0.01,0.00849,1
 GO:0030032,lamellipodium assembly,33,2,0.14,0.00851,1
 GO:0032508,DNA duplex unwinding,37,2,0.16,0.01062,1
-GO:0015721,bile acid and bile salt transport,3,1,0.01,0.01271,1
-GO:0043622,cortical microtubule organization,3,1,0.01,0.01271,1
-GO:0036166,phenotypic switching,3,1,0.01,0.01271,1
-GO:0070668,positive regulation of mast cell proliferation,3,1,0.01,0.01271,1
-GO:0050910,detection of mechanical stimulus involved in sensory perception of sound,3,1,0.01,0.01271,1
-GO:1903286,regulation of potassium ion import,3,1,0.01,0.01271,1
-GO:0098911,regulation of ventricular cardiac muscle cell action potential,3,1,0.01,0.01271,1
-GO:1905065,positive regulation of vascular associated smooth muscle cell differentiation,3,1,0.01,0.01271,1
-GO:0048665,neuron fate specification,3,1,0.01,0.01271,1
-GO:0006259,DNA metabolic process,474,6,2.02,0.01665,1
-GO:0008360,regulation of cell shape,47,2,0.2,0.01679,1
-GO:0051660,establishment of centrosome localization,4,1,0.02,0.01691,1
-GO:0038109,Kit signaling pathway,4,1,0.02,0.01691,1
-GO:0002732,positive regulation of dendritic cell cytokine production,4,1,0.02,0.01691,1
-GO:0007286,spermatid development,48,2,0.2,0.01747,1
-GO:0007130,synaptonemal complex assembly,5,1,0.02,0.02110,1
-GO:0033280,response to vitamin D,5,1,0.02,0.02110,1
-GO:0099645,neurotransmitter receptor localization to postsynaptic specialization membrane,5,1,0.02,0.02110,1
-GO:0036211,protein modification process,1660,6,7.06,0.02304,1
+GO:0015721,bile acid and bile salt transport,3,1,0.01,0.01272,1
+GO:0043622,cortical microtubule organization,3,1,0.01,0.01272,1
+GO:0036166,phenotypic switching,3,1,0.01,0.01272,1
+GO:0070668,positive regulation of mast cell proliferation,3,1,0.01,0.01272,1
+GO:0050910,detection of mechanical stimulus involved in sensory perception of sound,3,1,0.01,0.01272,1
+GO:1903286,regulation of potassium ion import,3,1,0.01,0.01272,1
+GO:0098911,regulation of ventricular cardiac muscle cell action potential,3,1,0.01,0.01272,1
+GO:1905065,positive regulation of vascular associated smooth muscle cell differentiation,3,1,0.01,0.01272,1
+GO:0048665,neuron fate specification,3,1,0.01,0.01272,1
+GO:0051660,establishment of centrosome localization,4,1,0.02,0.01692,1
+GO:0038109,Kit signaling pathway,4,1,0.02,0.01692,1
+GO:0002732,positive regulation of dendritic cell cytokine production,4,1,0.02,0.01692,1
+GO:0006259,DNA metabolic process,475,6,2.02,0.01729,1
+GO:0007286,spermatid development,48,2,0.2,0.01748,1
+GO:0008360,regulation of cell shape,48,2,0.2,0.01748,1
+GO:0007130,synaptonemal complex assembly,5,1,0.02,0.02111,1
+GO:0097067,cellular response to thyroid hormone stimulus,5,1,0.02,0.02111,1
+GO:0033280,response to vitamin D,5,1,0.02,0.02111,1
+GO:1903753,negative regulation of p38MAPK cascade,5,1,0.02,0.02111,1
+GO:0099645,neurotransmitter receptor localization to postsynaptic specialization membrane,5,1,0.02,0.02111,1
 GO:0045721,negative regulation of gluconeogenesis,6,1,0.03,0.02527,1
 GO:0002551,mast cell chemotaxis,6,1,0.03,0.02527,1
-GO:0097067,cellular response to thyroid hormone stimulus,6,1,0.03,0.02527,1
 GO:0035234,ectopic germ cell programmed cell death,6,1,0.03,0.02527,1
-GO:1903753,negative regulation of p38MAPK cascade,6,1,0.03,0.02527,1
 GO:0035701,hematopoietic stem cell migration,6,1,0.03,0.02527,1
 GO:1902473,regulation of protein localization to synapse,6,1,0.03,0.02527,1
 GO:0038093,Fc receptor signaling pathway,6,1,0.03,0.02527,1
-GO:0030318,melanocyte differentiation,7,1,0.03,0.02942,1
+GO:0030318,melanocyte differentiation,7,1,0.03,0.02943,1
+GO:0048745,smooth muscle tissue development,7,1,0.03,0.02943,1

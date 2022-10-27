@@ -3,49 +3,49 @@ GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0,0.0043,1
 GO:0032571,response to vitamin K,1,1,0,0.0043,1
 GO:0060992,response to fungicide,1,1,0,0.0043,1
 GO:0050873,brown fat cell differentiation,26,2,0.11,0.0053,1
-GO:0120162,positive regulation of cold-induced thermogenesis,32,2,0.14,0.0080,1
 GO:0048148,behavioral response to cocaine,2,1,0.01,0.0085,1
 GO:0071314,cellular response to cocaine,2,1,0.01,0.0085,1
+GO:0120162,positive regulation of cold-induced thermogenesis,34,2,0.14,0.0090,1
 GO:0036166,phenotypic switching,3,1,0.01,0.0127,1
 GO:0048665,neuron fate specification,3,1,0.01,0.0127,1
 GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,2,0.17,0.0129,1
 GO:0071285,cellular response to lithium ion,4,1,0.02,0.0169,1
 GO:0048266,behavioral response to pain,4,1,0.02,0.0169,1
-GO:0006334,nucleosome assembly,49,2,0.21,0.0182,1
-GO:0040029,regulation of gene expression; epigenetic,50,2,0.21,0.0189,1
+GO:0006334,nucleosome assembly,48,2,0.2,0.0175,1
+GO:0040029,regulation of gene expression; epigenetic,53,2,0.23,0.0211,1
 GO:0033280,response to vitamin D,5,1,0.02,0.0211,1
 GO:0007130,synaptonemal complex assembly,5,1,0.02,0.0211,1
-GO:0036211,protein modification process,1660,7,7.06,0.0221,1
 GO:0040015,negative regulation of multicellular organism growth,7,1,0.03,0.0294,1
 GO:0060997,dendritic spine morphogenesis,7,1,0.03,0.0294,1
 GO:0019827,stem cell population maintenance,68,2,0.29,0.0335,1
 GO:0050872,white fat cell differentiation,8,1,0.03,0.0336,1
+GO:0070734,histone H3-K27 methylation,8,1,0.03,0.0336,1
 GO:0007616,long-term memory,8,1,0.03,0.0336,1
 GO:0044030,regulation of DNA methylation,8,1,0.03,0.0336,1
-GO:0000122,negative regulation of transcription by RNA polymerase II,297,4,1.26,0.0355,1
-GO:0070734,histone H3-K27 methylation,9,1,0.04,0.0377,1
+GO:0000122,negative regulation of transcription by RNA polymerase II,299,4,1.27,0.0363,1
 GO:2000001,regulation of DNA damage checkpoint,9,1,0.04,0.0377,1
-GO:0045948,positive regulation of translational initiation,9,1,0.04,0.0377,1
 GO:0045471,response to ethanol,9,1,0.04,0.0377,1
+GO:0048599,oocyte development,9,1,0.04,0.0377,1
 GO:1902902,negative regulation of autophagosome assembly,10,1,0.04,0.0418,1
+GO:0031571,mitotic G1 DNA damage checkpoint,10,1,0.04,0.0418,1
+GO:0045948,positive regulation of translational initiation,10,1,0.04,0.0418,1
 GO:0018027,peptidyl-lysine dimethylation,10,1,0.04,0.0418,1
-GO:0048599,oocyte development,10,1,0.04,0.0418,1
 GO:0007186,G protein-coupled receptor signaling pathway,222,4,0.94,0.0424,1
-GO:0031571,mitotic G1 DNA damage checkpoint,11,1,0.05,0.0459,1
 GO:0036297,interstrand cross-link repair,12,1,0.05,0.0499,1
-GO:0051570,regulation of histone H3-K9 methylation,15,1,0.06,0.0620,1
+GO:0051570,regulation of histone H3-K9 methylation,13,1,0.06,0.0540,1
+GO:0036211,protein modification process,1658,7,7.06,0.0606,1
 GO:0009409,response to cold,15,1,0.06,0.0620,1
-GO:0009058,biosynthetic process,2316,10,9.85,0.0645,1
+GO:0009058,biosynthetic process,2324,10,9.89,0.0647,1
 GO:0045104,intermediate filament cytoskeleton organization,16,1,0.07,0.0660,1
+GO:0051569,regulation of histone H3-K4 methylation,19,1,0.08,0.0779,1
 GO:0015909,long-chain fatty acid transport,19,1,0.08,0.0779,1
-GO:0051569,regulation of histone H3-K4 methylation,20,1,0.09,0.0819,1
 GO:0075713,establishment of integrated proviral latency,20,1,0.09,0.0819,1
 GO:0044826,viral genome integration into host DNA,20,1,0.09,0.0819,1
-GO:0031297,replication fork processing,23,1,0.1,0.0936,1
-GO:0048731,system development,1383,6,5.88,0.1049,1
+GO:0031297,replication fork processing,24,1,0.1,0.0975,1
 GO:0007601,visual perception,26,1,0.11,0.1051,1
 GO:0030500,regulation of bone mineralization,26,1,0.11,0.1051,1
-GO:1900076,regulation of cellular response to insulin stimulus,27,1,0.11,0.1089,1
-GO:0042255,ribosome assembly,28,1,0.12,0.1127,1
-GO:0006259,DNA metabolic process,474,5,2.02,0.1219,1
+GO:0048731,system development,1394,6,5.93,0.1067,1
+GO:0042255,ribosome assembly,28,1,0.12,0.1128,1
+GO:1900076,regulation of cellular response to insulin stimulus,28,1,0.12,0.1128,1
 GO:0042632,cholesterol homeostasis,31,1,0.13,0.1241,1
+GO:0006259,DNA metabolic process,475,5,2.02,0.1254,1

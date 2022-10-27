@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:1902031,regulation of NADP metabolic process,2,2,0.06,0.00091,1
+GO:1901166,neural crest cell migration involved in autonomic nervous system development,2,2,0.06,0.00091,1
+GO:0010739,positive regulation of protein kinase A signaling,2,2,0.06,0.00091,1
+GO:2001045,negative regulation of integrin-mediated signaling pathway,2,2,0.06,0.00091,1
+GO:0048731,system development,1394,59,42.14,0.00221,1
+GO:0006002,fructose 6-phosphate metabolic process,3,2,0.09,0.00267,1
+GO:0070837,dehydroascorbic acid transport,3,2,0.09,0.00267,1
+GO:0002250,adaptive immune response,116,4,3.51,0.00504,1
+GO:0002504,antigen processing and presentation of peptide or polysaccharide antigen via MHC class II,10,3,0.3,0.00520,1
+GO:0006689,ganglioside catabolic process,4,2,0.12,0.00524,1
+GO:0032700,negative regulation of interleukin-17 production,4,2,0.12,0.00524,1
+GO:0042450,arginine biosynthetic process via ornithine,4,2,0.12,0.00524,1
+GO:0042531,positive regulation of tyrosine phosphorylation of STAT protein,13,3,0.39,0.00622,1
+GO:1905606,regulation of presynapse assembly,5,2,0.15,0.00856,1
+GO:0097421,liver regeneration,5,2,0.15,0.00856,1
+GO:0002024,diet induced thermogenesis,5,2,0.15,0.00856,1
+GO:0009313,oligosaccharide catabolic process,5,2,0.15,0.00856,1
+GO:0050873,brown fat cell differentiation,26,4,0.79,0.00939,1
+GO:0035987,endodermal cell differentiation,15,3,0.45,0.00947,1
+GO:0048146,positive regulation of fibroblast proliferation,16,3,0.48,0.01140,1
+GO:0050885,neuromuscular process controlling balance,16,3,0.48,0.01140,1
+GO:0007218,neuropeptide signaling pathway,6,2,0.18,0.01259,1
+GO:0070207,protein homotrimerization,6,2,0.18,0.01259,1
+GO:2000562,negative regulation of CD4-positive; alpha-beta T cell proliferation,6,2,0.18,0.01259,1
+GO:0090136,epithelial cell-cell adhesion,6,2,0.18,0.01259,1
+GO:0008360,regulation of cell shape,48,5,1.45,0.01434,1
+GO:2000353,positive regulation of endothelial cell apoptotic process,7,2,0.21,0.01728,1
+GO:0009083,branched-chain amino acid catabolic process,7,2,0.21,0.01728,1
+GO:0042403,thyroid hormone metabolic process,7,2,0.21,0.01728,1
+GO:0006805,xenobiotic metabolic process,19,3,0.57,0.01846,1
+GO:0120162,positive regulation of cold-induced thermogenesis,34,4,1.03,0.01850,1
+GO:0032755,positive regulation of interleukin-6 production,35,4,1.06,0.02041,1
+GO:0019915,lipid storage,37,4,1.12,0.02111,1
+GO:0007229,integrin-mediated signaling pathway,40,6,1.21,0.02177,1
+GO:0009653,anatomical structure morphogenesis,773,28,23.37,0.02191,1
+GO:0044030,regulation of DNA methylation,8,2,0.24,0.02258,1
+GO:0030206,chondroitin sulfate biosynthetic process,8,2,0.24,0.02258,1
+GO:0030890,positive regulation of B cell proliferation,21,3,0.63,0.02424,1
+GO:0000165,MAPK cascade,244,14,7.38,0.02717,1
+GO:0051017,actin filament bundle assembly,63,4,1.9,0.02837,1
+GO:0045471,response to ethanol,9,2,0.27,0.02847,1
+GO:0051923,sulfation,9,2,0.27,0.02847,1
+GO:0008645,hexose transmembrane transport,32,4,0.97,0.02993,1
+GO:0034767,positive regulation of ion transmembrane transport,53,4,1.6,0.03002,1
+GO:1905522,negative regulation of macrophage migration,2,2,0.06,0.03009,1
+GO:2000427,positive regulation of apoptotic cell clearance,2,2,0.06,0.03009,1
+GO:0048846,axon extension involved in axon guidance,3,2,0.09,0.03009,1
+GO:0034763,negative regulation of transmembrane transport,37,3,1.12,0.03010,1
+GO:0006544,glycine metabolic process,4,2,0.12,0.03010,1
+GO:1904738,vascular associated smooth muscle cell migration,5,2,0.15,0.03010,1

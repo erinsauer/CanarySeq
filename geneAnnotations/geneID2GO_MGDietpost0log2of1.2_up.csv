@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0071526,semaphorin-plexin signaling pathway,12,9,2.17,3.6e-05,0.4165
+GO:0030890,positive regulation of B cell proliferation,21,12,3.81,7.0e-05,0.4165
+GO:0007015,actin filament organization,162,44,29.36,0.00037,1
+GO:0050853,B cell receptor signaling pathway,27,16,4.89,0.00038,1
+GO:0032755,positive regulation of interleukin-6 production,35,15,6.34,0.00059,1
+GO:0016051,carbohydrate biosynthetic process,80,23,14.5,0.00097,1
+GO:0050861,positive regulation of B cell receptor signaling pathway,6,5,1.09,0.00099,1
+GO:0090026,positive regulation of monocyte chemotaxis,6,5,1.09,0.00099,1
+GO:0006631,fatty acid metabolic process,118,29,21.39,0.00104,1
+GO:0045669,positive regulation of osteoblast differentiation,23,11,4.17,0.00106,1
+GO:0070244,negative regulation of thymocyte apoptotic process,4,4,0.72,0.00107,1
+GO:0034351,negative regulation of glial cell apoptotic process,4,4,0.72,0.00107,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,66,40.24,0.00116,1
+GO:1904646,cellular response to amyloid-beta,9,6,1.63,0.00178,1
+GO:0002250,adaptive immune response,116,39,21.02,0.00200,1
+GO:0045668,negative regulation of osteoblast differentiation,18,9,3.26,0.00207,1
+GO:0009617,response to bacterium,159,48,28.82,0.00305,1
+GO:0007165,signal transduction,1751,422,317.36,0.00318,1
+GO:0008360,regulation of cell shape,48,17,8.7,0.00323,1
+GO:0033077,T cell differentiation in thymus,43,17,7.79,0.00360,1
+GO:0006096,glycolytic process,41,15,7.43,0.00372,1
+GO:0032731,positive regulation of interleukin-1 beta production,13,7,2.36,0.00391,1
+GO:2000773,negative regulation of cellular senescence,13,7,2.36,0.00391,1
+GO:0042554,superoxide anion generation,9,7,1.63,0.00456,1
+GO:0019370,leukotriene biosynthetic process,6,5,1.09,0.00459,1
+GO:0002024,diet induced thermogenesis,5,4,0.91,0.00460,1
+GO:1905606,regulation of presynapse assembly,5,4,0.91,0.00460,1
+GO:0032287,peripheral nervous system myelin maintenance,5,4,0.91,0.00460,1
+GO:2000343,positive regulation of chemokine (C-X-C motif) ligand 2 production,5,4,0.91,0.00460,1
+GO:0007214,gamma-aminobutyric acid signaling pathway,5,4,0.91,0.00460,1
+GO:0051058,negative regulation of small GTPase mediated signal transduction,23,7,4.17,0.00460,1
+GO:0048870,cell motility,501,148,90.8,0.00513,1
+GO:0007264,small GTPase mediated signal transduction,163,41,29.54,0.00543,1
+GO:0050953,sensory perception of light stimulus,29,10,5.26,0.00591,1
+GO:0001922,B-1 B cell homeostasis,3,3,0.54,0.00594,1
+GO:0032079,positive regulation of endodeoxyribonuclease activity,3,3,0.54,0.00594,1
+GO:0002322,B cell proliferation involved in immune response,3,3,0.54,0.00594,1
+GO:0010756,positive regulation of plasminogen activation,3,3,0.54,0.00594,1
+GO:0032693,negative regulation of interleukin-10 production,3,3,0.54,0.00594,1
+GO:0006002,fructose 6-phosphate metabolic process,3,3,0.54,0.00594,1
+GO:0032930,positive regulation of superoxide anion generation,3,3,0.54,0.00594,1
+GO:0002906,negative regulation of mature B cell apoptotic process,3,3,0.54,0.00594,1
+GO:0060674,placenta blood vessel development,12,4,2.17,0.00595,1
+GO:0006898,receptor-mediated endocytosis,87,17,15.77,0.00598,1
+GO:0032722,positive regulation of chemokine production,24,13,4.35,0.00648,1
+GO:0048701,embryonic cranial skeleton morphogenesis,13,6,2.36,0.00668,1
+GO:1900016,negative regulation of cytokine production involved in inflammatory response,8,5,1.45,0.00669,1
+GO:0060907,positive regulation of macrophage cytokine production,11,6,1.99,0.00705,1
+GO:0006909,phagocytosis,72,23,13.05,0.01021,1
+GO:0006954,inflammatory response,195,57,35.34,0.01116,1

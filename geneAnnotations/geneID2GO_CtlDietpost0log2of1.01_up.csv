@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,31,19.3,0.00018,1
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,15,8,0.00043,1
+GO:0075713,establishment of integrated proviral latency,20,17,9.41,0.00053,1
+GO:0044826,viral genome integration into host DNA,20,17,9.41,0.00053,1
+GO:0000413,protein peptidyl-prolyl isomerization,18,15,8.47,0.00175,1
+GO:0006811,ion transport,1073,490,505.01,0.00253,1
+GO:0016180,snRNA processing,11,9,5.18,0.00510,1
+GO:0035458,cellular response to interferon-beta,7,7,3.29,0.00510,1
+GO:0009617,response to bacterium,159,81,74.83,0.00718,1
+GO:0032757,positive regulation of interleukin-8 production,20,15,9.41,0.01058,1
+GO:0002314,germinal center B cell differentiation,6,6,2.82,0.01084,1
+GO:0033234,negative regulation of protein sumoylation,6,6,2.82,0.01084,1
+GO:0060340,positive regulation of type I interferon-mediated signaling pathway,6,6,2.82,0.01084,1
+GO:2000672,negative regulation of motor neuron apoptotic process,6,6,2.82,0.01084,1
+GO:0006465,signal peptide processing,9,8,4.24,0.01256,1
+GO:0043123,positive regulation of I-kappaB kinase/NF-kappaB signaling,65,40,30.59,0.01301,1
+GO:0071260,cellular response to mechanical stimulus,22,16,10.35,0.01328,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,49,37.18,0.01923,1
+GO:0031623,receptor internalization,45,27,21.18,0.02097,1
+GO:0042770,signal transduction in response to DNA damage,36,21,16.94,0.02300,1
+GO:0046931,pore complex assembly,11,8,5.18,0.02305,1
+GO:0140289,protein mono-ADP-ribosylation,5,5,2.35,0.02306,1
+GO:0045329,carnitine biosynthetic process,5,5,2.35,0.02306,1
+GO:0061709,reticulophagy,5,5,2.35,0.02306,1
+GO:0030278,regulation of ossification,42,20,19.77,0.02314,1
+GO:0031295,T cell costimulation,9,8,4.24,0.02398,1
+GO:0006805,xenobiotic metabolic process,19,16,8.94,0.02864,1
+GO:0051123,RNA polymerase II preinitiation complex assembly,15,11,7.06,0.02886,1
+GO:0051607,defense response to virus,91,49,42.83,0.03071,1
+GO:0001835,blastocyst hatching,15,11,7.06,0.03657,1
+GO:0032212,positive regulation of telomere maintenance via telomerase,22,15,10.35,0.03762,1
+GO:0051289,protein homotetramerization,22,15,10.35,0.03762,1
+GO:0016525,negative regulation of angiogenesis,25,16,11.77,0.03767,1
+GO:0043966,histone H3 acetylation,48,25,22.59,0.03788,1
+GO:0015074,DNA integration,33,21,15.53,0.04103,1
+GO:0006487,protein N-linked glycosylation,39,22,18.36,0.04378,1
+GO:0046718,viral entry into host cell,51,29,24,0.04389,1
+GO:0030225,macrophage differentiation,18,15,8.47,0.04502,1
+GO:0038066,p38MAPK cascade,26,18,12.24,0.04508,1
+GO:0070266,necroptotic process,22,14,10.35,0.04524,1
+GO:0070213,protein auto-ADP-ribosylation,7,6,3.29,0.04531,1
+GO:0071360,cellular response to exogenous dsRNA,7,6,3.29,0.04531,1
+GO:0048304,positive regulation of isotype switching to IgG isotypes,7,6,3.29,0.04531,1
+GO:0046512,sphingosine biosynthetic process,7,6,3.29,0.04531,1
+GO:2000563,positive regulation of CD4-positive; alpha-beta T cell proliferation,7,6,3.29,0.04531,1
+GO:2001240,negative regulation of extrinsic apoptotic signaling pathway in absence of ligand,7,6,3.29,0.04531,1
+GO:0002063,chondrocyte development,13,8,6.12,0.04537,1
+GO:0070371,ERK1 and ERK2 cascade,93,43,43.77,0.04557,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,25,19.3,0.04640,1
+GO:0071985,multivesicular body sorting pathway,16,12,7.53,0.04829,1

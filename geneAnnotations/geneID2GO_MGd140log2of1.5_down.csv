@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,7,0.63,2.5e-06,0.0298
-GO:0006278,RNA-dependent DNA biosynthetic process,79,7,1.22,0.0002,1
-GO:1990379,lipid transport across blood-brain barrier,3,2,0.05,0.0007,1
-GO:0007010,cytoskeleton organization,540,14,8.32,0.0013,1
-GO:0051930,regulation of sensory perception of pain,4,2,0.06,0.0014,1
-GO:0015074,DNA integration,33,4,0.51,0.0015,1
-GO:0007274,neuromuscular synaptic transmission,5,2,0.08,0.0023,1
-GO:0015909,long-chain fatty acid transport,19,3,0.29,0.0029,1
-GO:0075713,establishment of integrated proviral latency,20,3,0.31,0.0033,1
-GO:0044826,viral genome integration into host DNA,20,3,0.31,0.0033,1
-GO:0046718,viral entry into host cell,50,4,0.77,0.0071,1
-GO:0030036,actin cytoskeleton organization,275,7,4.24,0.0079,1
-GO:0007155,cell adhesion,353,7,5.44,0.0098,1
-GO:0006259,DNA metabolic process,474,18,7.3,0.0109,1
-GO:0019068,virion assembly,32,3,0.49,0.0127,1
-GO:0006665,sphingolipid metabolic process,67,4,1.03,0.0137,1
-GO:0140329,lysophospholipid translocation,1,1,0.02,0.0154,1
-GO:0036254,cellular response to amiloride,1,1,0.02,0.0154,1
-GO:0120229,protein localization to motile cilium,1,1,0.02,0.0154,1
-GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0.02,0.0154,1
-GO:0060992,response to fungicide,1,1,0.02,0.0154,1
-GO:0006433,prolyl-tRNA aminoacylation,1,1,0.02,0.0154,1
-GO:0032971,regulation of muscle filament sliding,1,1,0.02,0.0154,1
-GO:0051659,maintenance of mitochondrion location,1,1,0.02,0.0154,1
-GO:0014816,skeletal muscle satellite cell differentiation,1,1,0.02,0.0154,1
-GO:0061737,leukotriene signaling pathway,1,1,0.02,0.0154,1
-GO:0150175,regulation of phosphatidylethanolamine metabolic process,1,1,0.02,0.0154,1
-GO:0150178,regulation of phosphatidylserine metabolic process,1,1,0.02,0.0154,1
-GO:0009058,biosynthetic process,2316,40,35.68,0.0201,1
-GO:0007186,G protein-coupled receptor signaling pathway,222,9,3.42,0.0215,1
-GO:0006334,nucleosome assembly,49,4,0.75,0.0275,1
-GO:0035634,response to stilbenoid,2,1,0.03,0.0306,1
-GO:0150011,regulation of neuron projection arborization,2,1,0.03,0.0306,1
-GO:0060287,epithelial cilium movement involved in determination of left/right asymmetry,2,1,0.03,0.0306,1
-GO:0090660,cerebrospinal fluid circulation,2,1,0.03,0.0306,1
-GO:1904158,axonemal central apparatus assembly,2,1,0.03,0.0306,1
-GO:0034395,regulation of transcription from RNA polymerase II promoter in response to iron,2,1,0.03,0.0306,1
-GO:0048148,behavioral response to cocaine,2,1,0.03,0.0306,1
-GO:0072719,cellular response to cisplatin,2,1,0.03,0.0306,1
-GO:1904045,cellular response to aldosterone,2,1,0.03,0.0306,1
-GO:0042853,L-alanine catabolic process,2,1,0.03,0.0306,1
-GO:0099178,regulation of retrograde trans-synaptic signaling by endocanabinoid,2,1,0.03,0.0306,1
-GO:0006478,peptidyl-tyrosine sulfation,2,1,0.03,0.0306,1
-GO:2000448,positive regulation of macrophage migration inhibitory factor signaling pathway,2,1,0.03,0.0306,1
-GO:0003406,retinal pigment epithelium development,2,1,0.03,0.0306,1
-GO:0007021,tubulin complex assembly,2,1,0.03,0.0306,1
-GO:0045578,negative regulation of B cell differentiation,2,1,0.03,0.0306,1
-GO:0031999,negative regulation of fatty acid beta-oxidation,2,1,0.03,0.0306,1
-GO:0001572,lactosylceramide biosynthetic process,2,1,0.03,0.0306,1
-GO:0035360,positive regulation of peroxisome proliferator activated receptor signaling pathway,2,1,0.03,0.0306,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,7,0.63,2.3e-06,0.0274
+GO:0006278,RNA-dependent DNA biosynthetic process,79,7,1.21,0.00019,1
+GO:1990379,lipid transport across blood-brain barrier,3,2,0.05,0.00069,1
+GO:0051930,regulation of sensory perception of pain,4,2,0.06,0.00136,1
+GO:0007274,neuromuscular synaptic transmission,4,2,0.06,0.00136,1
+GO:0015074,DNA integration,33,4,0.5,0.00149,1
+GO:0007010,cytoskeleton organization,542,14,8.27,0.00152,1
+GO:0015909,long-chain fatty acid transport,19,3,0.29,0.00280,1
+GO:0075713,establishment of integrated proviral latency,20,3,0.31,0.00326,1
+GO:0044826,viral genome integration into host DNA,20,3,0.31,0.00326,1
+GO:0046718,viral entry into host cell,51,4,0.78,0.00738,1
+GO:0030036,actin cytoskeleton organization,274,7,4.18,0.00759,1
+GO:0007155,cell adhesion,355,7,5.42,0.01014,1
+GO:0006259,DNA metabolic process,475,18,7.25,0.01153,1
+GO:0019068,virion assembly,32,3,0.49,0.01243,1
+GO:0006665,sphingolipid metabolic process,67,4,1.02,0.01349,1
+GO:0140329,lysophospholipid translocation,1,1,0.02,0.01526,1
+GO:0036254,cellular response to amiloride,1,1,0.02,0.01526,1
+GO:0120229,protein localization to motile cilium,1,1,0.02,0.01526,1
+GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0.02,0.01526,1
+GO:0060992,response to fungicide,1,1,0.02,0.01526,1
+GO:0006433,prolyl-tRNA aminoacylation,1,1,0.02,0.01526,1
+GO:0032971,regulation of muscle filament sliding,1,1,0.02,0.01526,1
+GO:0051659,maintenance of mitochondrion location,1,1,0.02,0.01526,1
+GO:0014816,skeletal muscle satellite cell differentiation,1,1,0.02,0.01526,1
+GO:0061737,leukotriene signaling pathway,1,1,0.02,0.01526,1
+GO:0150175,regulation of phosphatidylethanolamine metabolic process,1,1,0.02,0.01526,1
+GO:0150178,regulation of phosphatidylserine metabolic process,1,1,0.02,0.01526,1
+GO:0009058,biosynthetic process,2324,40,35.47,0.01963,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,9,3.39,0.02057,1
+GO:0006334,nucleosome assembly,48,4,0.73,0.02843,1
+GO:0035634,response to stilbenoid,2,1,0.03,0.03029,1
+GO:0150011,regulation of neuron projection arborization,2,1,0.03,0.03029,1
+GO:0060287,epithelial cilium movement involved in determination of left/right asymmetry,2,1,0.03,0.03029,1
+GO:0090660,cerebrospinal fluid circulation,2,1,0.03,0.03029,1
+GO:1904158,axonemal central apparatus assembly,2,1,0.03,0.03029,1
+GO:0034395,regulation of transcription from RNA polymerase II promoter in response to iron,2,1,0.03,0.03029,1
+GO:0048148,behavioral response to cocaine,2,1,0.03,0.03029,1
+GO:0072719,cellular response to cisplatin,2,1,0.03,0.03029,1
+GO:1904045,cellular response to aldosterone,2,1,0.03,0.03029,1
+GO:0042853,L-alanine catabolic process,2,1,0.03,0.03029,1
+GO:0099178,regulation of retrograde trans-synaptic signaling by endocanabinoid,2,1,0.03,0.03029,1
+GO:0006478,peptidyl-tyrosine sulfation,2,1,0.03,0.03029,1
+GO:2000448,positive regulation of macrophage migration inhibitory factor signaling pathway,2,1,0.03,0.03029,1
+GO:0003406,retinal pigment epithelium development,2,1,0.03,0.03029,1
+GO:0007021,tubulin complex assembly,2,1,0.03,0.03029,1
+GO:0045578,negative regulation of B cell differentiation,2,1,0.03,0.03029,1
+GO:0031999,negative regulation of fatty acid beta-oxidation,2,1,0.03,0.03029,1
+GO:0001572,lactosylceramide biosynthetic process,2,1,0.03,0.03029,1
+GO:0035360,positive regulation of peroxisome proliferator activated receptor signaling pathway,2,1,0.03,0.03029,1

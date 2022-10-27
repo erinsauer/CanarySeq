@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.02,2.0e-07,0.0012
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.02,2.0e-07,0.0012
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.03,1.7e-06,0.0067
+GO:0006541,glutamine metabolic process,8,3,0.03,2.7e-06,0.008
+GO:0055072,iron ion homeostasis,43,3,0.16,0.00055,1
+GO:0006334,nucleosome assembly,48,3,0.18,0.00076,1
+GO:0071897,DNA biosynthetic process,129,4,0.49,0.00079,1
+GO:0030509,BMP signaling pathway,55,3,0.21,0.00113,1
+GO:0034337,RNA folding,1,1,0,0.00382,1
+GO:0098749,cerebellar neuron development,1,1,0,0.00382,1
+GO:0031990,mRNA export from nucleus in response to heat stress,2,1,0.01,0.00762,1
+GO:0032508,DNA duplex unwinding,37,2,0.14,0.00859,1
+GO:0046832,negative regulation of RNA export from nucleus,3,1,0.01,0.01141,1
+GO:0006640,monoacylglycerol biosynthetic process,3,1,0.01,0.01141,1
+GO:0060155,platelet dense granule organization,4,1,0.02,0.01518,1
+GO:0019885,antigen processing and presentation of endogenous peptide antigen via MHC class I,4,1,0.02,0.01518,1
+GO:0055089,fatty acid homeostasis,4,1,0.02,0.01518,1
+GO:0034379,very-low-density lipoprotein particle assembly,5,1,0.02,0.01894,1
+GO:1903232,melanosome assembly,5,1,0.02,0.01894,1
+GO:0006404,RNA import into nucleus,5,1,0.02,0.01894,1
+GO:0035336,long-chain fatty-acyl-CoA metabolic process,5,1,0.02,0.01894,1
+GO:0035457,cellular response to interferon-alpha,5,1,0.02,0.01894,1
+GO:0042572,retinol metabolic process,5,1,0.02,0.01894,1
+GO:0046784,viral mRNA export from host cell nucleus,6,1,0.02,0.02269,1
+GO:0090267,positive regulation of mitotic cell cycle spindle assembly checkpoint,6,1,0.02,0.02269,1
+GO:0045050,protein insertion into ER membrane by stop-transfer membrane-anchor sequence,7,1,0.03,0.02642,1
+GO:0045087,innate immune response,173,3,0.66,0.02724,1
+GO:1900153,positive regulation of nuclear-transcribed mRNA catabolic process; deadenylation-dependent decay,8,1,0.03,0.03014,1
+GO:0046339,diacylglycerol metabolic process,9,1,0.03,0.03384,1
+GO:0031453,positive regulation of heterochromatin assembly,9,1,0.03,0.03384,1
+GO:0045947,negative regulation of translational initiation,9,1,0.03,0.03384,1
+GO:0006954,inflammatory response,195,3,0.74,0.03700,1
+GO:0071816,tail-anchored membrane protein insertion into ER membrane,10,1,0.04,0.03753,1
+GO:0006999,nuclear pore organization,10,1,0.04,0.03753,1
+GO:0019432,triglyceride biosynthetic process,11,1,0.04,0.04121,1
+GO:0046827,positive regulation of protein export from nucleus,11,1,0.04,0.04121,1
+GO:1904262,negative regulation of TORC1 signaling,13,1,0.05,0.04853,1
+GO:0006886,intracellular protein transport,408,5,1.56,0.04866,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,1,0.05,0.05216,1
+GO:1901031,regulation of response to reactive oxygen species,14,1,0.05,0.05216,1
+GO:1901673,regulation of mitotic spindle assembly,15,1,0.06,0.05579,1
+GO:0032786,positive regulation of DNA-templated transcription; elongation,15,1,0.06,0.05579,1
+GO:0006952,defense response,434,4,1.66,0.06285,1
+GO:0070849,response to epidermal growth factor,19,1,0.07,0.07015,1
+GO:0042307,positive regulation of protein import into nucleus,21,1,0.08,0.07725,1
+GO:0098655,cation transmembrane transport,223,2,0.85,0.08701,1
+GO:0031297,replication fork processing,24,1,0.09,0.08781,1
+GO:0006406,mRNA export from nucleus,31,2,0.12,0.10134,1
+GO:0090305,nucleic acid phosphodiester bond hydrolysis,86,2,0.33,0.11205,1
+GO:0030032,lamellipodium assembly,33,1,0.13,0.11879,1

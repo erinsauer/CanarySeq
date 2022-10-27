@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.05,6.4e-06,0.0381
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.05,6.4e-06,0.0381
+GO:0006334,nucleosome assembly,48,6,0.57,1.9e-05,0.0754
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.08,5.5e-05,0.1636
+GO:0006541,glutamine metabolic process,8,3,0.1,8.7e-05,0.2071
+GO:0007010,cytoskeleton organization,542,11,6.44,0.00021,0.4165
+GO:0070106,interleukin-27-mediated signaling pathway,3,2,0.04,0.00042,0.7141
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,3,0.17,0.00054,0.8033
+GO:0071897,DNA biosynthetic process,129,7,1.53,0.00218,1
+GO:0030509,BMP signaling pathway,55,4,0.65,0.00399,1
+GO:0045071,negative regulation of viral genome replication,14,2,0.17,0.01158,1
+GO:0098749,cerebellar neuron development,1,1,0.01,0.01189,1
+GO:0034337,RNA folding,1,1,0.01,0.01189,1
+GO:1905662,negative regulation of telomerase RNA reverse transcriptase activity,1,1,0.01,0.01189,1
+GO:0032929,negative regulation of superoxide anion generation,1,1,0.01,0.01189,1
+GO:1901687,glutathione derivative biosynthetic process,1,1,0.01,0.01189,1
+GO:0001581,detection of chemical stimulus involved in sensory perception of sour taste,1,1,0.01,0.01189,1
+GO:0051256,mitotic spindle midzone assembly,1,1,0.01,0.01189,1
+GO:0000915,actomyosin contractile ring assembly,1,1,0.01,0.01189,1
+GO:1990408,calcitonin gene-related peptide receptor signaling pathway,1,1,0.01,0.01189,1
+GO:0071805,potassium ion transmembrane transport,41,3,0.49,0.01247,1
+GO:0055072,iron ion homeostasis,43,3,0.51,0.01419,1
+GO:0008272,sulfate transport,5,2,0.06,0.02336,1
+GO:0097647,amylin receptor signaling pathway,2,1,0.02,0.02363,1
+GO:0060050,positive regulation of protein glycosylation,2,1,0.02,0.02363,1
+GO:1905581,positive regulation of low-density lipoprotein particle clearance,2,1,0.02,0.02363,1
+GO:0007191,adenylate cyclase-activating dopamine receptor signaling pathway,2,1,0.02,0.02363,1
+GO:0019441,tryptophan catabolic process to kynurenine,2,1,0.02,0.02363,1
+GO:0030592,DNA ADP-ribosylation,2,1,0.02,0.02363,1
+GO:1905602,positive regulation of receptor-mediated endocytosis involved in cholesterol transport,2,1,0.02,0.02363,1
+GO:0050965,detection of temperature stimulus involved in sensory perception of pain,2,1,0.02,0.02363,1
+GO:0031990,mRNA export from nucleus in response to heat stress,2,1,0.02,0.02363,1
+GO:0051106,positive regulation of DNA ligation,2,1,0.02,0.02363,1
+GO:0051289,protein homotetramerization,22,2,0.26,0.02764,1
+GO:1990166,protein localization to site of double-strand break,3,1,0.04,0.03524,1
+GO:1902358,sulfate transmembrane transport,3,1,0.04,0.03524,1
+GO:0046832,negative regulation of RNA export from nucleus,3,1,0.04,0.03524,1
+GO:2001214,positive regulation of vasculogenesis,3,1,0.04,0.03524,1
+GO:0042985,negative regulation of amyloid precursor protein biosynthetic process,3,1,0.04,0.03524,1
+GO:0007190,activation of adenylate cyclase activity,3,1,0.04,0.03524,1
+GO:0007187,G protein-coupled receptor signaling pathway; coupled to cyclic nucleotide second messenger,3,1,0.04,0.03524,1
+GO:0009415,response to water,3,1,0.04,0.03524,1
+GO:0051482,positive regulation of cytosolic calcium ion concentration involved in phospholipase C-activating G protein-coupled signaling pathway,3,1,0.04,0.03524,1
+GO:0006640,monoacylglycerol biosynthetic process,3,1,0.04,0.03524,1
+GO:0060842,arterial endothelial cell differentiation,3,1,0.04,0.03524,1
+GO:0090209,negative regulation of triglyceride metabolic process,3,1,0.04,0.03524,1
+GO:0050917,sensory perception of umami taste,3,1,0.04,0.03524,1
+GO:0048388,endosomal lumen acidification,3,1,0.04,0.03524,1
+GO:0060158,phospholipase C-activating dopamine receptor signaling pathway,3,1,0.04,0.03524,1
+GO:0090310,negative regulation of DNA methylation-dependent heterochromatin assembly,3,1,0.04,0.03524,1

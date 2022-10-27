@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0007186,G protein-coupled receptor signaling pathway,222,47,23.03,2.1e-06,0.025
+GO:0018108,peptidyl-tyrosine phosphorylation,108,22,11.21,0.00018,1
+GO:0007166,cell surface receptor signaling pathway,786,100,81.55,0.00070,1
+GO:0007229,integrin-mediated signaling pathway,40,12,4.15,0.00073,1
+GO:0055085,transmembrane transport,461,69,47.83,0.00198,1
+GO:0030509,BMP signaling pathway,55,14,5.71,0.00201,1
+GO:0006334,nucleosome assembly,48,12,4.98,0.00355,1
+GO:0016310,phosphorylation,843,100,87.47,0.00369,1
+GO:0007155,cell adhesion,355,46,36.83,0.00398,1
+GO:0043583,ear development,48,8,4.98,0.00410,1
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.42,0.00411,1
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.42,0.00411,1
+GO:0006541,glutamine metabolic process,8,4,0.83,0.00571,1
+GO:0035767,endothelial cell chemotaxis,11,5,1.14,0.00942,1
+GO:0036120,cellular response to platelet-derived growth factor stimulus,9,4,0.93,0.00945,1
+GO:0036158,outer dynein arm assembly,5,3,0.52,0.00947,1
+GO:0001938,positive regulation of endothelial cell proliferation,32,8,3.32,0.01010,1
+GO:0008202,steroid metabolic process,74,15,7.68,0.01058,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,5,1.45,0.01069,1
+GO:0060119,inner ear receptor cell development,15,4,1.56,0.01073,1
+GO:0070574,cadmium ion transmembrane transport,2,2,0.21,0.01075,1
+GO:0007057,spindle assembly involved in female meiosis I,2,2,0.21,0.01075,1
+GO:0007021,tubulin complex assembly,2,2,0.21,0.01075,1
+GO:0010513,positive regulation of phosphatidylinositol biosynthetic process,2,2,0.21,0.01075,1
+GO:0010626,negative regulation of Schwann cell proliferation,2,2,0.21,0.01075,1
+GO:0060287,epithelial cilium movement involved in determination of left/right asymmetry,2,2,0.21,0.01075,1
+GO:0038163,thrombopoietin-mediated signaling pathway,2,2,0.21,0.01075,1
+GO:0006703,estrogen biosynthetic process,2,2,0.21,0.01075,1
+GO:0009253,peptidoglycan catabolic process,2,2,0.21,0.01075,1
+GO:0006876,cellular cadmium ion homeostasis,2,2,0.21,0.01075,1
+GO:0098700,neurotransmitter loading into synaptic vesicle,2,2,0.21,0.01075,1
+GO:0098708,glucose import across plasma membrane,2,2,0.21,0.01075,1
+GO:0070194,synaptonemal complex disassembly,2,2,0.21,0.01075,1
+GO:2000546,positive regulation of endothelial cell chemotaxis to fibroblast growth factor,2,2,0.21,0.01075,1
+GO:0048016,inositol phosphate-mediated signaling,22,3,2.28,0.01078,1
+GO:0050790,regulation of catalytic activity,669,79,69.41,0.01358,1
+GO:0010595,positive regulation of endothelial cell migration,48,11,4.98,0.01672,1
+GO:1903053,regulation of extracellular matrix organization,16,5,1.66,0.01743,1
+GO:0010875,positive regulation of cholesterol efflux,6,3,0.62,0.01749,1
+GO:0032691,negative regulation of interleukin-1 beta production,6,3,0.62,0.01749,1
+GO:0006935,chemotaxis,143,24,14.84,0.01893,1
+GO:0051496,positive regulation of stress fiber assembly,22,6,2.28,0.02133,1
+GO:0006508,proteolysis,739,69,76.68,0.02787,1
+GO:0000012,single strand break repair,7,3,0.73,0.02828,1
+GO:0045987,positive regulation of smooth muscle contraction,7,3,0.73,0.02828,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.73,0.02828,1
+GO:0044344,cellular response to fibroblast growth factor stimulus,28,5,2.91,0.02830,1
+GO:0030036,actin cytoskeleton organization,274,39,28.43,0.02869,1
+GO:0048731,system development,1394,158,144.64,0.02883,1
+GO:0030199,collagen fibril organization,12,4,1.25,0.02884,1

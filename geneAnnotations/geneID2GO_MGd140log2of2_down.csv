@@ -2,50 +2,50 @@ GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
 GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,3,0.18,0.00073,1
 GO:0010424,DNA methylation on cytosine within a CG sequence,1,1,0,0.00440,1
 GO:0060992,response to fungicide,1,1,0,0.00440,1
-GO:0006259,DNA metabolic process,474,7,2.09,0.00857,1
-GO:0048148,behavioral response to cocaine,2,1,0.01,0.00878,1
-GO:0071314,cellular response to cocaine,2,1,0.01,0.00878,1
-GO:0006478,peptidyl-tyrosine sulfation,2,1,0.01,0.00878,1
+GO:0048148,behavioral response to cocaine,2,1,0.01,0.00879,1
+GO:0071314,cellular response to cocaine,2,1,0.01,0.00879,1
+GO:0006478,peptidyl-tyrosine sulfation,2,1,0.01,0.00879,1
+GO:0006259,DNA metabolic process,475,7,2.09,0.00904,1
 GO:0032508,DNA duplex unwinding,37,2,0.16,0.01134,1
 GO:0036166,phenotypic switching,3,1,0.01,0.01315,1
 GO:0060842,arterial endothelial cell differentiation,3,1,0.01,0.01315,1
 GO:0048665,neuron fate specification,3,1,0.01,0.01315,1
 GO:2001214,positive regulation of vasculogenesis,3,1,0.01,0.01315,1
 GO:0071805,potassium ion transmembrane transport,41,2,0.18,0.01381,1
-GO:0015882,L-ascorbic acid transmembrane transport,4,1,0.02,0.01749,1
-GO:0051930,regulation of sensory perception of pain,4,1,0.02,0.01749,1
-GO:0006334,nucleosome assembly,49,2,0.22,0.01938,1
-GO:0040029,regulation of gene expression; epigenetic,50,2,0.22,0.02013,1
-GO:0007130,synaptonemal complex assembly,5,1,0.02,0.02182,1
-GO:0045603,positive regulation of endothelial cell differentiation,5,1,0.02,0.02182,1
-GO:0007218,neuropeptide signaling pathway,6,1,0.03,0.02613,1
-GO:0003198,epithelial to mesenchymal transition involved in endocardial cushion formation,7,1,0.03,0.03042,1
-GO:0007616,long-term memory,8,1,0.04,0.03469,1
-GO:0044030,regulation of DNA methylation,8,1,0.04,0.03469,1
-GO:0019827,stem cell population maintenance,68,2,0.3,0.03565,1
-GO:0070734,histone H3-K27 methylation,9,1,0.04,0.03894,1
-GO:0045948,positive regulation of translational initiation,9,1,0.04,0.03894,1
-GO:0045471,response to ethanol,9,1,0.04,0.03894,1
-GO:1902902,negative regulation of autophagosome assembly,10,1,0.04,0.04318,1
-GO:0018027,peptidyl-lysine dimethylation,10,1,0.04,0.04318,1
-GO:0048599,oocyte development,10,1,0.04,0.04318,1
-GO:0006278,RNA-dependent DNA biosynthetic process,79,2,0.35,0.04681,1
-GO:0034220,ion transmembrane transport,358,5,1.58,0.04721,1
-GO:0015986,ATP synthesis coupled proton transport,14,1,0.06,0.05994,1
-GO:0009058,biosynthetic process,2316,12,10.19,0.06139,1
-GO:0051570,regulation of histone H3-K9 methylation,15,1,0.07,0.06409,1
-GO:0045104,intermediate filament cytoskeleton organization,16,1,0.07,0.06822,1
-GO:0051569,regulation of histone H3-K4 methylation,20,1,0.09,0.08456,1
-GO:0075713,establishment of integrated proviral latency,20,1,0.09,0.08456,1
-GO:0044826,viral genome integration into host DNA,20,1,0.09,0.08456,1
-GO:0098655,cation transmembrane transport,223,4,0.98,0.10100,1
-GO:0042255,ribosome assembly,28,1,0.12,0.11641,1
-GO:0008344,adult locomotory behavior,28,1,0.12,0.11641,1
-GO:0030036,actin cytoskeleton organization,275,3,1.21,0.11875,1
-GO:0050848,regulation of calcium-mediated signaling,32,1,0.14,0.13193,1
-GO:0019068,virion assembly,32,1,0.14,0.13193,1
-GO:0030032,lamellipodium assembly,33,1,0.15,0.13577,1
-GO:0015074,DNA integration,33,1,0.15,0.13577,1
-GO:0009566,fertilization,34,1,0.15,0.13959,1
-GO:0000122,negative regulation of transcription by RNA polymerase II,297,3,1.31,0.14052,1
-GO:0006412,translation,352,4,1.55,0.14597,1
+GO:0015882,L-ascorbic acid transmembrane transport,4,1,0.02,0.01750,1
+GO:0051930,regulation of sensory perception of pain,4,1,0.02,0.01750,1
+GO:0006334,nucleosome assembly,48,2,0.21,0.01865,1
+GO:0007130,synaptonemal complex assembly,5,1,0.02,0.02183,1
+GO:0045603,positive regulation of endothelial cell differentiation,5,1,0.02,0.02183,1
+GO:0040029,regulation of gene expression; epigenetic,53,2,0.23,0.02247,1
+GO:0007218,neuropeptide signaling pathway,6,1,0.03,0.02614,1
+GO:0003198,epithelial to mesenchymal transition involved in endocardial cushion formation,7,1,0.03,0.03043,1
+GO:0070734,histone H3-K27 methylation,8,1,0.04,0.03470,1
+GO:0007616,long-term memory,8,1,0.04,0.03470,1
+GO:0044030,regulation of DNA methylation,8,1,0.04,0.03470,1
+GO:0019827,stem cell population maintenance,68,2,0.3,0.03567,1
+GO:0045471,response to ethanol,9,1,0.04,0.03896,1
+GO:0048599,oocyte development,9,1,0.04,0.03896,1
+GO:1902902,negative regulation of autophagosome assembly,10,1,0.04,0.04319,1
+GO:0045948,positive regulation of translational initiation,10,1,0.04,0.04319,1
+GO:0018027,peptidyl-lysine dimethylation,10,1,0.04,0.04319,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,2,0.35,0.04683,1
+GO:0034220,ion transmembrane transport,361,5,1.59,0.04725,1
+GO:0051570,regulation of histone H3-K9 methylation,13,1,0.06,0.05580,1
+GO:0015986,ATP synthesis coupled proton transport,14,1,0.06,0.05996,1
+GO:0009058,biosynthetic process,2324,12,10.23,0.06152,1
+GO:0045104,intermediate filament cytoskeleton organization,16,1,0.07,0.06824,1
+GO:0051569,regulation of histone H3-K4 methylation,19,1,0.08,0.08052,1
+GO:0075713,establishment of integrated proviral latency,20,1,0.09,0.08458,1
+GO:0044826,viral genome integration into host DNA,20,1,0.09,0.08458,1
+GO:0098655,cation transmembrane transport,223,4,0.98,0.09365,1
+GO:0042255,ribosome assembly,28,1,0.12,0.11644,1
+GO:0030036,actin cytoskeleton organization,274,3,1.21,0.11787,1
+GO:0008344,adult locomotory behavior,29,1,0.13,0.12034,1
+GO:0050848,regulation of calcium-mediated signaling,32,1,0.14,0.13196,1
+GO:0019068,virion assembly,32,1,0.14,0.13196,1
+GO:0009566,fertilization,32,1,0.14,0.13196,1
+GO:0030032,lamellipodium assembly,33,1,0.15,0.13580,1
+GO:0015074,DNA integration,33,1,0.15,0.13580,1
+GO:0000122,negative regulation of transcription by RNA polymerase II,299,3,1.32,0.14265,1
+GO:0006412,translation,352,4,1.55,0.14890,1

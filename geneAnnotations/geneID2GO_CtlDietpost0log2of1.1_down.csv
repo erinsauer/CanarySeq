@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0007186,G protein-coupled receptor signaling pathway,222,81,50.53,1e-05,0.119
+GO:0035855,megakaryocyte development,14,10,3.19,0.00015,0.8926
+GO:0007166,cell surface receptor signaling pathway,786,207,178.91,0.00058,1
+GO:0018108,peptidyl-tyrosine phosphorylation,108,35,24.58,0.00116,1
+GO:0006954,inflammatory response,195,61,44.39,0.00172,1
+GO:0032956,regulation of actin cytoskeleton organization,134,39,30.5,0.00247,1
+GO:0010763,positive regulation of fibroblast migration,4,4,0.91,0.00268,1
+GO:0035176,social behavior,13,8,2.96,0.00299,1
+GO:0051898,negative regulation of protein kinase B signaling,24,12,5.46,0.00313,1
+GO:0007229,integrin-mediated signaling pathway,40,18,9.1,0.00314,1
+GO:0030514,negative regulation of BMP signaling pathway,22,11,5.01,0.00464,1
+GO:0042127,regulation of cell population proliferation,487,121,110.85,0.00470,1
+GO:0045737,positive regulation of cyclin-dependent protein serine/threonine kinase activity,9,6,2.05,0.00608,1
+GO:0007160,cell-matrix adhesion,65,25,14.8,0.00675,1
+GO:0001525,angiogenesis,159,53,36.19,0.00708,1
+GO:0006334,nucleosome assembly,48,22,10.93,0.00791,1
+GO:0002042,cell migration involved in sprouting angiogenesis,22,10,5.01,0.00837,1
+GO:0045717,negative regulation of fatty acid biosynthetic process,9,6,2.05,0.00839,1
+GO:0034113,heterotypic cell-cell adhesion,15,7,3.41,0.00840,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,5,1.59,0.00841,1
+GO:0010572,positive regulation of platelet activation,7,5,1.59,0.00841,1
+GO:0016358,dendrite development,57,16,12.97,0.00842,1
+GO:0071539,protein localization to centrosome,22,11,5.01,0.00957,1
+GO:0043536,positive regulation of blood vessel endothelial cell migration,26,12,5.92,0.01026,1
+GO:0045668,negative regulation of osteoblast differentiation,18,9,4.1,0.01031,1
+GO:0016310,phosphorylation,843,200,191.88,0.01036,1
+GO:0035264,multicellular organism growth,67,21,15.25,0.01080,1
+GO:0071380,cellular response to prostaglandin E stimulus,5,4,1.14,0.01095,1
+GO:0036158,outer dynein arm assembly,5,4,1.14,0.01095,1
+GO:0033627,cell adhesion mediated by integrin,23,8,5.24,0.01095,1
+GO:0009653,anatomical structure morphogenesis,773,196,175.95,0.01132,1
+GO:0043270,positive regulation of ion transport,201,55,45.75,0.01161,1
+GO:0051057,positive regulation of small GTPase mediated signal transduction,18,8,4.1,0.01174,1
+GO:0002827,positive regulation of T-helper 1 type immune response,5,4,1.14,0.01176,1
+GO:0045604,regulation of epidermal cell differentiation,20,7,4.55,0.01177,1
+GO:0097241,hematopoietic stem cell migration to bone marrow,3,3,0.68,0.01178,1
+GO:0035166,post-embryonic hemopoiesis,3,3,0.68,0.01178,1
+GO:0006930,substrate-dependent cell migration; cell extension,3,3,0.68,0.01178,1
+GO:0035655,interleukin-18-mediated signaling pathway,3,3,0.68,0.01178,1
+GO:0010745,negative regulation of macrophage derived foam cell differentiation,3,3,0.68,0.01178,1
+GO:0007602,phototransduction,3,3,0.68,0.01178,1
+GO:0090116,C-5 methylation of cytosine,3,3,0.68,0.01178,1
+GO:0036159,inner dynein arm assembly,3,3,0.68,0.01178,1
+GO:0055085,transmembrane transport,461,127,104.93,0.01213,1
+GO:0043409,negative regulation of MAPK cascade,57,15,12.97,0.01236,1
+GO:0006412,translation,352,91,80.12,0.01433,1
+GO:0048286,lung alveolus development,16,9,3.64,0.01440,1
+GO:0097009,energy homeostasis,13,7,2.96,0.01447,1
+GO:1900026,positive regulation of substrate adhesion-dependent cell spreading,25,11,5.69,0.01489,1
+GO:0030509,BMP signaling pathway,55,23,12.52,0.01531,1

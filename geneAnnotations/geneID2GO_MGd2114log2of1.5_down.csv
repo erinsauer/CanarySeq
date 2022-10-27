@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,3,0.15,0.00041,1
-GO:0007628,adult walking behavior,10,2,0.11,0.00495,1
-GO:0007528,neuromuscular junction development,14,2,0.15,0.00973,1
-GO:1902305,regulation of sodium ion transmembrane transport,14,2,0.15,0.01073,1
-GO:0030026,cellular manganese ion homeostasis,1,1,0.01,0.01086,1
-GO:1903568,negative regulation of protein localization to ciliary membrane,1,1,0.01,0.01086,1
-GO:1905892,negative regulation of cellular response to thapsigargin,1,1,0.01,0.01086,1
-GO:1905895,negative regulation of cellular response to tunicamycin,1,1,0.01,0.01086,1
-GO:0034959,endothelin maturation,1,1,0.01,0.01086,1
-GO:0030240,skeletal muscle thin filament assembly,1,1,0.01,0.01086,1
-GO:0030241,skeletal muscle myosin thick filament assembly,1,1,0.01,0.01086,1
-GO:0007525,somatic muscle development,1,1,0.01,0.01086,1
-GO:1902847,regulation of neuronal signal transduction,1,1,0.01,0.01086,1
-GO:0031448,positive regulation of fast-twitch skeletal muscle fiber contraction,1,1,0.01,0.01086,1
-GO:0046813,receptor-mediated virion attachment to host cell,1,1,0.01,0.01086,1
-GO:0097080,plasma membrane selenite transport,1,1,0.01,0.01086,1
-GO:1990036,calcium ion import into sarcoplasmic reticulum,1,1,0.01,0.01086,1
-GO:0007432,salivary gland boundary specification,1,1,0.01,0.01086,1
-GO:0007438,oenocyte development,1,1,0.01,0.01086,1
-GO:1903408,positive regulation of sodium:potassium-exchanging ATPase activity,1,1,0.01,0.01086,1
-GO:0019695,choline metabolic process,1,1,0.01,0.01086,1
-GO:0034337,RNA folding,1,1,0.01,0.01086,1
-GO:0035995,detection of muscle stretch,1,1,0.01,0.01086,1
-GO:0048769,sarcomerogenesis,1,1,0.01,0.01086,1
-GO:0003117,regulation of vasoconstriction by circulating norepinephrine,1,1,0.01,0.01086,1
-GO:0060385,axonogenesis involved in innervation,1,1,0.01,0.01086,1
-GO:0043163,cell envelope organization,1,1,0.01,0.01086,1
-GO:0050957,equilibrioception,1,1,0.01,0.01086,1
-GO:1902287,semaphorin-plexin signaling pathway involved in axon guidance,1,1,0.01,0.01086,1
-GO:0099703,induction of synaptic vesicle exocytosis by positive regulation of presynaptic cytosolic calcium ion concentration,1,1,0.01,0.01086,1
-GO:1990540,mitochondrial manganese ion transmembrane transport,1,1,0.01,0.01086,1
-GO:0097492,sympathetic neuron axon guidance,1,1,0.01,0.01086,1
-GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0.01,0.01086,1
-GO:0010816,calcitonin catabolic process,1,1,0.01,0.01086,1
-GO:0048536,spleen development,16,2,0.17,0.01265,1
-GO:0006952,defense response,430,4,4.67,0.01698,1
-GO:0006876,cellular cadmium ion homeostasis,2,1,0.02,0.02160,1
-GO:0060235,lens induction in camera-type eye,2,1,0.02,0.02160,1
-GO:1990079,cartilage homeostasis,2,1,0.02,0.02160,1
-GO:0019530,taurine metabolic process,2,1,0.02,0.02160,1
-GO:0032286,central nervous system myelin maintenance,2,1,0.02,0.02160,1
-GO:1902523,positive regulation of protein K63-linked ubiquitination,2,1,0.02,0.02160,1
-GO:0030916,otic vesicle formation,2,1,0.02,0.02160,1
-GO:0070574,cadmium ion transmembrane transport,2,1,0.02,0.02160,1
-GO:0009448,gamma-aminobutyric acid metabolic process,2,1,0.02,0.02160,1
-GO:1903281,positive regulation of calcium:sodium antiporter activity,2,1,0.02,0.02160,1
-GO:1903288,positive regulation of potassium ion import across plasma membrane,2,1,0.02,0.02160,1
-GO:1903278,positive regulation of sodium ion export across plasma membrane,2,1,0.02,0.02160,1
-GO:0018872,arsonoacetate metabolic process,2,1,0.02,0.02160,1
-GO:0042659,regulation of cell fate specification,2,1,0.02,0.02160,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,3,0.15,0.00038,1
+GO:0007628,adult walking behavior,10,2,0.11,0.00469,1
+GO:0007528,neuromuscular junction development,14,2,0.15,0.00923,1
+GO:1902305,regulation of sodium ion transmembrane transport,14,2,0.15,0.01044,1
+GO:0030026,cellular manganese ion homeostasis,1,1,0.01,0.01057,1
+GO:1903568,negative regulation of protein localization to ciliary membrane,1,1,0.01,0.01057,1
+GO:0034959,endothelin maturation,1,1,0.01,0.01057,1
+GO:0030240,skeletal muscle thin filament assembly,1,1,0.01,0.01057,1
+GO:0030241,skeletal muscle myosin thick filament assembly,1,1,0.01,0.01057,1
+GO:0007525,somatic muscle development,1,1,0.01,0.01057,1
+GO:1902847,regulation of neuronal signal transduction,1,1,0.01,0.01057,1
+GO:0031448,positive regulation of fast-twitch skeletal muscle fiber contraction,1,1,0.01,0.01057,1
+GO:0046813,receptor-mediated virion attachment to host cell,1,1,0.01,0.01057,1
+GO:0097080,plasma membrane selenite transport,1,1,0.01,0.01057,1
+GO:0007432,salivary gland boundary specification,1,1,0.01,0.01057,1
+GO:0007438,oenocyte development,1,1,0.01,0.01057,1
+GO:1903408,positive regulation of sodium:potassium-exchanging ATPase activity,1,1,0.01,0.01057,1
+GO:0019695,choline metabolic process,1,1,0.01,0.01057,1
+GO:0034337,RNA folding,1,1,0.01,0.01057,1
+GO:0035995,detection of muscle stretch,1,1,0.01,0.01057,1
+GO:0048769,sarcomerogenesis,1,1,0.01,0.01057,1
+GO:0003117,regulation of vasoconstriction by circulating norepinephrine,1,1,0.01,0.01057,1
+GO:0060385,axonogenesis involved in innervation,1,1,0.01,0.01057,1
+GO:0043163,cell envelope organization,1,1,0.01,0.01057,1
+GO:0050957,equilibrioception,1,1,0.01,0.01057,1
+GO:1902287,semaphorin-plexin signaling pathway involved in axon guidance,1,1,0.01,0.01057,1
+GO:0099703,induction of synaptic vesicle exocytosis by positive regulation of presynaptic cytosolic calcium ion concentration,1,1,0.01,0.01057,1
+GO:1990540,mitochondrial manganese ion transmembrane transport,1,1,0.01,0.01057,1
+GO:0097492,sympathetic neuron axon guidance,1,1,0.01,0.01057,1
+GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0.01,0.01057,1
+GO:0010816,calcitonin catabolic process,1,1,0.01,0.01057,1
+GO:0048536,spleen development,16,2,0.17,0.01201,1
+GO:0006952,defense response,434,4,4.59,0.01612,1
+GO:0061518,microglial cell proliferation,2,1,0.02,0.02102,1
+GO:0006876,cellular cadmium ion homeostasis,2,1,0.02,0.02102,1
+GO:0060235,lens induction in camera-type eye,2,1,0.02,0.02102,1
+GO:1990079,cartilage homeostasis,2,1,0.02,0.02102,1
+GO:0019530,taurine metabolic process,2,1,0.02,0.02102,1
+GO:1990036,calcium ion import into sarcoplasmic reticulum,2,1,0.02,0.02102,1
+GO:0032286,central nervous system myelin maintenance,2,1,0.02,0.02102,1
+GO:1902523,positive regulation of protein K63-linked ubiquitination,2,1,0.02,0.02102,1
+GO:0030916,otic vesicle formation,2,1,0.02,0.02102,1
+GO:0070574,cadmium ion transmembrane transport,2,1,0.02,0.02102,1
+GO:1903281,positive regulation of calcium:sodium antiporter activity,2,1,0.02,0.02102,1
+GO:1903288,positive regulation of potassium ion import across plasma membrane,2,1,0.02,0.02102,1
+GO:1903278,positive regulation of sodium ion export across plasma membrane,2,1,0.02,0.02102,1
+GO:0018872,arsonoacetate metabolic process,2,1,0.02,0.02102,1
+GO:0042659,regulation of cell fate specification,2,1,0.02,0.02102,1
+GO:0061757,leukocyte adhesion to arterial endothelial cell,2,1,0.02,0.02102,1
+GO:1900748,positive regulation of vascular endothelial growth factor signaling pathway,2,1,0.02,0.02102,1

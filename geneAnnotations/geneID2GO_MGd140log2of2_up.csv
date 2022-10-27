@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
 GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.03,1.7e-06,0.0101
 GO:0044205,'de novo' UMP biosynthetic process,4,3,0.03,1.7e-06,0.0101
-GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.05,1.4e-05,0.0556
-GO:0006541,glutamine metabolic process,8,3,0.06,2.3e-05,0.0686
-GO:0045087,innate immune response,170,9,1.3,4.8e-05,0.1145
-GO:0006954,inflammatory response,196,7,1.5,0.00014,0.2384
-GO:0045071,negative regulation of viral genome replication,14,3,0.11,0.00014,0.2384
-GO:0070106,interleukin-27-mediated signaling pathway,3,2,0.02,0.00017,0.2533
-GO:0055072,iron ion homeostasis,42,3,0.32,0.00390,1
-GO:0006952,defense response,430,16,3.28,0.00494,1
-GO:0006334,nucleosome assembly,49,3,0.37,0.00603,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.05,1.4e-05,0.0555
+GO:0006541,glutamine metabolic process,8,3,0.06,2.3e-05,0.0684
+GO:0045087,innate immune response,173,9,1.32,4.8e-05,0.1142
+GO:0006954,inflammatory response,195,7,1.49,0.00014,0.238
+GO:0045071,negative regulation of viral genome replication,14,3,0.11,0.00014,0.238
+GO:0070106,interleukin-27-mediated signaling pathway,3,2,0.02,0.00017,0.2529
+GO:0055072,iron ion homeostasis,43,3,0.33,0.00417,1
+GO:0006952,defense response,434,16,3.31,0.00495,1
+GO:0006334,nucleosome assembly,48,3,0.37,0.00569,1
 GO:0071897,DNA biosynthetic process,129,4,0.98,0.00624,1
 GO:0032571,response to vitamin K,1,1,0.01,0.00763,1
-GO:0048255,mRNA stabilization,27,3,0.21,0.00780,1
-GO:0030509,BMP signaling pathway,55,3,0.42,0.00831,1
-GO:0007186,G protein-coupled receptor signaling pathway,222,7,1.69,0.01101,1
-GO:0007586,digestion,22,2,0.17,0.01196,1
-GO:0051607,defense response to virus,91,5,0.69,0.01398,1
-GO:0060337,type I interferon signaling pathway,19,2,0.14,0.01495,1
-GO:0034165,positive regulation of toll-like receptor 9 signaling pathway,2,1,0.02,0.01520,1
-GO:0034157,positive regulation of toll-like receptor 7 signaling pathway,2,1,0.02,0.01520,1
-GO:0034158,toll-like receptor 8 signaling pathway,2,1,0.02,0.01520,1
-GO:0008343,adult feeding behavior,2,1,0.02,0.01520,1
-GO:0055129,L-proline biosynthetic process,2,1,0.02,0.01520,1
-GO:0032298,positive regulation of DNA-dependent DNA replication initiation,2,1,0.02,0.01520,1
-GO:0035634,response to stilbenoid,2,1,0.02,0.01520,1
-GO:0090310,negative regulation of DNA methylation-dependent heterochromatin assembly,2,1,0.02,0.01520,1
-GO:0051602,response to electrical stimulus,3,1,0.02,0.02272,1
+GO:0030509,BMP signaling pathway,55,3,0.42,0.00832,1
+GO:0048255,mRNA stabilization,28,3,0.21,0.00868,1
+GO:0007586,digestion,21,2,0.16,0.01093,1
+GO:0007186,G protein-coupled receptor signaling pathway,222,7,1.69,0.01102,1
+GO:0051607,defense response to virus,91,5,0.69,0.01399,1
+GO:0034165,positive regulation of toll-like receptor 9 signaling pathway,2,1,0.02,0.01521,1
+GO:0034157,positive regulation of toll-like receptor 7 signaling pathway,2,1,0.02,0.01521,1
+GO:0034158,toll-like receptor 8 signaling pathway,2,1,0.02,0.01521,1
+GO:0051602,response to electrical stimulus,2,1,0.02,0.01521,1
+GO:0008343,adult feeding behavior,2,1,0.02,0.01521,1
+GO:0055129,L-proline biosynthetic process,2,1,0.02,0.01521,1
+GO:0032298,positive regulation of DNA-dependent DNA replication initiation,2,1,0.02,0.01521,1
+GO:0035634,response to stilbenoid,2,1,0.02,0.01521,1
 GO:1902358,sulfate transmembrane transport,3,1,0.02,0.02272,1
 GO:0006640,monoacylglycerol biosynthetic process,3,1,0.02,0.02272,1
 GO:0070837,dehydroascorbic acid transport,3,1,0.02,0.02272,1
+GO:0090310,negative regulation of DNA methylation-dependent heterochromatin assembly,3,1,0.02,0.02272,1
 GO:0090209,negative regulation of triglyceride metabolic process,3,1,0.02,0.02272,1
-GO:2000623,negative regulation of nuclear-transcribed mRNA catabolic process; nonsense-mediated decay,4,1,0.03,0.03018,1
-GO:0034379,very-low-density lipoprotein particle assembly,4,1,0.03,0.03018,1
+GO:0060337,type I interferon signaling pathway,21,2,0.16,0.02968,1
 GO:0003383,apical constriction,4,1,0.03,0.03018,1
 GO:0019835,cytolysis,4,1,0.03,0.03018,1
 GO:0055089,fatty acid homeostasis,4,1,0.03,0.03018,1
-GO:0030214,hyaluronan catabolic process,4,1,0.03,0.03018,1
 GO:0015882,L-ascorbic acid transmembrane transport,4,1,0.03,0.03018,1
 GO:0006707,cholesterol catabolic process,4,1,0.03,0.03018,1
 GO:0016554,cytidine to uridine editing,4,1,0.03,0.03018,1
-GO:0009636,response to toxic substance,37,2,0.28,0.03207,1
-GO:0051321,meiotic cell cycle,60,4,0.46,0.03573,1
-GO:0006955,immune response,430,12,3.28,0.03595,1
-GO:1900227,positive regulation of NLRP3 inflammasome complex assembly,5,1,0.04,0.03758,1
-GO:1900246,positive regulation of RIG-I signaling pathway,5,1,0.04,0.03758,1
-GO:0033280,response to vitamin D,5,1,0.04,0.03758,1
-GO:0060259,regulation of feeding behavior,5,1,0.04,0.03758,1
-GO:0035336,long-chain fatty-acyl-CoA metabolic process,5,1,0.04,0.03758,1
-GO:2000553,positive regulation of T-helper 2 cell cytokine production,5,1,0.04,0.03758,1
+GO:0009636,response to toxic substance,36,2,0.27,0.03050,1
+GO:0051321,meiotic cell cycle,60,4,0.46,0.03574,1
+GO:0006955,immune response,434,12,3.31,0.03601,1
+GO:2000623,negative regulation of nuclear-transcribed mRNA catabolic process; nonsense-mediated decay,5,1,0.04,0.03759,1
+GO:1900227,positive regulation of NLRP3 inflammasome complex assembly,5,1,0.04,0.03759,1
+GO:0034379,very-low-density lipoprotein particle assembly,5,1,0.04,0.03759,1
+GO:1900246,positive regulation of RIG-I signaling pathway,5,1,0.04,0.03759,1
+GO:0033280,response to vitamin D,5,1,0.04,0.03759,1
+GO:0060259,regulation of feeding behavior,5,1,0.04,0.03759,1
+GO:0035336,long-chain fatty-acyl-CoA metabolic process,5,1,0.04,0.03759,1
+GO:2000553,positive regulation of T-helper 2 cell cytokine production,5,1,0.04,0.03759,1
+GO:0042572,retinol metabolic process,5,1,0.04,0.03759,1

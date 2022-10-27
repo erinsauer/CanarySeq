@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0006412,translation,352,257,172.49,3.3e-18,0
-GO:0032981,mitochondrial respiratory chain complex I assembly,41,34,20.09,6.9e-06,0.0411
-GO:0015074,DNA integration,33,28,16.17,2.0e-05,0.0795
-GO:0006278,RNA-dependent DNA biosynthetic process,79,51,38.71,3.0e-05,0.0811
-GO:0006310,DNA recombination,161,81,78.89,3.4e-05,0.0811
-GO:0006413,translational initiation,74,53,36.26,0.00017,0.3378
-GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,31,20.09,0.00038,0.6472
-GO:0075713,establishment of integrated proviral latency,20,17,9.8,0.00095,1
-GO:0044826,viral genome integration into host DNA,20,17,9.8,0.00095,1
-GO:1905515,non-motile cilium assembly,27,20,13.23,0.00160,1
-GO:0042274,ribosomal small subunit biogenesis,25,19,12.25,0.00161,1
-GO:0042273,ribosomal large subunit biogenesis,26,21,12.74,0.00328,1
-GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,14,8.33,0.00501,1
-GO:0002181,cytoplasmic translation,41,30,20.09,0.00514,1
-GO:0019827,stem cell population maintenance,68,37,33.32,0.00554,1
-GO:0043162,ubiquitin-dependent protein catabolic process via the multivesicular body sorting pathway,19,15,9.31,0.00753,1
-GO:0070979,protein K11-linked ubiquitination,21,16,10.29,0.01040,1
-GO:0006414,translational elongation,27,25,13.23,0.01360,1
-GO:0045116,protein neddylation,15,14,7.35,0.01372,1
-GO:0043928,exonucleolytic catabolism of deadenylated mRNA,6,6,2.94,0.01381,1
-GO:0006123,mitochondrial electron transport; cytochrome c to oxygen,6,6,2.94,0.01381,1
-GO:0000398,mRNA splicing; via spliceosome,140,85,68.6,0.01626,1
-GO:0075522,IRES-dependent viral translational initiation,9,8,4.41,0.01683,1
-GO:0042254,ribosome biogenesis,130,89,63.7,0.02272,1
-GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,11,6.86,0.02403,1
-GO:0016055,Wnt signaling pathway,143,68,70.07,0.02442,1
-GO:0046718,viral entry into host cell,50,30,24.5,0.02460,1
-GO:0032508,DNA duplex unwinding,37,22,18.13,0.02548,1
-GO:0006446,regulation of translational initiation,35,21,17.15,0.02806,1
-GO:0042255,ribosome assembly,28,19,13.72,0.02810,1
-GO:0051694,pointed-end actin filament capping,5,5,2.45,0.02821,1
-GO:0033615,mitochondrial proton-transporting ATP synthase complex assembly,5,5,2.45,0.02821,1
-GO:2000436,positive regulation of protein neddylation,5,5,2.45,0.02821,1
-GO:0042744,hydrogen peroxide catabolic process,5,5,2.45,0.02821,1
-GO:0044806,G-quadruplex DNA unwinding,5,5,2.45,0.02821,1
-GO:0045329,carnitine biosynthetic process,5,5,2.45,0.02821,1
-GO:0006122,mitochondrial electron transport; ubiquinol to cytochrome c,5,5,2.45,0.02821,1
-GO:0034101,erythrocyte homeostasis,76,37,37.24,0.02833,1
-GO:0007389,pattern specification process,100,45,49,0.02849,1
-GO:0071044,histone mRNA catabolic process,9,8,4.41,0.03090,1
-GO:0001682,tRNA 5'-leader removal,8,7,3.92,0.03093,1
-GO:0006289,nucleotide-excision repair,28,20,13.72,0.03187,1
-GO:0060271,cilium assembly,129,82,63.21,0.03240,1
-GO:0006260,DNA replication,127,62,62.23,0.03243,1
-GO:0070936,protein K48-linked ubiquitination,46,29,22.54,0.03852,1
-GO:1902774,late endosome to lysosome transport,14,11,6.86,0.03939,1
-GO:0006364,rRNA processing,85,55,41.65,0.04004,1
-GO:1902018,negative regulation of cilium assembly,10,8,4.9,0.04789,1
-GO:0035269,protein O-linked mannosylation,10,8,4.9,0.04789,1
-GO:0001778,plasma membrane repair,13,9,6.37,0.04794,1
+GO:0006412,translation,352,256,172.69,5.5e-19,0
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,34,20.11,7.1e-06,0.0422
+GO:0015074,DNA integration,33,28,16.19,2.0e-05,0.0793
+GO:0006278,RNA-dependent DNA biosynthetic process,79,51,38.76,3.1e-05,0.0833
+GO:0006310,DNA recombination,160,81,78.5,3.5e-05,0.0833
+GO:0006413,translational initiation,75,53,36.8,0.00030,0.595
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,31,20.11,0.00039,0.6631
+GO:0075713,establishment of integrated proviral latency,20,17,9.81,0.00097,1
+GO:0044826,viral genome integration into host DNA,20,17,9.81,0.00097,1
+GO:0042274,ribosomal small subunit biogenesis,24,18,11.77,0.00163,1
+GO:1905515,non-motile cilium assembly,28,20,13.74,0.00405,1
+GO:0042273,ribosomal large subunit biogenesis,29,23,14.23,0.00484,1
+GO:0006120,mitochondrial electron transport; NADH to ubiquinone,17,14,8.34,0.00507,1
+GO:0043162,ubiquitin-dependent protein catabolic process via the multivesicular body sorting pathway,19,15,9.32,0.00764,1
+GO:0019827,stem cell population maintenance,68,37,33.36,0.00887,1
+GO:0002181,cytoplasmic translation,42,29,20.61,0.00925,1
+GO:0070979,protein K11-linked ubiquitination,21,16,10.3,0.01055,1
+GO:0006414,translational elongation,27,25,13.25,0.01370,1
+GO:0045116,protein neddylation,15,14,7.36,0.01382,1
+GO:0043928,exonucleolytic catabolism of deadenylated mRNA,6,6,2.94,0.01391,1
+GO:0006123,mitochondrial electron transport; cytochrome c to oxygen,6,6,2.94,0.01391,1
+GO:0000398,mRNA splicing; via spliceosome,140,85,68.69,0.01661,1
+GO:0075522,IRES-dependent viral translational initiation,9,8,4.42,0.01698,1
+GO:0042254,ribosome biogenesis,132,90,64.76,0.02296,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,11,6.87,0.02427,1
+GO:0016055,Wnt signaling pathway,145,69,71.14,0.02467,1
+GO:0032508,DNA duplex unwinding,37,22,18.15,0.02582,1
+GO:0042255,ribosome assembly,28,19,13.74,0.02826,1
+GO:0006446,regulation of translational initiation,37,22,18.15,0.02831,1
+GO:0051694,pointed-end actin filament capping,5,5,2.45,0.02838,1
+GO:0033615,mitochondrial proton-transporting ATP synthase complex assembly,5,5,2.45,0.02838,1
+GO:2000436,positive regulation of protein neddylation,5,5,2.45,0.02838,1
+GO:0042744,hydrogen peroxide catabolic process,5,5,2.45,0.02838,1
+GO:0044806,G-quadruplex DNA unwinding,5,5,2.45,0.02838,1
+GO:0045329,carnitine biosynthetic process,5,5,2.45,0.02838,1
+GO:0006122,mitochondrial electron transport; ubiquinol to cytochrome c,5,5,2.45,0.02838,1
+GO:0034101,erythrocyte homeostasis,77,38,37.78,0.02848,1
+GO:0007389,pattern specification process,100,45,49.06,0.02866,1
+GO:0071044,histone mRNA catabolic process,9,8,4.42,0.03113,1
+GO:0033617,mitochondrial cytochrome c oxidase assembly,8,7,3.92,0.03116,1
+GO:0001682,tRNA 5'-leader removal,8,7,3.92,0.03116,1
+GO:0006289,nucleotide-excision repair,28,20,13.74,0.03221,1
+GO:0006260,DNA replication,129,62,63.29,0.03286,1
+GO:0060271,cilium assembly,130,82,63.78,0.03317,1
+GO:0046718,viral entry into host cell,51,30,25.02,0.03497,1
+GO:0070936,protein K48-linked ubiquitination,46,29,22.57,0.03919,1
+GO:1902774,late endosome to lysosome transport,14,11,6.87,0.03976,1
+GO:0006888,endoplasmic reticulum to Golgi vesicle-mediated transport,57,29,27.96,0.03997,1
+GO:0006364,rRNA processing,84,54,41.21,0.04076,1
+GO:0001778,plasma membrane repair,13,10,6.38,0.04822,1

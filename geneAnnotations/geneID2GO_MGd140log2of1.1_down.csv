@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0006412,translation,352,156,79.22,1.8e-28,0
-GO:0007186,G protein-coupled receptor signaling pathway,222,69,49.96,2.8e-05,0.1152
-GO:0033617,mitochondrial cytochrome c oxidase assembly,7,7,1.58,2.9e-05,0.1152
-GO:0042274,ribosomal small subunit biogenesis,25,14,5.63,4.6e-05,0.1371
-GO:0031295,T cell costimulation,9,8,2.03,0.00019,0.3974
-GO:0006278,RNA-dependent DNA biosynthetic process,79,23,17.78,0.00020,0.3974
-GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,19,9.23,0.00041,0.6983
-GO:0045060,negative thymic T cell selection,7,6,1.58,0.00073,1
-GO:0006310,DNA recombination,161,46,36.23,0.00085,1
-GO:0015074,DNA integration,33,16,7.43,0.00089,1
-GO:0002181,cytoplasmic translation,41,18,9.23,0.00118,1
-GO:0006364,rRNA processing,85,31,19.13,0.00261,1
-GO:0006996,organelle organization,1691,349,380.57,0.00288,1
-GO:0050852,T cell receptor signaling pathway,52,24,11.7,0.00397,1
-GO:0032981,mitochondrial respiratory chain complex I assembly,41,17,9.23,0.00503,1
-GO:0071805,potassium ion transmembrane transport,41,12,9.23,0.00601,1
-GO:0075713,establishment of integrated proviral latency,20,10,4.5,0.00634,1
-GO:0044826,viral genome integration into host DNA,20,10,4.5,0.00634,1
-GO:0006413,translational initiation,74,22,16.65,0.00886,1
-GO:0042744,hydrogen peroxide catabolic process,5,4,1.13,0.01049,1
-GO:0032703,negative regulation of interleukin-2 production,5,4,1.13,0.01049,1
-GO:0034101,erythrocyte homeostasis,76,18,17.1,0.01054,1
-GO:0044597,daunorubicin metabolic process,3,3,0.68,0.01138,1
-GO:0044598,doxorubicin metabolic process,3,3,0.68,0.01138,1
-GO:0070681,glutaminyl-tRNAGln biosynthesis via transamidation,3,3,0.68,0.01138,1
-GO:1902255,positive regulation of intrinsic apoptotic signaling pathway by p53 class mediator,3,3,0.68,0.01138,1
-GO:1901222,regulation of NIK/NF-kappaB signaling,41,8,9.23,0.01146,1
-GO:0050920,regulation of chemotaxis,59,12,13.28,0.01146,1
-GO:0030514,negative regulation of BMP signaling pathway,20,10,4.5,0.01453,1
-GO:0030488,tRNA methylation,15,10,3.38,0.01719,1
-GO:0042273,ribosomal large subunit biogenesis,26,12,5.85,0.01722,1
-GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,1.8,0.01736,1
-GO:0001682,tRNA 5'-leader removal,8,5,1.8,0.01736,1
-GO:0046718,viral entry into host cell,50,18,11.25,0.01946,1
-GO:0045454,cell redox homeostasis,17,8,3.83,0.02199,1
-GO:0035234,ectopic germ cell programmed cell death,6,4,1.35,0.02587,1
-GO:0050862,positive regulation of T cell receptor signaling pathway,6,4,1.35,0.02587,1
-GO:0007218,neuropeptide signaling pathway,6,4,1.35,0.02587,1
-GO:0045656,negative regulation of monocyte differentiation,6,4,1.35,0.02587,1
-GO:0006955,immune response,430,95,96.78,0.02617,1
-GO:0006749,glutathione metabolic process,35,12,7.88,0.02793,1
-GO:0070979,protein K11-linked ubiquitination,21,9,4.73,0.03002,1
-GO:0006665,sphingolipid metabolic process,67,20,15.08,0.03174,1
-GO:0014003,oligodendrocyte development,14,6,3.15,0.03191,1
-GO:0032543,mitochondrial translation,35,14,7.88,0.03307,1
-GO:0060271,cilium assembly,129,39,29.03,0.03654,1
-GO:0019827,stem cell population maintenance,68,19,15.3,0.03744,1
-GO:0070585,protein localization to mitochondrion,46,13,10.35,0.03782,1
-GO:0019433,triglyceride catabolic process,8,4,1.8,0.03785,1
-GO:0022417,protein maturation by protein folding,4,3,0.9,0.03786,1
+GO:0006412,translation,352,155,79.14,4.8e-29,0
+GO:0007186,G protein-coupled receptor signaling pathway,222,69,49.91,2.8e-05,0.1666
+GO:0042274,ribosomal small subunit biogenesis,24,14,5.4,4.6e-05,0.1825
+GO:0031295,T cell costimulation,9,8,2.02,0.00018,0.3967
+GO:0033617,mitochondrial cytochrome c oxidase assembly,8,7,1.8,0.00018,0.3967
+GO:0006278,RNA-dependent DNA biosynthetic process,79,23,17.76,0.00020,0.3967
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,19,9.22,0.00040,0.6801
+GO:0045060,negative thymic T cell selection,7,6,1.57,0.00072,1
+GO:0006310,DNA recombination,160,46,35.97,0.00084,1
+GO:0015074,DNA integration,33,16,7.42,0.00088,1
+GO:0006364,rRNA processing,84,31,18.89,0.00258,1
+GO:0002181,cytoplasmic translation,42,18,9.44,0.00277,1
+GO:0006996,organelle organization,1692,351,380.41,0.00284,1
+GO:0042273,ribosomal large subunit biogenesis,29,14,6.52,0.00394,1
+GO:0050852,T cell receptor signaling pathway,51,23,11.47,0.00395,1
+GO:0032981,mitochondrial respiratory chain complex I assembly,41,17,9.22,0.00497,1
+GO:0071805,potassium ion transmembrane transport,41,13,9.22,0.00594,1
+GO:0006413,translational initiation,75,22,16.86,0.00625,1
+GO:0075713,establishment of integrated proviral latency,20,10,4.5,0.00629,1
+GO:0044826,viral genome integration into host DNA,20,10,4.5,0.00629,1
+GO:0030514,negative regulation of BMP signaling pathway,22,11,4.95,0.00959,1
+GO:0042744,hydrogen peroxide catabolic process,5,4,1.12,0.01045,1
+GO:0032703,negative regulation of interleukin-2 production,5,4,1.12,0.01045,1
+GO:0034101,erythrocyte homeostasis,77,19,17.31,0.01048,1
+GO:0044597,daunorubicin metabolic process,3,3,0.67,0.01135,1
+GO:0044598,doxorubicin metabolic process,3,3,0.67,0.01135,1
+GO:0106035,protein maturation by [4Fe-4S] cluster transfer,3,3,0.67,0.01135,1
+GO:0070681,glutaminyl-tRNAGln biosynthesis via transamidation,3,3,0.67,0.01135,1
+GO:1902255,positive regulation of intrinsic apoptotic signaling pathway by p53 class mediator,3,3,0.67,0.01135,1
+GO:0050920,regulation of chemotaxis,59,12,13.27,0.01143,1
+GO:1901222,regulation of NIK/NF-kappaB signaling,39,7,8.77,0.01144,1
+GO:0046718,viral entry into host cell,51,18,11.47,0.01481,1
+GO:0030488,tRNA methylation,15,10,3.37,0.01712,1
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,1.8,0.01729,1
+GO:0001682,tRNA 5'-leader removal,8,5,1.8,0.01729,1
+GO:0035234,ectopic germ cell programmed cell death,6,4,1.35,0.02578,1
+GO:0061744,motor behavior,6,4,1.35,0.02578,1
+GO:0007218,neuropeptide signaling pathway,6,4,1.35,0.02578,1
+GO:0032691,negative regulation of interleukin-1 beta production,6,4,1.35,0.02578,1
+GO:0045656,negative regulation of monocyte differentiation,6,4,1.35,0.02578,1
+GO:0031929,TOR signaling,72,12,16.19,0.02619,1
+GO:0006955,immune response,434,94,97.58,0.02622,1
+GO:0070979,protein K11-linked ubiquitination,21,9,4.72,0.02983,1
+GO:0006665,sphingolipid metabolic process,67,20,15.06,0.03160,1
+GO:0045454,cell redox homeostasis,18,8,4.05,0.03176,1
+GO:0014003,oligodendrocyte development,14,6,3.15,0.03178,1
+GO:0032543,mitochondrial translation,35,14,7.87,0.03290,1
+GO:0007020,microtubule nucleation,14,7,3.15,0.03348,1
+GO:0060271,cilium assembly,130,40,29.23,0.03598,1
+GO:0019433,triglyceride catabolic process,8,4,1.8,0.03774,1

@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:0006952,defense response,430,33,10.91,0.00059,1
+GO:0006952,defense response,434,33,11.02,0.00059,1
 GO:0032696,negative regulation of interleukin-13 production,2,2,0.05,0.00064,1
-GO:0006954,inflammatory response,196,12,4.97,0.00149,1
-GO:0048731,system development,1383,42,35.1,0.00175,1
+GO:0006954,inflammatory response,195,12,4.95,0.00149,1
+GO:0048731,system development,1394,42,35.39,0.00176,1
 GO:1902358,sulfate transmembrane transport,3,2,0.08,0.00189,1
 GO:0030913,paranodal junction assembly,3,2,0.08,0.00189,1
 GO:0070106,interleukin-27-mediated signaling pathway,3,2,0.08,0.00189,1
 GO:0042450,arginine biosynthetic process via ornithine,4,2,0.1,0.00372,1
 GO:0016554,cytidine to uridine editing,4,2,0.1,0.00372,1
 GO:0045071,negative regulation of viral genome replication,14,3,0.36,0.00476,1
-GO:0033234,negative regulation of protein sumoylation,6,2,0.15,0.00898,1
-GO:0090026,positive regulation of monocyte chemotaxis,6,2,0.15,0.00898,1
-GO:0048255,mRNA stabilization,27,4,0.69,0.00978,1
-GO:0002829,negative regulation of type 2 immune response,7,2,0.18,0.01237,1
-GO:0040015,negative regulation of multicellular organism growth,7,2,0.18,0.01237,1
-GO:0006955,immune response,430,27,10.91,0.01603,1
-GO:0042742,defense response to bacterium,54,6,1.37,0.01678,1
-GO:0045429,positive regulation of nitric oxide biosynthetic process,9,2,0.23,0.02051,1
-GO:0140374,antiviral innate immune response,9,2,0.23,0.02051,1
-GO:0009653,anatomical structure morphogenesis,771,19,19.57,0.02109,1
-GO:0009615,response to virus,130,11,3.3,0.02506,1
-GO:0002521,leukocyte differentiation,235,7,5.96,0.02537,1
-GO:1990227,paranodal junction maintenance,1,1,0.03,0.02538,1
-GO:0002760,positive regulation of antimicrobial humoral response,1,1,0.03,0.02538,1
-GO:0000053,argininosuccinate metabolic process,1,1,0.03,0.02538,1
-GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0.03,0.02538,1
-GO:0048295,positive regulation of isotype switching to IgE isotypes,1,1,0.03,0.02538,1
-GO:0071641,negative regulation of macrophage inflammatory protein 1 alpha production,1,1,0.03,0.02538,1
-GO:0071644,negative regulation of chemokine (C-C motif) ligand 4 production,1,1,0.03,0.02538,1
-GO:0032423,regulation of mismatch repair,1,1,0.03,0.02538,1
-GO:0055113,epiboly involved in gastrulation with mouth forming second,1,1,0.03,0.02538,1
-GO:0009114,hypoxanthine catabolic process,1,1,0.03,0.02538,1
-GO:0009115,xanthine catabolic process,1,1,0.03,0.02538,1
-GO:0070512,positive regulation of histone H4-K20 methylation,1,1,0.03,0.02538,1
-GO:1990092,calcium-dependent self proteolysis,1,1,0.03,0.02538,1
-GO:0010248,establishment or maintenance of transmembrane electrochemical gradient,1,1,0.03,0.02538,1
-GO:0048597,post-embryonic camera-type eye morphogenesis,1,1,0.03,0.02538,1
-GO:0006148,inosine catabolic process,1,1,0.03,0.02538,1
-GO:0006149,deoxyinosine catabolic process,1,1,0.03,0.02538,1
-GO:1905892,negative regulation of cellular response to thapsigargin,1,1,0.03,0.02538,1
-GO:1905895,negative regulation of cellular response to tunicamycin,1,1,0.03,0.02538,1
-GO:0010734,negative regulation of protein glutathionylation,1,1,0.03,0.02538,1
-GO:0060054,positive regulation of epithelial cell proliferation involved in wound healing,1,1,0.03,0.02538,1
-GO:0048014,Tie signaling pathway,1,1,0.03,0.02538,1
-GO:0140214,positive regulation of long-chain fatty acid import into cell,1,1,0.03,0.02538,1
-GO:0032714,negative regulation of interleukin-5 production,1,1,0.03,0.02538,1
-GO:0046380,N-acetylneuraminate biosynthetic process,1,1,0.03,0.02538,1
-GO:0150102,negative regulation of monocyte activation,1,1,0.03,0.02538,1
-GO:1902847,regulation of neuronal signal transduction,1,1,0.03,0.02538,1
-GO:0002352,B cell negative selection,1,1,0.03,0.02538,1
+GO:0033234,negative regulation of protein sumoylation,6,2,0.15,0.00899,1
+GO:0090026,positive regulation of monocyte chemotaxis,6,2,0.15,0.00899,1
+GO:0032755,positive regulation of interleukin-6 production,35,4,0.89,0.01137,1
+GO:0048255,mRNA stabilization,28,4,0.71,0.01141,1
+GO:0002829,negative regulation of type 2 immune response,7,2,0.18,0.01238,1
+GO:0040015,negative regulation of multicellular organism growth,7,2,0.18,0.01238,1
+GO:0006955,immune response,434,28,11.02,0.01573,1
+GO:0042742,defense response to bacterium,54,6,1.37,0.01895,1
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,2,0.23,0.02052,1
+GO:0140374,antiviral innate immune response,9,2,0.23,0.02052,1
+GO:0009653,anatomical structure morphogenesis,773,20,19.63,0.02086,1
+GO:0009615,response to virus,130,11,3.3,0.02259,1
+GO:0006508,proteolysis,739,18,18.76,0.02329,1
+GO:0034331,cell junction maintenance,7,2,0.18,0.02526,1
+GO:0002521,leukocyte differentiation,237,7,6.02,0.02539,1
+GO:1990227,paranodal junction maintenance,1,1,0.03,0.02539,1
+GO:0002760,positive regulation of antimicrobial humoral response,1,1,0.03,0.02539,1
+GO:0000053,argininosuccinate metabolic process,1,1,0.03,0.02539,1
+GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0.03,0.02539,1
+GO:0048295,positive regulation of isotype switching to IgE isotypes,1,1,0.03,0.02539,1
+GO:0071641,negative regulation of macrophage inflammatory protein 1 alpha production,1,1,0.03,0.02539,1
+GO:0071644,negative regulation of chemokine (C-C motif) ligand 4 production,1,1,0.03,0.02539,1
+GO:0032423,regulation of mismatch repair,1,1,0.03,0.02539,1
+GO:0055113,epiboly involved in gastrulation with mouth forming second,1,1,0.03,0.02539,1
+GO:0009114,hypoxanthine catabolic process,1,1,0.03,0.02539,1
+GO:0009115,xanthine catabolic process,1,1,0.03,0.02539,1
+GO:0070512,positive regulation of histone H4-K20 methylation,1,1,0.03,0.02539,1
+GO:1990092,calcium-dependent self proteolysis,1,1,0.03,0.02539,1
+GO:0010248,establishment or maintenance of transmembrane electrochemical gradient,1,1,0.03,0.02539,1
+GO:0048597,post-embryonic camera-type eye morphogenesis,1,1,0.03,0.02539,1
+GO:0006148,inosine catabolic process,1,1,0.03,0.02539,1
+GO:0006149,deoxyinosine catabolic process,1,1,0.03,0.02539,1
+GO:0010734,negative regulation of protein glutathionylation,1,1,0.03,0.02539,1
+GO:0060054,positive regulation of epithelial cell proliferation involved in wound healing,1,1,0.03,0.02539,1
+GO:0048014,Tie signaling pathway,1,1,0.03,0.02539,1
+GO:0140214,positive regulation of long-chain fatty acid import into cell,1,1,0.03,0.02539,1
+GO:0032714,negative regulation of interleukin-5 production,1,1,0.03,0.02539,1
+GO:0046380,N-acetylneuraminate biosynthetic process,1,1,0.03,0.02539,1
+GO:0150102,negative regulation of monocyte activation,1,1,0.03,0.02539,1
+GO:1902847,regulation of neuronal signal transduction,1,1,0.03,0.02539,1

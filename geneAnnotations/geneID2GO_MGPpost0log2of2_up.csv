@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:0009653,anatomical structure morphogenesis,771,8,2.94,0.00037,1
-GO:0097155,fasciculation of sensory neuron axon,1,1,0,0.00381,1
-GO:1902847,regulation of neuronal signal transduction,1,1,0,0.00381,1
-GO:0055113,epiboly involved in gastrulation with mouth forming second,1,1,0,0.00381,1
-GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0,0.00381,1
-GO:0150102,negative regulation of monocyte activation,1,1,0,0.00381,1
-GO:1905892,negative regulation of cellular response to thapsigargin,1,1,0,0.00381,1
-GO:1905895,negative regulation of cellular response to tunicamycin,1,1,0,0.00381,1
-GO:0048731,system development,1383,9,5.28,0.00534,1
+GO:0009653,anatomical structure morphogenesis,773,8,2.95,0.00037,1
+GO:0150102,negative regulation of monocyte activation,1,1,0,0.00382,1
+GO:1902998,positive regulation of neurofibrillary tangle assembly,1,1,0,0.00382,1
+GO:0055113,epiboly involved in gastrulation with mouth forming second,1,1,0,0.00382,1
+GO:1902847,regulation of neuronal signal transduction,1,1,0,0.00382,1
+GO:0097155,fasciculation of sensory neuron axon,1,1,0,0.00382,1
+GO:0048731,system development,1394,9,5.32,0.00536,1
+GO:1902949,positive regulation of tau-protein kinase activity,2,1,0.01,0.00762,1
+GO:0060971,embryonic heart tube left/right pattern formation,2,1,0.01,0.00762,1
 GO:0007271,synaptic transmission; cholinergic,2,1,0.01,0.00762,1
+GO:0051602,response to electrical stimulus,2,1,0.01,0.00762,1
 GO:1904237,positive regulation of substrate-dependent cell migration; cell attachment to substrate,2,1,0.01,0.00762,1
+GO:0061518,microglial cell proliferation,2,1,0.01,0.00762,1
 GO:1901166,neural crest cell migration involved in autonomic nervous system development,2,1,0.01,0.00762,1
 GO:0071907,determination of digestive tract left/right asymmetry,2,1,0.01,0.00762,1
+GO:0048842,positive regulation of axon extension involved in axon guidance,2,1,0.01,0.00762,1
 GO:0032298,positive regulation of DNA-dependent DNA replication initiation,2,1,0.01,0.00762,1
-GO:1902949,positive regulation of tau-protein kinase activity,2,1,0.01,0.00762,1
 GO:0031133,regulation of axon diameter,2,1,0.01,0.00762,1
 GO:0032286,central nervous system myelin maintenance,2,1,0.01,0.00762,1
-GO:0030200,heparan sulfate proteoglycan catabolic process,2,1,0.01,0.00762,1
 GO:0007161,calcium-independent cell-matrix adhesion,2,1,0.01,0.00762,1
-GO:0060971,embryonic heart tube left/right pattern formation,2,1,0.01,0.00762,1
-GO:0048842,positive regulation of axon extension involved in axon guidance,2,1,0.01,0.00762,1
-GO:0051602,response to electrical stimulus,3,1,0.01,0.01140,1
-GO:0010961,cellular magnesium ion homeostasis,3,1,0.01,0.01140,1
-GO:0061740,protein targeting to lysosome involved in chaperone-mediated autophagy,3,1,0.01,0.01140,1
-GO:0061518,microglial cell proliferation,3,1,0.01,0.01140,1
-GO:0071635,negative regulation of transforming growth factor beta production,4,1,0.02,0.01517,1
-GO:0003383,apical constriction,4,1,0.02,0.01517,1
-GO:1905907,negative regulation of amyloid fibril formation,4,1,0.02,0.01517,1
-GO:0095500,acetylcholine receptor signaling pathway,4,1,0.02,0.01517,1
-GO:1905606,regulation of presynapse assembly,5,1,0.02,0.01893,1
-GO:0042074,cell migration involved in gastrulation,6,1,0.02,0.02268,1
-GO:0018149,peptide cross-linking,6,1,0.02,0.02268,1
-GO:1902430,negative regulation of amyloid-beta formation,6,1,0.02,0.02268,1
-GO:1900221,regulation of amyloid-beta clearance,7,1,0.03,0.02641,1
-GO:0045773,positive regulation of axon extension,10,2,0.04,0.02899,1
-GO:0001774,microglial cell activation,8,1,0.03,0.03013,1
-GO:0006027,glycosaminoglycan catabolic process,8,1,0.03,0.03013,1
-GO:0045471,response to ethanol,9,1,0.03,0.03383,1
-GO:0045429,positive regulation of nitric oxide biosynthetic process,9,1,0.03,0.03383,1
-GO:0031453,positive regulation of heterochromatin assembly,9,1,0.03,0.03383,1
-GO:0035094,response to nicotine,9,1,0.03,0.03383,1
-GO:0031100,animal organ regeneration,9,1,0.03,0.03383,1
-GO:0032355,response to estradiol,9,1,0.03,0.03383,1
-GO:0090200,positive regulation of release of cytochrome c from mitochondria,9,1,0.03,0.03383,1
-GO:0001662,behavioral fear response,9,1,0.03,0.03383,1
-GO:0006952,defense response,430,4,1.64,0.03541,1
-GO:0006278,RNA-dependent DNA biosynthetic process,79,2,0.3,0.03602,1
-GO:0051788,response to misfolded protein,11,1,0.04,0.04120,1
-GO:0048741,skeletal muscle fiber development,11,1,0.04,0.04120,1
-GO:0070098,chemokine-mediated signaling pathway,12,1,0.05,0.04486,1
+GO:1905907,negative regulation of amyloid fibril formation,3,1,0.01,0.01141,1
+GO:0061740,protein targeting to lysosome involved in chaperone-mediated autophagy,3,1,0.01,0.01141,1
+GO:0010961,cellular magnesium ion homeostasis,3,1,0.01,0.01141,1
+GO:0003383,apical constriction,4,1,0.02,0.01518,1
+GO:0071635,negative regulation of transforming growth factor beta production,4,1,0.02,0.01518,1
+GO:0095500,acetylcholine receptor signaling pathway,4,1,0.02,0.01518,1
+GO:0030200,heparan sulfate proteoglycan catabolic process,4,1,0.02,0.01518,1
+GO:1905606,regulation of presynapse assembly,5,1,0.02,0.01894,1
+GO:1902430,negative regulation of amyloid-beta formation,6,1,0.02,0.02269,1
+GO:0042074,cell migration involved in gastrulation,6,1,0.02,0.02269,1
+GO:0018149,peptide cross-linking,6,1,0.02,0.02269,1
+GO:1900221,regulation of amyloid-beta clearance,7,1,0.03,0.02642,1
+GO:0045773,positive regulation of axon extension,10,2,0.04,0.02900,1
+GO:0001774,microglial cell activation,8,1,0.03,0.03014,1
+GO:0090200,positive regulation of release of cytochrome c from mitochondria,9,1,0.03,0.03384,1
+GO:0001662,behavioral fear response,9,1,0.03,0.03384,1
+GO:0031453,positive regulation of heterochromatin assembly,9,1,0.03,0.03384,1
+GO:0035094,response to nicotine,9,1,0.03,0.03384,1
+GO:0032355,response to estradiol,9,1,0.03,0.03384,1
+GO:0045471,response to ethanol,9,1,0.03,0.03384,1
+GO:0045429,positive regulation of nitric oxide biosynthetic process,9,1,0.03,0.03384,1
+GO:0031100,animal organ regeneration,9,1,0.03,0.03384,1
+GO:0006952,defense response,434,4,1.66,0.03544,1
+GO:0006278,RNA-dependent DNA biosynthetic process,79,2,0.3,0.03604,1
+GO:0051788,response to misfolded protein,11,1,0.04,0.04121,1
+GO:0048741,skeletal muscle fiber development,11,1,0.04,0.04121,1
+GO:0006027,glycosaminoglycan catabolic process,11,1,0.04,0.04121,1
+GO:0070098,chemokine-mediated signaling pathway,12,1,0.05,0.04487,1
+GO:0033622,integrin activation,12,1,0.05,0.04487,1
+GO:1904262,negative regulation of TORC1 signaling,13,1,0.05,0.04853,1
