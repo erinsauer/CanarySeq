@@ -1,0 +1,284 @@
+---
+title: "TopGO Analysis"
+author: "Carson Stacy"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r required.pkgs}
+# BiocManager::install("biomaRt")
+library(tidyverse)
+library(topGO)
+library(biomaRt)
+library(here)
+```
+
+```{r}
+## Update these
+
+# load in data (here edgeR outputs) as .csv files
+MGDietpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/MGDietpost0.csv")
+CtlDietpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/CtlDietpost0.csv")
+
+# create a named list of all of the different datasets that need analyzed.
+contrasts <- list(
+  MGDietpost0 = MGDietpost0,
+  CtlDietpost0 = CtlDietpost0
+)
+```
+
+```{r}
+# get biomart ensembl dataset for scanaria (has most GO terms)
+mart <- if(exists('mart') == TRUE){
+  mart
+} else {
+  useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
+}
+```
+
+```{r}
+# loop through each dataset
+for(i in 1:length(contrasts)) {
+  # get names of genes for which to get annotations
+  transcript_ids <- contrasts[i][[1]][1] #names of all genes in edgeR output
+  
+  res <- getBM(attributes = c('ensembl_transcript_id',
+                            'ensembl_peptide_id',
+                            'ensembl_gene_id', 
+                            'uniprot_gn_symbol',
+                            'wikigene_name',
+                            'entrezgene_id',
+                            'external_gene_name',
+                            'go_id',
+                            'description'
+                            ),
+             # filters = 'ensembl_transcript_id', 
+             values = transcript_ids,
+             mart = mart)
+  
+  # changing format of the output for subsequent analysis
+  # getting GO terms grouped to gene names
+  res_min <- res %>% 
+    mutate(wikigene_name = ifelse(wikigene_name %in% "", 
+                                  external_gene_name, 
+                                  wikigene_name))%>% # get gene names
+    group_by(ensembl_gene_id) %>% # I think I need to change this...
+    mutate(GOterms = paste0(go_id, collapse = ",")) %>%
+    slice_head(n=1) %>% # get only one row per gene
+    ungroup()
+  
+  # tidy up data formatting
+  res_min <- res_min %>%
+    mutate(GOterms = gsub("^,+|,+$|(,)+", "\\1", GOterms, perl=TRUE)) %>%  # tidy up the extra ;;; in Go terms
+    mutate_all(na_if,"")
+  
+  # combine different nomenclature types
+  geneID2GO_combine_names <- res_min[,c(5,7,10)] %>%
+    mutate(...1 = ifelse(is.na(res_min$wikigene_name), res_min$external_gene_name, res_min$wikigene_name)) %>%
+    dplyr::select(-c(wikigene_name, external_gene_name))
+  
+  # merge the data from BioMart and our input genes
+  geneID_names <- left_join(contrasts[i][[1]][1], geneID2GO_combine_names, by = "...1")
+  colnames(geneID_names)[1] <- "seq_name"
+  
+  # build the table of original GO terms with gene IDs (weird format needed)
+  geneID2GO_build_BM <- tibble(
+                            geneID_names$seq_name,
+                            "\t",
+                            geneID_names$GOterms
+                            )
+  # give appropriate column names
+  colnames(geneID2GO_build_BM) <- c("seq_name", "\t", "go_i_ds")
+  
+  # load in Blast2GO results
+  Blast2GO <- read_delim("~/Desktop/canary/newGOterms_nomatchDEgenes.tsv", 
+      delim = "\t", escape_double = FALSE, 
+      trim_ws = TRUE) %>%
+    janitor::clean_names() %>%
+    dplyr::select(seq_name, go_i_ds) %>%
+  #change formatting of the GO term seperators to ,
+    dplyr::mutate(go_i_ds = str_replace_all(go_i_ds, "; ", ",")) %>%
+    dplyr::mutate(go_i_ds = str_replace_all(go_i_ds, "[PFC]:", ""))
+  
+  combinedGOterms <- left_join(geneID2GO_build_BM, Blast2GO, by = "seq_name")
+  
+  # now condense the two go_i_ds columns into single column of GO terms.
+  combinedGOterms <- 
+    tidyr::unite(combinedGOterms,
+                 GOterms,
+                 go_i_ds.x:go_i_ds.y, 
+                   na.rm = TRUE, remove = FALSE,
+                   sep = ",")
+  geneID2GO_build_BM <- tibble(
+                          # canary_annotations$geneID_ncbi,
+                          seq_name = combinedGOterms$seq_name,
+                          "\t",
+                          GOterms = combinedGOterms$GOterms
+                          )
+  
+  # write out the geneID2GO_BM.map file
+  write.table(geneID2GO_build_BM, file=here("geneID2GO_BM.map"),
+              quote = F, row.names = F, col.names = F)
+  save(geneID2GO_build_BM, 
+       file = paste( "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_", names(contrasts)[i], ".RData", sep= ""))
+  
+  # read in the mappings with readMappings from topGO
+  canary_geneID2GO_BM <- topGO::readMappings(file = here("geneid2GO_BM.map"))
+  
+  # save these mappings
+  save(canary_geneID2GO_BM, file = paste( "~/Documents/GitHub/CanarySeq/geneAnnotations/canary_geneID2GO_BM_", names(contrasts)[i], ".RData", sep= ""))
+  
+  
+  #load in canary geneID2GO map
+  load(file = paste( "~/Documents/GitHub/CanarySeq/geneAnnotations/canary_geneID2GO_BM_", names(contrasts)[i], ".RData", sep= ""))
+  
+  # Numeric ID values (in edgeR output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
+  matches <- which(toupper(names(canary_geneID2GO_BM)) %in% contrasts[i][[1]][[1]])
+            # these names came from `edgeR diff expression.R` file
+  
+  
+  # used unique because there are some duplicates in output. (per isoform)
+  genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
+  
+  
+  # assign desired fold change cutoff value (will be log2 tranformed in script)
+  j = 1.5
+
+  DEgenes_up <- filter(as.data.frame(contrasts[[i]]), logFC > log2(j)) %>% pull(`...1`)
+  DEgenes_down <- filter(contrasts[[i]], logFC < -log2(j)) %>% pull(`...1`)
+    
+  # genes names with GO terms and DE.
+  DEgeneswithGO_up <- which(DEgenes_up %in% genesMatched)
+  DEgeneswithGO_down <- which(DEgenes_down %in% genesMatched)
+  
+  # select only genes that are DE and have GO terms
+  DEgenesGO_up <- DEgenes_up[DEgeneswithGO_up]
+  DEgenesGO_down <- DEgenes_down[DEgeneswithGO_down]
+   
+  #first, let's subset our canary geneIDtoGO to just these genes.
+  canary_geneID2GO_BM_DE_up <-
+    canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenesGO_up)]
+    
+  names(canary_geneID2GO_BM_DE_up)[!(DEgenesGO_up %in% names(canary_geneID2GO_BM_DE_up))]
+  
+  canary_geneID2GO_BM_DE_down <-
+    canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenesGO_down)]
+    
+  names(canary_geneID2GO_BM_DE_down)[!(DEgenesGO_down %in% names(canary_geneID2GO_BM_DE_down))]
+    
+    
+  #Let me also get my full edgeR gene list.
+  canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% genesMatched)]
+
+    
+  # weird formatting creating the geneList for topGO. this code seemed to work
+  all_genes_up <- factor(as.integer(toupper(contrasts[i][[1]][[1]]) %in% DEgenesGO_up)) # create 0 1 factors.
+    names(all_genes_up) <- toupper(contrasts[i][[1]][[1]]) # add gene names
+    
+  all_genes_down <- factor(as.integer(toupper(contrasts[i][[1]][[1]]) %in% DEgenesGO_down)) # create 0 1 factors.
+  names(all_genes_down) <- toupper(contrasts[i][[1]][[1]]) # add gene names
+    
+    
+  GOdata_up=new('topGOdata', 
+         ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         allGenes = all_genes_up, # all 10188 genes that are in MGpost0 data from edgeR. 
+                                  # factor=1 for those that are DE.
+         annot = annFUN.gene2GO, # annotation function for custom annotation
+# I am thinking about switching this for one filtered to just edgeR genes:
+         gene2GO = canary_geneID2GO_BM_edgeR # annotation db from BiomaRt.
+
+           )
+    
+  GOdata_down=new('topGOdata', 
+         ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         allGenes = all_genes_down, # all 10188 genes that are in MGpost0 data from edgeR. 
+                                    # factor=1 for those that are DE.
+         annot = annFUN.gene2GO, # annotation function for custom annotation
+# I am thinking about switching this for one filtered to just edgeR genes:
+         gene2GO = canary_geneID2GO_BM_edgeR # annotation db from BiomaRt.
+
+           )
+    
+  #analysis
+  # define test using the weight01 algorithm (default) with fisher
+  weight_fisher_result_up=runTest(GOdata_up, algorithm='weight01', statistic='fisher') 
+  weight_fisher_result_down=runTest(GOdata_down, algorithm='weight01', statistic='fisher')
+     
+  # generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
+  allGO_up=usedGO(GOdata_up)
+  all_res_up=GenTable(GOdata_up, 
+                      weightFisher=weight_fisher_result_up, 
+                      orderBy='weightFisher', 
+                      topNodes=length(allGO_up), 
+                      numChar = 200)
+    
+    allGO_down=usedGO(GOdata_down)
+    all_res_down=GenTable(GOdata_down, 
+                          weightFisher=weight_fisher_result_down, 
+                          orderBy='weightFisher', 
+                          topNodes=length(allGO_down), 
+                          numChar = 200)
+    
+    #performing BH correction on our p values
+    p.adj_up=round(p.adjust(all_res_up$weightFisher,method="BH"),digits = 4)
+    p.adj_down=round(p.adjust(all_res_down$weightFisher,method="BH"),digits = 4)
+     
+    # create the file with all the statistics from GO analysis
+    all_res_final_up=cbind(all_res_up,p.adj_up)
+    all_res_final_up=all_res_final_up[order(all_res_final_up$p.adj),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+    all_res_final_down=cbind(all_res_down,p.adj_down)
+    all_res_final_down=all_res_final_down[order(all_res_final_down$p.adj),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+     
+    #get list of significant GO before multiple testing correction
+    results.table.p_up= all_res_final_up[which(as.numeric(all_res_final_up$weightFisher)<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+    results.table.p_down= all_res_final_down[which(as.numeric(all_res_final_down$weightFisher)<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+    #get list of significant GO after multiple testing correction
+    results.table.bh_up=all_res_final_up[which(all_res_final_up$p.adj<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+    results.table.bh_down=all_res_final_down[which(all_res_final_down$p.adj<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+     
+    #save first top 50 ontolgies sorted by adjusted pvalues
+    write.table(all_res_final_up[1:50,],
+                  file = paste(
+                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_",
+                    names(contrasts)[i], "log2of", as.character(j), "_up.csv", sep= ""),
+                  # "~/Desktop/canary/summary_topGO_analysis.csv",
+                  sep=",",
+                  quote=FALSE,
+                  row.names=FALSE)
+
+    write.table(all_res_final_down[1:50,],
+                  file = paste(
+                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_",
+                    names(contrasts)[i], "log2of", as.character(j), "_down.csv", sep= ""),
+                  # "~/Desktop/canary/summary_topGO_analysis.csv",
+                  sep=",",
+                  quote=FALSE,
+                  row.names=FALSE)
+     
+    
+    
+    
+    
+    # PLOT the GO hierarchy plot: the enriched GO terms are colored in yellow/red according to significance level
+    # pdf(file='~/Desktop/canary/topGOPlot_fullnames.pdf', height=12, width=12, paper='special', pointsize=18)
+    # showSigOfNodes(GOdata_down, score(weight_fisher_result_up), useInfo = "none", sigForAll=FALSE, firstSigNodes=2,.NO.CHAR=50)
+    # dev.off()
+  
+}
+```
+

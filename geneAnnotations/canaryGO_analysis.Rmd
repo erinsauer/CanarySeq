@@ -49,11 +49,11 @@ contrasts <- list(
   # MGd140 = MGd140,
   # MGPpost0 = MGPpost0,
   # MGd2114 = MGd2114,
-  # Diet0 = Diet0,
+  Diet0 = Diet0#,
   # MGDietpost0 = MGDietpost0,
-  # CtlDietpost0 = CtlDietpost0,
-  CtlLpost0 = CtlLpost0,
-  CtlPpost0 = CtlPpost0
+  # CtlDietpost0 = CtlDietpost0#,
+  # CtlLpost0 = CtlLpost0,
+  # CtlPpost0 = CtlPpost0
 )
 ```
 
