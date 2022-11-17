@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:0045071,negative regulation of viral genome replication,14,3,0.09,8.1e-05,0.7153
-GO:0070106,interleukin-27-mediated signaling pathway,3,2,0.02,0.00012,0.7153
-GO:0048255,mRNA stabilization,27,3,0.17,0.00534,1
-GO:0051607,defense response to virus,91,5,0.57,0.00811,1
-GO:0060337,type I interferon signaling pathway,19,2,0.12,0.01232,1
-GO:0009448,gamma-aminobutyric acid metabolic process,2,1,0.01,0.01258,1
-GO:0034165,positive regulation of toll-like receptor 9 signaling pathway,2,1,0.01,0.01258,1
-GO:0034157,positive regulation of toll-like receptor 7 signaling pathway,2,1,0.01,0.01258,1
-GO:0034158,toll-like receptor 8 signaling pathway,2,1,0.01,0.01258,1
-GO:0035634,response to stilbenoid,2,1,0.01,0.01258,1
-GO:0019530,taurine metabolic process,2,1,0.01,0.01258,1
-GO:0090310,negative regulation of DNA methylation-dependent heterochromatin assembly,2,1,0.01,0.01258,1
-GO:0090209,negative regulation of triglyceride metabolic process,3,1,0.02,0.01881,1
-GO:0070837,dehydroascorbic acid transport,3,1,0.02,0.01881,1
-GO:1902358,sulfate transmembrane transport,3,1,0.02,0.01881,1
-GO:0006566,threonine metabolic process,3,1,0.02,0.01881,1
-GO:2000623,negative regulation of nuclear-transcribed mRNA catabolic process; nonsense-mediated decay,4,1,0.03,0.02500,1
-GO:0003383,apical constriction,4,1,0.03,0.02500,1
-GO:0015882,L-ascorbic acid transmembrane transport,4,1,0.03,0.02500,1
-GO:0006563,L-serine metabolic process,4,1,0.03,0.02500,1
-GO:0016554,cytidine to uridine editing,4,1,0.03,0.02500,1
-GO:0006544,glycine metabolic process,4,1,0.03,0.02500,1
-GO:0015914,phospholipid transport,40,2,0.25,0.02606,1
-GO:0006955,immune response,430,9,2.71,0.02702,1
-GO:1900227,positive regulation of NLRP3 inflammasome complex assembly,5,1,0.03,0.03116,1
-GO:1900246,positive regulation of RIG-I signaling pathway,5,1,0.03,0.03116,1
-GO:2000553,positive regulation of T-helper 2 cell cytokine production,5,1,0.03,0.03116,1
-GO:0044790,negative regulation by host of viral release from host cell,6,1,0.04,0.03727,1
-GO:0045087,innate immune response,170,6,1.07,0.04307,1
-GO:0040015,negative regulation of multicellular organism growth,7,1,0.04,0.04335,1
-GO:0060997,dendritic spine morphogenesis,7,1,0.04,0.04335,1
-GO:0046597,negative regulation of viral entry into host cell,7,1,0.04,0.04335,1
-GO:0006388,tRNA splicing; via endonucleolytic cleavage and ligation,7,1,0.04,0.04335,1
-GO:0002281,macrophage activation involved in immune response,7,1,0.04,0.04335,1
-GO:0042742,defense response to bacterium,54,2,0.34,0.04524,1
-GO:0032970,regulation of actin filament-based process,142,3,0.9,0.04807,1
-GO:0006013,mannose metabolic process,8,1,0.05,0.04939,1
-GO:0006541,glutamine metabolic process,8,1,0.05,0.04939,1
-GO:0007186,G protein-coupled receptor signaling pathway,222,4,1.4,0.05022,1
-GO:0045824,negative regulation of innate immune response,19,2,0.12,0.05422,1
-GO:0070935,3'-UTR-mediated mRNA stabilization,9,1,0.06,0.05540,1
-GO:0140374,antiviral innate immune response,9,1,0.06,0.05540,1
-GO:1900017,positive regulation of cytokine production involved in inflammatory response,9,1,0.06,0.05540,1
-GO:0070314,G1 to G0 transition,9,1,0.06,0.05540,1
-GO:0060333,interferon-gamma-mediated signaling pathway,9,1,0.06,0.05540,1
-GO:0045776,negative regulation of blood pressure,9,1,0.06,0.05540,1
-GO:0042953,lipoprotein transport,9,1,0.06,0.05540,1
-GO:0060339,negative regulation of type I interferon-mediated signaling pathway,10,1,0.06,0.06137,1
-GO:0043123,positive regulation of I-kappaB kinase/NF-kappaB signaling,65,2,0.41,0.06298,1
-GO:0051092,positive regulation of NF-kappaB transcription factor activity,69,2,0.44,0.06993,1
+GO:0007601,visual perception,5,4,1.09,0.0089,1
+GO:0051923,sulfation,2,2,0.44,0.0472,1
+GO:0018027,peptidyl-lysine dimethylation,2,2,0.44,0.0472,1
+GO:1990034,calcium ion export across plasma membrane,2,2,0.44,0.0472,1
+GO:0003334,keratinocyte development,2,2,0.44,0.0472,1
+GO:0007602,phototransduction,2,2,0.44,0.0472,1
+GO:0090026,positive regulation of monocyte chemotaxis,2,2,0.44,0.0472,1
+GO:0046627,negative regulation of insulin receptor signaling pathway,2,2,0.44,0.0472,1
+GO:0007368,determination of left/right symmetry,2,2,0.44,0.0472,1
+GO:0006310,DNA recombination,14,5,3.05,0.0714,1
+GO:0006278,RNA-dependent DNA biosynthetic process,9,4,1.96,0.1090,1
+GO:0010468,regulation of gene expression,88,23,19.2,0.1128,1
+GO:0001503,ossification,6,3,1.31,0.1204,1
+GO:0006511,ubiquitin-dependent protein catabolic process,11,4,2.4,0.1206,1
+GO:0051570,regulation of histone H3-K9 methylation,3,2,0.65,0.1213,1
+GO:0007219,Notch signaling pathway,3,2,0.65,0.1213,1
+GO:0015074,DNA integration,3,2,0.65,0.1213,1
+GO:0010467,gene expression,119,33,25.96,0.1740,1
+GO:0006355,regulation of transcription; DNA-templated,63,15,13.75,0.1799,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,4,2,0.87,0.2086,1
+GO:0035725,sodium ion transmembrane transport,4,2,0.87,0.2086,1
+GO:0007399,nervous system development,37,12,8.07,0.2092,1
+GO:0050877,nervous system process,28,10,6.11,0.2095,1
+GO:0050953,sensory perception of light stimulus,6,5,1.31,0.2105,1
+GO:0021915,neural tube development,3,3,0.65,0.2141,1
+GO:0022008,neurogenesis,27,8,5.89,0.2145,1
+GO:0043588,skin development,6,3,1.31,0.2158,1
+GO:0022904,respiratory electron transport chain,6,3,1.31,0.2158,1
+GO:1990138,neuron projection extension,2,2,0.44,0.2161,1
+GO:0007411,axon guidance,2,2,0.44,0.2161,1
+GO:0051480,regulation of cytosolic calcium ion concentration,2,2,0.44,0.2161,1
+GO:0060349,bone morphogenesis,2,2,0.44,0.2161,1
+GO:0042471,ear morphogenesis,2,2,0.44,0.2161,1
+GO:0042475,odontogenesis of dentin-containing tooth,2,2,0.44,0.2161,1
+GO:0045664,regulation of neuron differentiation,2,2,0.44,0.2161,1
+GO:0070129,regulation of mitochondrial translation,2,2,0.44,0.2161,1
+GO:0030593,neutrophil chemotaxis,3,2,0.65,0.2167,1
+GO:0021782,glial cell development,3,2,0.65,0.2167,1
+GO:0010837,regulation of keratinocyte proliferation,3,2,0.65,0.2167,1
+GO:0048871,multicellular organismal homeostasis,13,4,2.84,0.2172,1
+GO:0070371,ERK1 and ERK2 cascade,4,2,0.87,0.2173,1
+GO:0006707,cholesterol catabolic process,1,1,0.22,0.2182,1
+GO:1902902,negative regulation of autophagosome assembly,1,1,0.22,0.2182,1
+GO:0010592,positive regulation of lamellipodium assembly,1,1,0.22,0.2182,1
+GO:1990166,protein localization to site of double-strand break,1,1,0.22,0.2182,1
+GO:0021902,commitment of neuronal cell to specific neuron type in forebrain,1,1,0.22,0.2182,1
+GO:0140331,aminophospholipid translocation,1,1,0.22,0.2182,1
+GO:0030210,heparin biosynthetic process,1,1,0.22,0.2182,1
+GO:0060088,auditory receptor cell stereocilium organization,1,1,0.22,0.2182,1
+GO:0061588,calcium activated phospholipid scrambling,1,1,0.22,0.2182,1

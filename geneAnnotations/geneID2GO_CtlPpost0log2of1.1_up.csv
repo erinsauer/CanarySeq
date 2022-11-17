@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0006412,translation,352,129,80.48,4.5e-11,0
+GO:0016310,phosphorylation,843,182,192.75,0.0025,1
+GO:0035520,monoubiquitinated protein deubiquitination,30,10,6.86,0.0027,1
+GO:0030579,ubiquitin-dependent SMAD protein catabolic process,4,4,0.91,0.0027,1
+GO:0045721,negative regulation of gluconeogenesis,6,5,1.37,0.0030,1
+GO:0090160,Golgi to lysosome transport,6,5,1.37,0.0030,1
+GO:0002181,cytoplasmic translation,42,16,9.6,0.0031,1
+GO:0035176,social behavior,13,8,2.97,0.0031,1
+GO:0008344,adult locomotory behavior,29,11,6.63,0.0045,1
+GO:0042127,regulation of cell population proliferation,487,98,111.35,0.0057,1
+GO:0042274,ribosomal small subunit biogenesis,24,9,5.49,0.0062,1
+GO:0006413,translational initiation,75,26,17.15,0.0071,1
+GO:0001881,receptor recycling,20,7,4.57,0.0086,1
+GO:0071539,protein localization to centrosome,22,10,5.03,0.0099,1
+GO:0036158,outer dynein arm assembly,5,4,1.14,0.0111,1
+GO:0019509,L-methionine salvage from methylthioadenosine,3,3,0.69,0.0119,1
+GO:0035616,histone H2B conserved C-terminal lysine deubiquitination,3,3,0.69,0.0119,1
+GO:0070682,proteasome regulatory particle assembly,3,3,0.69,0.0119,1
+GO:0030182,neuron differentiation,335,90,76.6,0.0153,1
+GO:0006511,ubiquitin-dependent protein catabolic process,330,93,75.45,0.0185,1
+GO:0086091,regulation of heart rate by cardiac conduction,8,5,1.83,0.0186,1
+GO:0048026,positive regulation of mRNA splicing; via spliceosome,8,5,1.83,0.0186,1
+GO:0006334,nucleosome assembly,48,18,10.98,0.0203,1
+GO:0042771,intrinsic apoptotic signaling pathway in response to DNA damage by p53 class mediator,18,7,4.12,0.0224,1
+GO:0050790,regulation of catalytic activity,669,137,152.96,0.0237,1
+GO:0045444,fat cell differentiation,94,22,21.49,0.0271,1
+GO:0043129,surfactant homeostasis,6,4,1.37,0.0274,1
+GO:0060307,regulation of ventricular cardiac muscle cell membrane repolarization,6,4,1.37,0.0274,1
+GO:0034551,mitochondrial respiratory chain complex III assembly,6,4,1.37,0.0274,1
+GO:0045910,negative regulation of DNA recombination,27,7,6.17,0.0275,1
+GO:0055085,transmembrane transport,461,114,105.41,0.0328,1
+GO:0036120,cellular response to platelet-derived growth factor stimulus,9,5,2.06,0.0340,1
+GO:0071549,cellular response to dexamethasone stimulus,9,5,2.06,0.0340,1
+GO:0006665,sphingolipid metabolic process,67,13,15.32,0.0345,1
+GO:0032418,lysosome localization,32,12,7.32,0.0348,1
+GO:0045454,cell redox homeostasis,18,8,4.12,0.0349,1
+GO:0006979,response to oxidative stress,158,37,36.13,0.0351,1
+GO:0050890,cognition,81,26,18.52,0.0357,1
+GO:0071320,cellular response to cAMP,15,7,3.43,0.0362,1
+GO:0040029,regulation of gene expression; epigenetic,53,16,12.12,0.0362,1
+GO:0007368,determination of left/right symmetry,32,9,7.32,0.0364,1
+GO:0001774,microglial cell activation,8,4,1.83,0.0396,1
+GO:0022417,protein maturation by protein folding,4,3,0.91,0.0396,1
+GO:0007023,post-chaperonin tubulin folding pathway,4,3,0.91,0.0396,1
+GO:0032466,negative regulation of cytokinesis,4,3,0.91,0.0396,1
+GO:0015889,cobalamin transport,4,3,0.91,0.0396,1
+GO:0045348,positive regulation of MHC class II biosynthetic process,4,3,0.91,0.0396,1
+GO:0120183,positive regulation of focal adhesion disassembly,4,3,0.91,0.0396,1
+GO:0015671,oxygen transport,4,3,0.91,0.0396,1
+GO:0071139,resolution of recombination intermediates,4,3,0.91,0.0396,1

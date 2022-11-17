@@ -14,6 +14,8 @@ library(tidyverse)
 library(topGO)
 library(biomaRt)
 library(here)
+library(edgeR)
+# library(ggpubr)
 ```
 
 #TODO: CHECK HOW MANY lncRNA show up in our edgeR outputs.
@@ -50,9 +52,9 @@ contrasts <- list(
   # MGPpost0 = MGPpost0,
   # MGd2114 = MGd2114,
   Diet0 = Diet0#,
-  # MGDietpost0 = MGDietpost0,
-  # CtlDietpost0 = CtlDietpost0#,
-  # CtlLpost0 = CtlLpost0,
+  # MGDietpost0 = MGDietpost0#,
+  # CtlDietpost0 = CtlDietpost0#, # I am checking if this was the contrast with the cool GO term enrichments... didn't look liek ti was, checking Diet- now
+  # CtlLpost0 = CtlLpost0#,
   # CtlPpost0 = CtlPpost0
 )
 ```
@@ -178,8 +180,11 @@ for(i in 1:length(contrasts)) {
   
   # loop through different lfc cutoffs I want to compare (and up v down)
   # for (j in c(1.1,1.2,1.5)) {
-  # for (j in c(1.01,2)) {
-  for (j in c(1.01,1.1,1.2,1.5)) {
+  for (j in c(1.2)) {
+  # for (j in c(1.1)) {
+  # for (j in c(1.5)) {
+  # for (j in c(2)) {
+  # for (j in c(1.01,1.1,1.2,1.5)) {
     DEgenes_up <- filter(as.data.frame(contrasts[[i]]), logFC > log2(j)) %>% pull(`...1`)
     DEgenes_down <- filter(contrasts[[i]], logFC < -log2(j)) %>% pull(`...1`)
     
@@ -314,117 +319,222 @@ for(i in 1:length(contrasts)) {
 ```
 
 ```{r}
-# Run GO enrichment on clustered genes from cluster_chunks.csv
-
-cluster_chunks_GO <- read_csv(here("cluster analysis/cluster_chunks_GO.csv"))
-
-  # Numeric ID values (in edgeR output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
-  chunk_matches <- which(toupper(names(canary_geneID2GO_BM)) %in% cluster_chunks_GO$gene)
-            # these names came from `edgeR diff expression.R` file
-
-genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[chunk_matches])
-
-DEgenes <- pull(cluster_chunks_GO, gene)
-
-    # genes names with GO terms and DE.
-DEgeneswithGO <- which(DEgenes %in% genesMatched)
-    
-    # select only genes that are DE and have GO terms
-DEgenesGO <- DEgenes[DEgeneswithGO]
-
-
-all_genes <- factor(as.integer(toupper(cluster_chunks_GO$gene) %in% DEgenesGO)) # create 0 1 factors.
-names(all_genes) <- toupper(cluster_chunks_GO$gene) # add gene names
-
-#Do the GO mapping
-GOdata=new('topGOdata', 
-           ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
-           allGenes = all_genes, # all 10188 genes that are in MGpost0 data from edgeR. factor=1 for those that are DE.
-           annot = annFUN.gene2GO, # annotation function for custom annotation
-           # gene2GO = canary_geneID2GO_BM # annotation db from eggNOG output.
-# I am thinking about switching this for one filtered to just edgeR genes:
-           gene2GO = canary_geneID2GO_BM_edgeR # annotation db from BiomaRt.
-           # gene2GO = canary_geneID2GO_BM_DE#, 
-           # geneSel = DE_genes
-           )
-
-# Now analyze the results:
-
-# define test using the weight01 algorithm (default) with fisher
-weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher') 
-
-     
-    # generate a table of results: we can use the GenTable function to generate 
-    # a summary table with the results from tests applied to the topGOdata object.
-    allGO=usedGO(GOdata)
-    all_res=GenTable(GOdata, 
-                     weightFisher=weight_fisher_result, 
-                     orderBy='weightFisher', 
-                     topNodes=length(allGO), 
-                     numChar = 200)
-
-    #performing BH correction on our p values
-    p.adj=round(p.adjust(all_res$weightFisher,method="BH"),digits = 4)
-
-    # create the file with all the statistics from GO analysis
-    all_res_final=cbind(all_res,p.adj)
-    all_res_final=all_res_final_up[order(all_res_final$p.adj),]  %>%
-      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
-
-    #get list of significant GO before multiple testing correction
-    results.table.p= all_res_final[which(as.numeric(all_res_final$weightFisher)<=0.1),] %>%
-      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
-    
-
-    #get list of significant GO after multiple testing correction
-    results.table.bh=all_res_final[which(all_res_final$p.adj<=0.1),] %>%
-      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
-    
-
-    #save first top 50 ontolgies sorted by adjusted pvalues
-    write.table(all_res_final[1:50,],
-                  file = paste(
-                    "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_",
-                    "cluster_chunks", ".csv", sep= ""),
-                  # "~/Desktop/canary/summary_topGO_analysis.csv",
-                  sep=",",
-                  quote=FALSE,
-                  row.names=FALSE)
-
-
+# # Run GO enrichment on clustered genes from cluster_chunks.csv
+# 
+# cluster_chunks_GO <- read_csv(here("cluster analysis/cluster_chunks_GO.csv"))
+# 
+#   # Numeric ID values (in edgeR output) of genes whose names match Gene Ontology Estimates with edgeR output gene names
+#   chunk_matches <- which(toupper(names(canary_geneID2GO_BM)) %in% cluster_chunks_GO$gene)
+#             # these names came from `edgeR diff expression.R` file
+# 
+# genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[chunk_matches])
+# 
+# DEgenes <- pull(cluster_chunks_GO, gene)
+# 
+#     # genes names with GO terms and DE.
+# DEgeneswithGO <- which(DEgenes %in% genesMatched)
+#     
+#     # select only genes that are DE and have GO terms
+# DEgenesGO <- DEgenes[DEgeneswithGO]
+# 
+# 
+# all_genes <- factor(as.integer(toupper(cluster_chunks_GO$gene) %in% DEgenesGO)) # create 0 1 factors.
+# names(all_genes) <- toupper(cluster_chunks_GO$gene) # add gene names
+# 
+# #Do the GO mapping
+# GOdata=new('topGOdata', 
+#            ontology='BP', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+#            allGenes = all_genes, # all 10188 genes that are in MGpost0 data from edgeR. factor=1 for those that are DE.
+#            annot = annFUN.gene2GO, # annotation function for custom annotation
+#            # gene2GO = canary_geneID2GO_BM # annotation db from eggNOG output.
+# # I am thinking about switching this for one filtered to just edgeR genes:
+#            gene2GO = canary_geneID2GO_BM_edgeR # annotation db from BiomaRt.
+#            # gene2GO = canary_geneID2GO_BM_DE#, 
+#            # geneSel = DE_genes
+#            )
+# 
+# # Now analyze the results:
+# 
+# # define test using the weight01 algorithm (default) with fisher
+# weight_fisher_result=runTest(GOdata, algorithm='weight01', statistic='fisher') 
+# 
+#      
+#     # generate a table of results: we can use the GenTable function to generate 
+#     # a summary table with the results from tests applied to the topGOdata object.
+#     allGO=usedGO(GOdata)
+#     all_res=GenTable(GOdata, 
+#                      weightFisher=weight_fisher_result, 
+#                      orderBy='weightFisher', 
+#                      topNodes=length(allGO), 
+#                      numChar = 200)
+# 
+#     #performing BH correction on our p values
+#     p.adj=round(p.adjust(all_res$weightFisher,method="BH"),digits = 4)
+# 
+#     # create the file with all the statistics from GO analysis
+#     all_res_final=cbind(all_res,p.adj)
+#     all_res_final=all_res_final_up[order(all_res_final$p.adj),]  %>%
+#       mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+# 
+#     #get list of significant GO before multiple testing correction
+#     results.table.p= all_res_final[which(as.numeric(all_res_final$weightFisher)<=0.1),] %>%
+#       mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+#     
+# 
+#     #get list of significant GO after multiple testing correction
+#     results.table.bh=all_res_final[which(all_res_final$p.adj<=0.1),] %>%
+#       mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+#     
+# 
+#     #save first top 50 ontolgies sorted by adjusted pvalues
+#     write.table(all_res_final[1:50,],
+#                   file = paste(
+#                     "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_",
+#                     "cluster_chunks", ".csv", sep= ""),
+#                   # "~/Desktop/canary/summary_topGO_analysis.csv",
+#                   sep=",",
+#                   quote=FALSE,
+#                   row.names=FALSE)
+# 
+# 
 ```
 
 
 ```{r visualizing results}
 library(scales)
 
-ntop <- 30
-ggdata <- goEnrichment[1:ntop,]
-ggdata$Term <- factor(ggdata$Term, levels = rev(ggdata$Term)) # fixes order
-gg1 <- ggplot(ggdata,
-  aes(x = Term, y = -log10(KS), size = -log10(KS), fill = -log10(KS))) +
+ntop <- 25
+
+ggdata_up <- all_res_up[1:ntop,] %>%
+  mutate(enrichment = "lipid")
+ggdata_up$Term <- factor(ggdata_up$Term, levels = rev(ggdata_up$Term)) # fixes order
+
+ggdata_down <- all_res_down[1:ntop,] %>%
+  mutate(enrichment = "protein")
+ggdata_down$Term <- factor(ggdata_down$Term, levels = rev(ggdata_down$Term)) # fixes order
+# 
+# gg1 <- ggplot(ggdata_up,
+#   # aes(x = Term, y = -log10(as.numeric(weightFisher)), size = -log10(as.numeric(weightFisher)), fill = -log10(as.numeric(weightFisher)))) +
+#   aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = ((Significant-Expected)/Annotated))) +
+# 
+#   geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+#     linetype = c("dotted", "longdash", "solid"),
+#     colour = c("black", "black", "black"),
+#     size = c(0.5, 1.5, 3)) +
+#   
+#   expand_limits(y = 1) +
+#   geom_point(shape = 21) +
+#   scale_size(range = c(2.5,12.5)) +
+#   scale_fill_continuous(low = 'royalblue', high = 'red4') +
+# 
+#   xlab('') + 
+#   ylab('Enrichment score') +
+#   labs(
+#     title = 'GO Biological processes upregulated in infected + lipid',
+#     subtitle = 'Top 25 terms ordered by weighted Fisher p-value',
+#     caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+# 
+# 
+#   theme_bw(base_size = 24) +
+#   theme(
+#     legend.position = 'right',
+#     legend.background = element_rect(),
+#     plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust=0.5),
+#     plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+#     plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+# 
+#     axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+#     axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+#     axis.title = element_text(size = 12, face = 'bold'),
+#     axis.title.x = element_text(size = 12, face = 'bold'),
+#     axis.title.y = element_text(size = 12, face = 'bold'),
+#     axis.line = element_line(colour = 'black'),
+# 
+#     #Legend
+#     legend.key = element_blank(), # removes the border
+#     legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+#     legend.text = element_text(size = 14, face = "bold"), # Text size
+#     title = element_text(size = 14, face = "bold")) +
+# 
+#   coord_flip()
+# 
+# 
+# 
+# ggdata_down <- all_res_down[1:ntop,] %>%
+#   mutate(enrichment = "protein")
+# ggdata_down$Term <- factor(ggdata_down$Term, levels = rev(ggdata_down$Term)) # fixes order
+# 
+# gg2 <- ggplot(ggdata_down,
+#   aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = ((Significant-Expected)/Annotated))) +
+# 
+#   expand_limits(y = 1) +
+#   geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+#     linetype = c("dotted", "longdash", "solid"),
+#     colour = c("black", "black", "black"),
+#     size = c(0.5, 1.5, 3)) +
+#   geom_point(shape = 21) +
+#   scale_size(range = c(2.5,12.5)) +
+#   scale_fill_continuous(low = 'royalblue', high = 'red4') +
+# 
+#   xlab('') + 
+#   ylab('Enrichment score') +
+#   labs(
+#     title = 'GO Biological processes upregulated in infected + protein',
+#     subtitle = 'Top 25 terms ordered by weighted Fisher p-value',
+#     caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+# 
+#   theme_bw(base_size = 24) +
+#   theme(
+#     legend.position = 'right',
+#     legend.background = element_rect(),
+#     plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+#     plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+#     plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+# 
+#     axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+#     axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+#     axis.title = element_text(size = 12, face = 'bold'),
+#     axis.title.x = element_text(size = 12, face = 'bold'),
+#     axis.title.y = element_text(size = 12, face = 'bold'),
+#     axis.line = element_line(colour = 'black'),
+# 
+#     #Legend
+#     legend.key = element_blank(), # removes the border
+#     legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+#     legend.text = element_text(size = 14, face = "bold"), # Text size
+#     title = element_text(size = 14, face = "bold")) +
+# 
+#   coord_flip()
+
+# ggarrange(gg1, gg2, ncol=1)
+
+ggdata <- bind_rows(ggdata_up, ggdata_down) %>%
+  mutate(`% overrepresented` = (Significant-Expected)/Annotated)
+
+gg <- ggplot(ggdata,
+  aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
 
   expand_limits(y = 1) +
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+    linetype = c("dotted", "longdash", "solid", "dotted", "longdash", "solid"),
+    colour = "black",
+    size = c(0.5, 1.5, 3, 0.5, 1.5, 3)) +
   geom_point(shape = 21) +
   scale_size(range = c(2.5,12.5)) +
   scale_fill_continuous(low = 'royalblue', high = 'red4') +
 
-  xlab('') + ylab('Enrichment score') +
+  xlab('') + 
+  ylab('Enrichment score') +
   labs(
-    title = 'GO Biological processes',
-    subtitle = 'Top 30 terms ordered by Kolmogorov-Smirnov p-value',
+    title = 'GO Biological processes upregulated by diet during infection',
+    subtitle = 'Top 25 terms ordered by weighted Fisher p-value',
     caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
-
-  geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
-    linetype = c("dotted", "longdash", "solid"),
-    colour = c("black", "black", "black"),
-    size = c(0.5, 1.5, 3)) +
 
   theme_bw(base_size = 24) +
   theme(
     legend.position = 'right',
     legend.background = element_rect(),
-    plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1),
+    plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
     plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
     plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
 
@@ -441,6 +551,528 @@ gg1 <- ggplot(ggdata,
     legend.text = element_text(size = 14, face = "bold"), # Text size
     title = element_text(size = 14, face = "bold")) +
 
+  facet_grid(rows = vars(enrichment), scales = "free") +
   coord_flip()
+  
+
+gg
 ```
 
+```{r controls viz}
+
+ntop.c <- 25
+
+ggdata_up.c <- all_res_up[1:ntop.c,] %>%
+  # mutate(enrichment = "up.post0")
+  mutate(enrichment = "protein", ID = row_number()*pi)
+
+ggdata_up.c$Term <- factor(ggdata_up.c$Term, levels = rev(ggdata_up.c$Term)) # fixes order
+
+ggdata_down.c <- all_res_down[1:ntop.c,] %>%
+  # mutate(enrichment = "down.post0")
+  mutate(enrichment = "lipid", ID = row_number()*exp(1))
+
+ggdata_down.c$Term <- factor(ggdata_down.c$Term, levels = rev(ggdata_down.c$Term)) # fixes order
+
+
+
+ggdata.c <- bind_rows(ggdata_up.c, ggdata_down.c) %>%
+  mutate(`% overrepresented` = (Significant-Expected)/Annotated) %>%
+  group_by(enrichment)
+
+ggdata.c$Term <- factor(ggdata.c$Term, levels = unique(rev(ggdata.c$Term)), ordered=TRUE) # fixes order
+
+gg.c <- ggplot(ggdata.c,
+  aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+
+  expand_limits(y = 1) +
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+    linetype = c("dotted", "longdash", "solid", "dotted", "longdash", "solid"),
+    colour = "black",
+    size = c(0.5, 1.5, 3, 0.5, 1.5, 3)) +
+  geom_point(shape = 21) +
+  scale_size(range = c(2.5,12.5)) +
+  scale_fill_continuous(low = 'royalblue', high = 'red4') +
+
+  xlab('') + 
+  ylab('Enrichment score') +
+  labs(
+    title = 'GO Biological processes upregulated in Day 0 samples by Diet',
+    subtitle = 'Top 25 terms ordered by weighted Fisher p-value',
+    caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+
+  theme_bw(base_size = 24) +
+  theme(
+    legend.position = 'right',
+    legend.background = element_rect(),
+    plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+    plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+    plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+
+    axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+    axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+    axis.title = element_text(size = 12, face = 'bold'),
+    axis.title.x = element_text(size = 12, face = 'bold'),
+    axis.title.y = element_text(size = 12, face = 'bold'),
+    axis.line = element_line(colour = 'black'),
+
+    #Legend
+    legend.key = element_blank(), # removes the border
+    legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+    legend.text = element_text(size = 14, face = "bold"), # Text size
+    title = element_text(size = 14, face = "bold")) +
+
+  facet_grid(rows = vars(enrichment), scales = "free") +
+  coord_flip()
+
+gg.c
+```
+# look at the difference between all time points controls proteins vs lipids.
+
+# NOTE: Diet0 shows really interesting BH correction sigs. Look more at it, see other changes.
+
+```{r gg.post0}
+
+ntop.cpost0 <- 25
+
+ggdata_up.cpost0 <- all_res_up[1:ntop.cpost0,] %>%
+  # mutate(enrichment = "up.post0")
+  mutate(enrichment = "protein")
+
+ggdata_up.cpost0$Term <- factor(ggdata_up.cpost0$Term, levels = rev(ggdata_up.cpost0$Term)) # fixes order
+
+ggdata_down.cpost0 <- all_res_down[1:ntop.cpost0,] %>%
+  # mutate(enrichment = "down.post0")
+  mutate(enrichment = "lipid") %>%
+  mutate(Term = str_replace(Term, "G protein coupled", " G protein coupled"))
+
+ggdata_down.cpost0$Term <- factor(ggdata_down.cpost0$Term, levels = rev(ggdata_down.cpost0$Term)) # fixes order
+
+
+ggdata.cpost0 <- bind_rows(ggdata_up.cpost0, ggdata_down.cpost0) %>%
+  mutate(`% overrepresented` = (Significant-Expected)/Annotated) %>%
+  group_by(enrichment)
+
+ggdata.cpost0$Term <- factor(ggdata.cpost0$Term, levels = unique(rev(ggdata.cpost0$Term)), ordered=TRUE) # fixes order
+
+gg.cpost0 <- ggplot(ggdata.cpost0,
+  aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+
+  expand_limits(y = 1) +
+  geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+    linetype = c("dotted", "longdash", "solid", "dotted", "longdash", "solid"),
+    colour = "black",
+    size = c(0.5, 1.5, 3, 0.5, 1.5, 3)) +
+  geom_point(shape = 21) +
+  scale_size(range = c(2.5,12.5)) +
+  scale_fill_continuous(low = 'royalblue', high = 'red4') +
+
+  xlab('') + 
+  ylab('Enrichment score') +
+  labs(
+    title = 'GO Biological processes upregulated in Day 0 samples by Diet',
+    subtitle = 'Top 25 terms ordered by weighted Fisher p-value',
+    caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+
+  theme_bw(base_size = 24) +
+  theme(
+    legend.position = 'right',
+    legend.background = element_rect(),
+    plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+    plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+    plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+
+    axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+    axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+    axis.title = element_text(size = 12, face = 'bold'),
+    axis.title.x = element_text(size = 12, face = 'bold'),
+    axis.title.y = element_text(size = 12, face = 'bold'),
+    axis.line = element_line(colour = 'black'),
+
+    #Legend
+    legend.key = element_blank(), # removes the border
+    legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+    legend.text = element_text(size = 14, face = "bold"), # Text size
+    title = element_text(size = 14, face = "bold")) +
+
+  facet_grid(rows = vars(enrichment), scales = "free") +
+  coord_flip()
+
+gg.cpost0
+```
+
+
+# Get genes all genes with a given GO term
+```{r}
+# modify for easier formatting
+ID2GO_up <- GOdata_up %>%
+  genesInTerm() %>%
+  enframe()
+  
+# find out how many contain GOTERM.
+GOTERM <- "GO:0007186" #G Protein Coupled Receptor signaling pathway
+GOTERM <- "GO:0002250" # adaptive immune response
+GOTERM_ <- "GO:0030890" # positive regulation of B cell proliferation
+
+# # select rows with GOTERM
+ID2GO_up %>%
+  filter(str_detect(name, GOTERM))
+
+GcoupledUP <- genesInTerm(GOdata_up)[GOTERM][[1]][genesInTerm(GOdata_up)[GOTERM][[1]] %in% DEgenes_up]
+GcoupledDN <- genesInTerm(GOdata_down)[GOTERM][[1]][genesInTerm(GOdata_down)[GOTERM][[1]] %in% DEgenes_down]
+
+AdImUP <- genesInTerm(GOdata_up)[GOTERM][[1]][genesInTerm(GOdata_up)[GOTERM][[1]] %in% DEgenes_up]
+AdImDN <- genesInTerm(GOdata_down)[GOTERM][[1]][genesInTerm(GOdata_down)[GOTERM][[1]] %in% DEgenes_down]
+
+# b cell pos reg (Diet post0)
+PosBUP <- genesInTerm(GOdata_up)[GOTERM_][[1]][genesInTerm(GOdata_up)[GOTERM_][[1]] %in% DEgenes_up]
+
+
+# let's run the same thing but not for a given go term
+# reformat genesInTerm as vector
+all_up_genesGOTERM <- names(unlist(genesInTerm(GOdata_up)))
+all_down_genesGOTERM <- as.vector(unlist(genesInTerm(GOdata_down)))
+
+allUP <- all_up_genesGOTERM[all_up_genesGOTERM %in% DEgenes_up]
+allDN <- all_down_genesGOTERM[all_down_genesGOTERM %in% DEgenes_down]
+
+Gcoupled <- 
+  list(
+    PROTEIN = GcoupledUP,
+    LIPID = GcoupledDN
+  )
+
+AdaptImm <- 
+  list(
+    PROTEIN = AdImUP,
+    LIPID = AdImDN
+  )
+
+all <-
+  list(
+    PROTEIN = allUP,
+    LIPID = allDN
+  )
+```
+
+
+```{r}
+# if (!require(devtools)) install.packages("devtools")
+# devtools::install_github("gaospecial/ggVennDiagram")
+library(ggVennDiagram)
+
+ggVennDiagram(Gcoupled)
+ggVennDiagram(AdaptImm)
+ggVennDiagram(all)
+
+```
+
+```{r}
+# ADA
+# AGTRAP
+# AKAP13
+# C3
+# CCR10
+# CCR6
+# CCR7
+# DGKH
+# DGKZ
+# GNG2
+# GNG7
+# GPR132
+# GPR162
+# GPR171
+# GPR174
+# GPR18
+# GPR82
+# LOC103812291
+# LOC103812980
+# LOC103812985
+# LOC103813169
+# LOC103813540
+# LOC103815708
+# LOC103819762
+# LOC103824208
+# LOC108964377
+# LOC108964492
+# LOC108964818
+# LOC115485368
+# LOC115485604
+# LOC115485605
+# P2RY10
+# P2RY12
+# P2RY6
+# PIK3CG
+# PIK3R6
+# PLCL1
+# PLCL2
+# PREX1
+# PRMT5
+# PTK2B
+# RAMP2
+# RGS1
+# RGS4
+# RRH
+# S1PR2
+# S1PR4
+# SLC24A4
+# SORL1
+# TYRO3
+# ZDHHC21
+```
+
+
+# Individual Genes of Interest
+
+It looks like the CCR# receptors are enriched in the PROTEIN group but not the lipid group. 
+We take a look at how the expression of these genes changed over time for prot vs lipid ctl birds
+
+```{r getDataIn}
+g.tpm.l <- read.delim("~/Documents/GitHub/CanarySeq/globinModifiedGTFResults/rsem.merged.gene_tpm.tsv", 
+                                          header=TRUE)
+row.names(g.tpm.l) <- (g.tpm.l$gene_id)
+# View(g.tpm.l)
+g.tpm.l$ES89_Blue.049_Control.protein_0 <- NULL #remove the bad sample
+
+############ make the metadata table ######################
+meta <- data.frame(SampID = colnames(g.tpm.l[,c(3:106)]))
+meta <- meta %>% separate(SampID, 
+                          c("Sample.ID", "Bird.ID",
+                            "MG.Diet", "Day"), "_", 
+                          extra = "warn", fill = "warn", 
+                          remove = FALSE) 
+# View(meta)
+
+meta <- meta %>% separate(MG.Diet, 
+                          c("MG.Status", "Diet"), 
+                          sep = "[.]", extra = "warn", 
+                          fill = "warn", 
+                          remove = FALSE) 
+
+meta$MG.Diet.Day <- paste0(meta$MG.Diet, ".", meta$Day)
+meta$MG.Day <- paste0(meta$MG.Status, ".", meta$Day)
+meta$Diet.Day <- paste0(meta$Diet, ".", meta$Day)
+
+meta <- meta %>% mutate(MG.active = if_else(Day < 1, "NO", 
+                                            if_else(MG.Status == "Control",
+                                                    "NO", "YES")))
+meta$Exposure.MG <- paste0(meta$MG.active, ".", meta$MG.Status)
+meta$Exposure.Diet <- paste0(meta$MG.active, ".", meta$Diet)
+
+# View(meta)
+row.names(meta) <- (meta$SampID)
+############ diff exp #################################
+My.dge<-DGEList(counts=g.tpm.l[,c(3:106)], group=meta$MG.Diet.Day)
+summary(My.dge)
+#barplot(My.dge$samples$lib.size*1e-6, names=1:ncol(My.dge), ylab="Library size (millions)")
+
+## creates object from table of counts, 
+## with a data frame counting information for each sample
+# View(My.dge$samples)
+#keep <- filterByExpr(My.dge)
+keep <- rowSums(cpm(My.dge)>1) >= 6
+My.dge <- My.dge[keep, , keep.lib.sizes=FALSE]
+My.dge <- calcNormFactors(My.dge)
+geneExpr <- My.dge$counts
+## uses TMM (weighted trimmed mean of M-values) 
+## to calculate normalization factors (i.e. effective library sizes) 
+## for each sample.
+
+## rule of thumb, require that genes have at least 10-15 reads 
+## in at least one condition to be considered expressed
+## removing unexpressed genes increases our statistical power 
+## to detect differential expression (because fewer tests)
+```
+
+See all of the CCR gene expression in control birds
+```{r}
+# tidy the data for graphing
+tidygeneExpr <- geneExpr %>%
+  as_tibble(rownames = "gene") %>%
+  pivot_longer(!gene, 
+               names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+               names_sep = "_",
+               values_to = "tpm") %>%
+  separate(col = MG.Diet, c("MG", "Diet"))
+
+# let's look at the CCR# genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  filter(MG == "Control") %>%
+  filter(str_detect(gene, 'CCR')) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             y = #tpm,
+             log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  facet_wrap(~Diet+ MG) +
+  theme_classic() 
+```
+
+
+See all of the adaptive immune response gene expression in control birds
+```{r warning=FALSE}
+
+
+# let's look at the adaptive immune genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  filter(MG == "Control") %>%
+  filter(gene %in% AdImUP) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             y = #tpm,
+             log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet) +
+  theme_classic() +
+  ggtitle("Adapt immune resp upregulated in Diet0")
+
+# let's look at the Positive B cell reg genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  filter(MG == "Control") %>%
+  filter(gene %in% PosBUP) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             y = tpm,
+             # log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet) +
+  theme_classic() +
+  ggtitle("pos b cell upregulated in Diet0")
+```
+
+It looks like the gene RSAD2 is acting differently between the two diet groups. Let's explore further
+```{r}
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene == "RSAD2") %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day, 
+             y = tpm,
+             # log10tpmadd1,
+             fill = Bird)) +
+  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
+  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet+MG) +
+  theme_classic() +
+  guides(fill = FALSE) +
+  ggtitle("RSAD2 gene expression lowest in high lipid diet uninfected birds")
+
+```
+Look at CD40 of B Cell pos reg GO term
+```{r}
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene == "CD40") %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day, 
+             y = tpm,
+             # log10tpmadd1,
+             fill = Bird)) +
+  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
+  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet+MG) +
+  theme_classic() +
+  guides(fill = FALSE) +
+  ggtitle("CD40 gene expression")
+```
+
+Alright now let us do the same thing but this time for downregulated in this scenario. First GO term I consider relevant would be translation (GO:0006412)
+```{r}
+translationGO <- "GO:0006412"# b cell pos reg (Diet post0)
+transDN <- genesInTerm(GOdata_up)[translationGO][[1]][genesInTerm(GOdata_up)[translationGO][[1]] %in% DEgenes_down]
+
+# let's look at the translation genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene %in% transDN) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             # y = tpm,
+             y = log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet+MG, nrow = 1) +
+  theme_classic() +
+  ggtitle("translation genes up in LIPID in Diet0")  +
+  guides(color = FALSE) 
+
+
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene == "RPS29") %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day, 
+             y = #tpm,
+             log10tpmadd1,
+             fill = Bird)) +
+  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
+  facet_wrap(~Diet+MG) +
+  theme_classic() +
+  guides(fill = FALSE) +
+  ggtitle("RPS29 gene expression")
+```
+
+
+11/17/22 weekly meeting canary notes
+Set the thresholds. Most interesting part is going to be the discussion. What is the (potential) biological meaning of these results. How do top enriched genes relate to the bird outcomes (phenotypic data).
+
+Getting close to outlining and writing up the results. (we can think about where we want it to go and writing it accordingly). Jeff suggests a broad journal to start. Molecular Ecology an option. Also ProcB fxnl ecology. Other similar ones are out there.
+
+Authorship...
+
+Intro and discussion Erin feels good about. Erin make first outline, esp what went into it prior and how we want to frame.
+I can handle (results and conclusion??)
+Make a figure flow chart. (lot's in the supplement)
+Make a Google slides of figures we can go through. I will make this and share with you.
+...will also want to put into that the phenotypic data.
+
+I want to have the phenotype data.
+Take all the data for each and do pearson corr for each. Use permutation test to get p-value.
+This has been done in yeast, a good idea. 
+
+Quantitative measures. We could use as stat the given days values. also the time to recovery or AUC as sum stats.
+For path load make sure to log transformation. Also consider log transform and median center.
+Note log2 transformation for path load instead of log10.
+
+Think about using slope of decay of path load as variable to fit.
+
+Other variables that they have include: fat scores & mass stuff, but probably not worth looking into. antibody levels didn't look different between the trt groups but maybe worth looking at. Probably do other stuff first. white blood cell stuff don't want to go there.
+
+What makes most sense for our story would be the eye score data. 

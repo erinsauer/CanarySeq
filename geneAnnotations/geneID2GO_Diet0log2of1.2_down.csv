@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0006412,translation,352,53,26.6,8.5e-12,0
-GO:0007186,G protein-coupled receptor signaling pathway,222,29,16.77,0.0006,1
-GO:0044205,'de novo' UMP biosynthetic process,4,3,0.3,0.0016,1
-GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.3,0.0016,1
-GO:0006541,glutamine metabolic process,8,4,0.6,0.0018,1
-GO:1904667,negative regulation of ubiquitin protein ligase activity,8,4,0.6,0.0018,1
-GO:2000059,negative regulation of ubiquitin-dependent protein catabolic process,31,5,2.34,0.0018,1
-GO:0030509,BMP signaling pathway,55,10,4.16,0.0028,1
-GO:0071897,DNA biosynthetic process,129,15,9.75,0.0029,1
-GO:0006334,nucleosome assembly,49,10,3.7,0.0031,1
-GO:0006952,defense response,430,35,32.49,0.0047,1
-GO:0043576,regulation of respiratory gaseous exchange,5,3,0.38,0.0057,1
-GO:0071376,cellular response to corticotropin-releasing hormone stimulus,2,2,0.15,0.0057,1
-GO:0042853,L-alanine catabolic process,2,2,0.15,0.0057,1
-GO:0006703,estrogen biosynthetic process,2,2,0.15,0.0057,1
-GO:0035505,positive regulation of myosin light chain kinase activity,2,2,0.15,0.0057,1
-GO:0009253,peptidoglycan catabolic process,2,2,0.15,0.0057,1
-GO:0002181,cytoplasmic translation,41,8,3.1,0.0060,1
-GO:0055072,iron ion homeostasis,42,8,3.17,0.0097,1
-GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.53,0.0119,1
-GO:0001764,neuron migration,37,8,2.8,0.0161,1
-GO:0048388,endosomal lumen acidification,3,2,0.23,0.0162,1
-GO:2000435,negative regulation of protein neddylation,3,2,0.23,0.0162,1
-GO:1902255,positive regulation of intrinsic apoptotic signaling pathway by p53 class mediator,3,2,0.23,0.0162,1
-GO:0035845,photoreceptor cell outer segment organization,3,2,0.23,0.0162,1
-GO:0001654,eye development,92,10,6.95,0.0180,1
-GO:0045654,positive regulation of megakaryocyte differentiation,8,3,0.6,0.0180,1
-GO:0001935,endothelial cell proliferation,53,6,4,0.0181,1
-GO:0007601,visual perception,26,6,1.96,0.0216,1
-GO:0030199,collagen fibril organization,12,4,0.91,0.0254,1
-GO:0030534,adult behavior,39,6,2.95,0.0254,1
-GO:0007154,cell communication,1901,154,143.63,0.0295,1
-GO:0007608,sensory perception of smell,18,5,1.36,0.0306,1
-GO:0034765,regulation of ion transmembrane transport,123,12,9.29,0.0307,1
-GO:1902414,protein localization to cell junction,28,4,2.12,0.0308,1
-GO:0043031,negative regulation of macrophage activation,4,2,0.3,0.0309,1
-GO:0034379,very-low-density lipoprotein particle assembly,4,2,0.3,0.0309,1
-GO:0032466,negative regulation of cytokinesis,4,2,0.3,0.0309,1
-GO:0098719,sodium ion import across plasma membrane,4,2,0.3,0.0309,1
-GO:0015793,glycerol transport,4,2,0.3,0.0309,1
-GO:1903546,protein localization to photoreceptor outer segment,4,2,0.3,0.0309,1
-GO:0010389,regulation of G2/M transition of mitotic cell cycle,44,5,3.32,0.0309,1
-GO:0045604,regulation of epidermal cell differentiation,22,3,1.66,0.0309,1
-GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,7,3.1,0.0321,1
-GO:0045820,negative regulation of glycolytic process,10,3,0.76,0.0345,1
-GO:0042274,ribosomal small subunit biogenesis,25,5,1.89,0.0363,1
-GO:0050995,negative regulation of lipid catabolic process,7,3,0.53,0.0487,1
-GO:1990573,potassium ion import across plasma membrane,8,3,0.6,0.0487,1
-GO:0051445,regulation of meiotic cell cycle,12,3,0.91,0.0488,1
-GO:0045603,positive regulation of endothelial cell differentiation,5,2,0.38,0.0489,1
+GO:0006412,translation,352,52,26.45,5.5e-13,0
+GO:0007186,G protein-coupled receptor signaling pathway,222,29,16.68,0.00055,1
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.3,0.00159,1
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.3,0.00159,1
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,4,0.6,0.00173,1
+GO:0006541,glutamine metabolic process,8,4,0.6,0.00173,1
+GO:2000059,negative regulation of ubiquitin-dependent protein catabolic process,31,5,2.33,0.00174,1
+GO:0030509,BMP signaling pathway,55,10,4.13,0.00201,1
+GO:0006334,nucleosome assembly,48,10,3.61,0.00254,1
+GO:0071897,DNA biosynthetic process,129,15,9.69,0.00288,1
+GO:0006952,defense response,434,35,32.61,0.00462,1
+GO:0043576,regulation of respiratory gaseous exchange,5,3,0.38,0.00562,1
+GO:0042853,L-alanine catabolic process,2,2,0.15,0.00564,1
+GO:0071376,cellular response to corticotropin-releasing hormone stimulus,2,2,0.15,0.00564,1
+GO:0006703,estrogen biosynthetic process,2,2,0.15,0.00564,1
+GO:0035505,positive regulation of myosin light chain kinase activity,2,2,0.15,0.00564,1
+GO:0009253,peptidoglycan catabolic process,2,2,0.15,0.00564,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,3,0.53,0.01174,1
+GO:0055072,iron ion homeostasis,43,8,3.23,0.01288,1
+GO:0001764,neuron migration,37,8,2.78,0.01567,1
+GO:2000435,negative regulation of protein neddylation,3,2,0.23,0.01606,1
+GO:0048388,endosomal lumen acidification,3,2,0.23,0.01606,1
+GO:0035845,photoreceptor cell outer segment organization,3,2,0.23,0.01606,1
+GO:1902255,positive regulation of intrinsic apoptotic signaling pathway by p53 class mediator,3,2,0.23,0.01606,1
+GO:0001654,eye development,93,10,6.99,0.01769,1
+GO:0045654,positive regulation of megakaryocyte differentiation,8,3,0.6,0.01775,1
+GO:0001935,endothelial cell proliferation,52,6,3.91,0.01778,1
+GO:0007601,visual perception,26,6,1.95,0.02109,1
+GO:0030199,collagen fibril organization,12,4,0.9,0.02506,1
+GO:0030534,adult behavior,40,6,3.01,0.02507,1
+GO:0002181,cytoplasmic translation,42,7,3.16,0.02536,1
+GO:0007154,cell communication,1899,152,142.69,0.02933,1
+GO:0042274,ribosomal small subunit biogenesis,24,5,1.8,0.03025,1
+GO:0034765,regulation of ion transmembrane transport,123,13,9.24,0.03030,1
+GO:0007608,sensory perception of smell,18,5,1.35,0.03031,1
+GO:1902414,protein localization to cell junction,28,4,2.1,0.03051,1
+GO:1903546,protein localization to photoreceptor outer segment,4,2,0.3,0.03053,1
+GO:0015793,glycerol transport,4,2,0.3,0.03053,1
+GO:0043031,negative regulation of macrophage activation,4,2,0.3,0.03053,1
+GO:0098719,sodium ion import across plasma membrane,4,2,0.3,0.03053,1
+GO:0032466,negative regulation of cytokinesis,4,2,0.3,0.03053,1
+GO:0010389,regulation of G2/M transition of mitotic cell cycle,44,5,3.31,0.03053,1
+GO:0045604,regulation of epidermal cell differentiation,20,3,1.5,0.03056,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,7,3.08,0.03122,1
+GO:0045820,negative regulation of glycolytic process,10,3,0.75,0.03398,1
+GO:0050995,negative regulation of lipid catabolic process,7,3,0.53,0.04823,1
+GO:1990573,potassium ion import across plasma membrane,8,3,0.6,0.04825,1
+GO:0030261,chromosome condensation,11,3,0.83,0.04829,1
+GO:0051445,regulation of meiotic cell cycle,12,3,0.9,0.04830,1
+GO:0034379,very-low-density lipoprotein particle assembly,5,2,0.38,0.04838,1
