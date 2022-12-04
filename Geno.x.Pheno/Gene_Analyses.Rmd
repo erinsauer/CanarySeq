@@ -1,0 +1,737 @@
+---
+title: "Canary_GenoxPheno"
+author: "Carson Stacy"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(edgeR)
+library(corrr)
+```
+
+
+
+# Individual Genes of Interest
+
+It looks like the CCR# receptors are enriched in the PROTEIN group but not the lipid group. 
+We take a look at how the expression of these genes changed over time for prot vs lipid ctl birds
+
+```{r getDataIn}
+g.tpm.l <- read.delim("~/Documents/GitHub/CanarySeq/globinModifiedGTFResults/rsem.merged.gene_tpm.tsv", 
+                                          header=TRUE)
+row.names(g.tpm.l) <- (g.tpm.l$gene_id)
+# View(g.tpm.l)
+g.tpm.l$ES89_Blue.049_Control.protein_0 <- NULL #remove the bad sample
+
+############ make the metadata table ######################
+meta <- data.frame(SampID = colnames(g.tpm.l[,c(3:106)]))
+meta <- meta %>% separate(SampID, 
+                          c("Sample.ID", "Bird.ID",
+                            "MG.Diet", "Day"), "_", 
+                          extra = "warn", fill = "warn", 
+                          remove = FALSE) 
+# View(meta)
+
+meta <- meta %>% separate(MG.Diet, 
+                          c("MG.Status", "Diet"), 
+                          sep = "[.]", extra = "warn", 
+                          fill = "warn", 
+                          remove = FALSE) 
+
+meta$MG.Diet.Day <- paste0(meta$MG.Diet, ".", meta$Day)
+meta$MG.Day <- paste0(meta$MG.Status, ".", meta$Day)
+meta$Diet.Day <- paste0(meta$Diet, ".", meta$Day)
+
+meta <- meta %>% mutate(MG.active = if_else(Day < 1, "NO", 
+                                            if_else(MG.Status == "Control",
+                                                    "NO", "YES")))
+meta$Exposure.MG <- paste0(meta$MG.active, ".", meta$MG.Status)
+meta$Exposure.Diet <- paste0(meta$MG.active, ".", meta$Diet)
+
+# View(meta)
+row.names(meta) <- (meta$SampID)
+############ diff exp #################################
+My.dge<-DGEList(counts=g.tpm.l[,c(3:106)], group=meta$MG.Diet.Day)
+summary(My.dge)
+#barplot(My.dge$samples$lib.size*1e-6, names=1:ncol(My.dge), ylab="Library size (millions)")
+
+## creates object from table of counts, 
+## with a data frame counting information for each sample
+# View(My.dge$samples)
+#keep <- filterByExpr(My.dge)
+keep <- rowSums(cpm(My.dge)>1) >= 6
+My.dge <- My.dge[keep, , keep.lib.sizes=FALSE]
+My.dge <- calcNormFactors(My.dge)
+geneExpr <- My.dge$counts
+## uses TMM (weighted trimmed mean of M-values) 
+## to calculate normalization factors (i.e. effective library sizes) 
+## for each sample.
+
+## rule of thumb, require that genes have at least 10-15 reads 
+## in at least one condition to be considered expressed
+## removing unexpressed genes increases our statistical power 
+## to detect differential expression (because fewer tests)
+```
+
+See all of the CCR gene expression in control birds
+```{r}
+# tidy the data for graphing
+tidygeneExpr <- geneExpr %>%
+  as_tibble(rownames = "gene") %>%
+  pivot_longer(!gene, 
+               names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+               names_sep = "_",
+               values_to = "tpm") %>%
+  separate(col = MG.Diet, c("MG", "Diet"))
+
+# let's look at the CCR# genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  filter(MG == "Control") %>%
+  filter(str_detect(gene, 'CCR')) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             y = #tpm,
+             log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  facet_wrap(~Diet+ MG) +
+  theme_classic() 
+```
+
+
+
+See all of the adaptive immune response gene expression in control birds
+```{r warning=FALSE}
+
+
+# let's look at the adaptive immune genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  filter(MG == "Control") %>%
+  filter(gene %in% AdImUP) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             y = #tpm,
+             log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet) +
+  theme_classic() +
+  ggtitle("Adapt immune resp upregulated in Diet0")
+
+# let's look at the Positive B cell reg genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  filter(MG == "Control") %>%
+  filter(gene %in% PosBUP) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             y = tpm,
+             # log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet) +
+  theme_classic() +
+  ggtitle("pos b cell upregulated in Diet0")
+```
+
+It looks like the gene RSAD2 is acting differently between the two diet groups. Let's explore further
+```{r}
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene == "RSAD2") %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day, 
+             y = tpm,
+             # log10tpmadd1,
+             fill = Bird)) +
+  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
+  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet+MG) +
+  theme_classic() +
+  guides(fill = FALSE) +
+  ggtitle("RSAD2 gene expression lowest in high lipid diet uninfected birds")
+
+
+```
+Look at CD40 of B Cell pos reg GO term
+```{r}
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene == "CD40") %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day, 
+             y = tpm,
+             # log10tpmadd1,
+             fill = Bird)) +
+  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
+  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet+MG) +
+  theme_classic() +
+  guides(fill = FALSE) +
+  ggtitle("CD40 gene expression")
+```
+
+Alright now let us do the same thing but this time for downregulated in this scenario. First GO term I consider relevant would be translation (GO:0006412)
+```{r}
+translationGO <- "GO:0006412"# b cell pos reg (Diet post0)
+transDN <- genesInTerm(GOdata_up)[translationGO][[1]][genesInTerm(GOdata_up)[translationGO][[1]] %in% DEgenes_down]
+
+# let's look at the translation genes now in all control birds.
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene %in% transDN) %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day_jitter, 
+             # y = tpm,
+             y = log10tpmadd1,
+             color = gene)) +
+  geom_line(aes(group=interaction(Bird,gene))) +
+  geom_point() +
+  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet+MG, nrow = 1) +
+  theme_classic() +
+  ggtitle("translation genes up in LIPID in Diet0")  +
+  guides(color = FALSE) 
+
+
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene == "RPS29") %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day, 
+             y = #tpm,
+             log10tpmadd1,
+             fill = Bird)) +
+  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
+  facet_wrap(~Diet+MG) +
+  theme_classic() +
+  guides(fill = FALSE) +
+  ggtitle("RPS29 gene expression")
+```
+
+
+11/17/22 weekly meeting canary notes
+Set the thresholds. Most interesting part is going to be the discussion. What is the (potential) biological meaning of these results. How do top enriched genes relate to the bird outcomes (phenotypic data).
+
+Getting close to outlining and writing up the results. (we can think about where we want it to go and writing it accordingly). Jeff suggests a broad journal to start. Molecular Ecology an option. Also ProcB fxnl ecology. Other similar ones are out there.
+
+Authorship...
+
+Intro and discussion Erin feels good about. Erin make first outline, esp what went into it prior and how we want to frame.
+I can handle (results and conclusion??)
+Make a figure flow chart. (lot's in the supplement)
+Make a Google slides of figures we can go through. I will make this and share with you.
+...will also want to put into that the phenotypic data.
+
+I want to have the phenotype data.
+Take all the data for each and do pearson corr for each. Use permutation test to get p-value.
+This has been done in yeast, a good idea. 
+
+Quantitative measures. We could use as stat the given days values. also the time to recovery or AUC as sum stats.
+For path load make sure to log transformation. Also consider log transform and median center.
+Note log2 transformation for path load instead of log10.
+
+Think about using slope of decay of path load as variable to fit.
+
+Other variables that they have include: fat scores & mass stuff, but probably not worth looking into. antibody levels didn't look different between the trt groups but maybe worth looking at. Probably do other stuff first. white blood cell stuff don't want to go there.
+
+What makes most sense for our story would be the eye score data. 
+
+```{r}
+# let me test a gene with biggest edgeR output diff in diet0
+tidygeneExpr %>% 
+  # filter(Day == "0" | MG == "Control") %>%
+  # filter(MG == "Control") %>%
+  filter(gene == "RIMBP2") %>%
+  # filter(str_detect(gene, 'LOC108963957')) %>%
+  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
+         log10tpmadd1 = log10(tpm+1)) %>%
+  ggplot(aes(x=Day, 
+             # y = tpm,
+             log10tpmadd1,
+             fill = Bird)) +
+  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
+  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~Diet+MG) +
+  theme_classic() +
+  guides(fill = FALSE) +
+  ggtitle("RIMBP2 gene expression lowest in high lipid diet uninfected birds")
+```
+
+# Genotype x Phenotype
+
+## loading in phenotype data
+```{r}
+eyescores_raw <- readr::read_csv("~/Documents/GitHub/CanarySeq/Geno.x.Pheno/canary_eyescores.csv", 
+    col_types = cols(Day = col_integer(), 
+        Date = col_character()))
+
+
+```
+
+```{r}
+eyescores_days <- eyescores_raw %>%
+  mutate(Bird = str_replace(ID, " ", ".")) %>%
+  mutate(Bird = str_replace(Bird, "Orange", "orange")) %>%
+  mutate(Bird = str_replace(Bird, "- ", "")) %>%
+  mutate(Bird = str_replace(Bird, "LD.19 239", "LD19.239")) %>%
+  mutate(Bird = str_replace(Bird, "Blue.045", "Blue.45")) %>%
+  select(Bird, Day, ES) #%>%
+  # filter(Day %in% c(0,14,21)) # get days we are interested in
+
+eyescores_days14 <- eyescores_days %>%
+  filter(Day == 14)
+
+unique(eyescores_days14$Bird) %>% length()
+unique(tidygeneExpr$Bird) %>% length()
+# we have RNA-seq data for 6 of the 8 birds with phenotype scores.
+unique(tidygeneExpr$Bird)[!(unique(tidygeneExpr$Bird) %in% unique(eyescores_days14$Bird))] %>% length()
+
+eyescores_tidy <- eyescores_days %>%
+  filter(Bird %in% tidygeneExpr$Bird) %>% # only birds with both phenotype and genotype data
+  mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  select(-ES) 
+
+eyescores_tidy14 <- eyescores_days14 %>%
+  filter(Bird %in% tidygeneExpr$Bird) %>% # only birds with both phenotype and genotype data
+  mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  select(-ES) #%>% # remove ES column, replaced by 'value'
+  # mutate(Lane = NA, 
+  #        gene = NA, 
+  #        MG=)
+
+geneExpr_wide14 <- tidygeneExpr %>% 
+  filter(Bird %in% eyescores_tidy14$Bird) %>% # just correlate with birds with both data types
+  # filter(Day %in% c(0,7,14)) %>% # only days with pheno & geno measures
+  filter(Day == 14) %>% # alternative, just use this xday for analysis. alt to above line
+  # group_by(MG) %>%
+  pivot_wider(id_cols = gene, 
+              values_from = tpm, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             MG,
+                             Bird)
+              ) %>%
+  select(gene, order(names(.))) %>%
+  rename_all(~stringr::str_replace(.,"^.*_","")) %>%
+  select(gene, order(names(.)))
+
+eyescore_row_df14 <- eyescores_tidy14 %>%
+  distinct() %>% # remove any duplicates (currently only orange.24)
+  filter(Bird %in% colnames(geneExpr_wide14)) %>%
+  pivot_wider(id_cols = measure, 
+              values_from = value, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             Bird)
+              ) %>%
+  mutate(gene = measure, .keep="unused") %>%
+  select(gene, order(names(.)))# %>%
+  # select(Bird %in% tidygeneExpr$Bird)
+
+eyescore_row_vec14 <- c(NA, as.numeric(as.vector(eyescore_row_df14[1,-1])))
+colnames(eyescore_row_df14) <-  colnames(geneExpr_wide14)
+
+genPhen_dat14 <- rbind(geneExpr_wide14, eyescore_row_df14)
+
+genPhen_dat_t.tmp14 <- as_tibble(cbind(bird = names(genPhen_dat14), t(genPhen_dat14)))
+
+colnames(genPhen_dat_t.tmp14) <- genPhen_dat_t.tmp14[1,]
+
+geno.x.pheno14 <- genPhen_dat_t.tmp14 %>% 
+  slice(-1) %>%
+  hablar::retype()
+  
+# 
+# eyescore_wide <- eyescore_wide_tmp[rep(1, nrow(geneExpr_wide)),]
+# 
+# 
+# 
+# 
+# geno.x.pheno <- bind_cols(
+#   geneExpr_wide,
+#   eyescore_wide
+# )
+
+```
+
+```{r}
+# subset only genes that show some possiblility of DE via edgeR:
+# load in edgeR output
+MGLpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/MGLpost0.csv")
+```
+
+
+```{r}
+library(corrr)
+
+cor.geno.x.pheno14 <- geno.x.pheno14 %>%
+  correlate()
+
+cor.geno.x.pheno.tidy14 <- cor.geno.x.pheno14 %>%
+  stretch()
+
+cor.geno.x.pheno.tidy14 %>%
+  filter(x == "eye_score") %>%
+  arrange(desc(abs(r)))
+  
+```
+
+It appears there exists a positive correlation between phenotypic eye scores and tpm of LOC103818289 and JCHAIN.
+
+```{r viz key genes Day 14}
+# our gene of interest
+goi <- "LOC103818289"
+goi <- "JCHAIN"
+goi <- "LOC108963957"
+
+tidygeneExpr %>%
+  filter(gene == goi) %>%
+  ggplot(aes(x=Day, y =tpm, color = MG, group = Bird, shape = Diet)) +
+  geom_line() +
+  geom_point() +
+  theme_classic() +
+  facet_wrap(~MG)
+
+eyescores_tidy %>%
+  ggplot(aes(x=Bird, y =10*value)) +
+  geom_bar(data = filter(tidygeneExpr, gene==goi & Day == 14),
+           stat= "identity",
+           aes(x=Bird, y = tpm), alpha = 0.5, fill = "red"
+           ) +
+  geom_bar(stat = "identity", fill = "blue", alpha = 0.5) +
+  theme_classic() + 
+  scale_x_discrete(guide = guide_axis(angle = 70)) #+
+  # facet_wrap(~MG)
+```
+
+```{r}
+tidygeneExpr %>%
+  filter(gene %in% c("LOC103818289", "LOC108963957")) %>%
+  filter(Day == 14) %>%
+  ggplot(aes(x=Bird, y =tpm, fill = gene, group = Bird, shape = Diet)) +
+  geom_col(position = "jitter") +
+  theme_classic() +
+  facet_wrap(~MG) + 
+  scale_x_discrete(guide = guide_axis(angle = 70))
+```
+
+
+# Day 21
+
+```{r}
+
+eyescores_days21 <- eyescores_raw %>%
+  mutate(Bird = str_replace(ID, " ", ".")) %>%
+  mutate(Bird = str_replace(Bird, "Orange", "orange")) %>%
+  mutate(Bird = str_replace(Bird, "- ", "")) %>%
+  mutate(Bird = str_replace(Bird, "LD.19 239", "LD19.239")) %>%
+  mutate(Bird = str_replace(Bird, "Blue.045", "Blue.45")) %>%
+  select(Bird, Day, ES) %>%
+  # filter(Day %in% c(0,21,21)) # get days we are interested in
+  filter(Day == 21)
+
+unique(eyescores_days21$Bird) %>% length()
+unique(tidygeneExpr$Bird) %>% length()
+# we have RNA-seq data for 6 of the 8 birds with phenotype scores.
+unique(tidygeneExpr$Bird)[!(unique(tidygeneExpr$Bird) %in% unique(eyescores_days21$Bird))] %>% length()
+
+eyescores_tidy21 <- eyescores_days21 %>%
+  filter(Bird %in% tidygeneExpr$Bird) %>% # only birds with both phenotype and genotype data
+  mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  select(-ES) 
+
+geneExpr_wide21 <- tidygeneExpr %>% 
+  filter(Bird %in% eyescores_tidy21$Bird) %>% # just correlate with birds with both data types
+  # filter(Day %in% c(0,7,21)) %>% # only days with pheno & geno measures
+  filter(Day == 21) %>% # alternative, just use this xday for analysis. alt to above line
+  # group_by(MG) %>%
+  pivot_wider(id_cols = gene, 
+              values_from = tpm, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             MG,
+                             Bird)
+              ) %>%
+  select(gene, order(names(.))) %>%
+  rename_all(~stringr::str_replace(.,"^.*_","")) %>%
+  select(gene, order(names(.)))
+
+eyescore_row_df21 <- eyescores_tidy21 %>%
+  distinct() %>% # remove any duplicates (currently only orange.24)
+  filter(Bird %in% colnames(geneExpr_wide21)) %>%
+  pivot_wider(id_cols = measure, 
+              values_from = value, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             Bird)
+              ) %>%
+  mutate(gene = measure, .keep="unused") %>%
+  select(gene, order(names(.)))# %>%
+  # select(Bird %in% tidygeneExpr$Bird)
+
+eyescore_row_vec21 <- c(NA, as.numeric(as.vector(eyescore_row_df21[1,-1])))
+colnames(eyescore_row_df21) <-  colnames(geneExpr_wide21)
+
+genPhen_dat21 <- rbind(geneExpr_wide21, eyescore_row_df21)
+
+genPhen_dat_t.tmp21 <- as_tibble(cbind(bird = names(genPhen_dat21), t(genPhen_dat21)))
+
+colnames(genPhen_dat_t.tmp21) <- genPhen_dat_t.tmp21[1,]
+
+geno.x.pheno21 <- genPhen_dat_t.tmp21 %>% 
+  slice(-1) %>%
+  hablar::retype()
+
+remove(geneExpr, genPhen_dat_t.tmp14, genPhen_dat21)
+#corr generation.
+
+cor.geno.x.pheno.tidy21 <- geno.x.pheno21 %>%
+  correlate() %>%
+  rearrange() %>%
+  shave() %>%
+  stretch()
+
+remove(cor.geno.x.pheno21)
+
+cor.geno.x.pheno.tidy21 %>%
+  filter(x == "eye_score") %>%
+  arrange(desc(abs(r)))
+```
+
+```{r viz key genes Day 21}
+# some gene of interest for day 14
+goi <- "LOC103818289"
+goi <- "JCHAIN"
+goi <- "LOC108963957"
+
+# these are for day 21:
+goi <- "LOC103826451"
+goi <- "LOC115485505"
+goi <- "YPEL1"
+goi <- "LOC103818289"
+
+# DE but don't see:
+goi <- "RUBCN"
+
+tidygeneExpr %>%
+  filter(gene == goi) %>%
+  ggplot(aes(x=Day, y =tpm, color = MG, group = Bird, shape = Diet)) +
+  geom_line() +
+  geom_point() +
+  theme_classic() +
+  facet_wrap(~MG)
+
+print(goi)
+eyescores_tidy21 %>%
+  # make sure that only birds with both are included
+  filter(Bird %in% filter(tidygeneExpr, gene==goi & Day == 21)$Bird) %>%
+  ggplot(aes(x=Bird, y =10*value)) +
+  geom_bar(data = filter(tidygeneExpr, gene==goi & Day == 21),
+  # geom_bar(data = filter(tidygeneExpr, gene %in% c("LOC103826451", "LOC115485505","YPEL1") & Day == 21),
+           stat= "identity",
+           aes(x=Bird, y = tpm), alpha = 0.5, fill = "red"
+           ) +
+  geom_bar(stat = "identity", fill = "blue", alpha = 0.5) +
+  theme_classic() + 
+  scale_x_discrete(guide = guide_axis(angle = 70)) +
+  ggtitle("red = tpm, blue = eyescore*10") + 
+  facet_wrap(~MG)
+```
+
+```{r}
+# look at all of the interesting relationships between genes before unloading that data
+cor.geno.x.pheno.tidy21 %>%
+  filter(r <= -0.8) %>%
+  arrange(r)
+```
+
+```{r}
+tidygeneExpr %>%
+  filter(gene %in% c("RPS3A", "WHAMM")) %>%
+  ggplot(aes(x=Day, y =log10(tpm), color = gene, group = interaction(gene, Bird), shape = Bird)) +
+  geom_line() +
+  geom_point() +
+  theme_classic() +
+  facet_wrap(~MG)
+```
+
+```{r}
+tidygeneExpr %>%
+  filter(gene %in% c("OCIAD2", "P2RY1")) %>%
+  ggplot(aes(x=Day, y =tpm, color = gene, group = interaction(gene, Bird), shape = Diet)) +
+  geom_line() +
+  geom_point() +
+  theme_classic() +
+  facet_wrap(~MG)
+```
+# Checking correlatioons only for genes that were identified as DE via edgeR in post0 contrast
+```{r}
+eyescores_tidy14 <- eyescores_days14 %>%
+  filter(Bird %in% tidygeneExpr$Bird) %>% # only birds with both phenotype and genotype data
+  mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  select(-ES) #%>% # remove ES column, replaced by 'value'
+  # mutate(Lane = NA, 
+  #        gene = NA, 
+  #        MG=)
+
+# tidy the data for graphing
+tidygeneExpr <- geneExpr %>%
+  as_tibble(rownames = "gene") %>%
+  pivot_longer(!gene, 
+               names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+               names_sep = "_",
+               values_to = "tpm") %>%
+  separate(col = MG.Diet, c("MG", "Diet"))
+
+geneExpr_wide14_DE <- tidygeneExpr %>% 
+  filter(Bird %in% eyescores_tidy14$Bird) %>% # just correlate with birds with both data types
+  # filter(Day %in% c(0,7,14)) %>% # only days with pheno & geno measures
+  filter(Day == 14) %>% # alternative, just use this xday for analysis. alt to above line
+  filter(gene %in% filter(MGLpost0, FDR < 0.2)$...1) %>%
+  pivot_wider(id_cols = gene, 
+              values_from = tpm, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             MG,
+                             Bird)
+              ) %>%
+  select(gene, order(names(.))) %>%
+  rename_all(~stringr::str_replace(.,"^.*_","")) %>%
+  select(gene, order(names(.)))
+
+eyescore_row_df14 <- eyescores_tidy14 %>%
+  distinct() %>% # remove any duplicates (currently only orange.24)
+  filter(Bird %in% colnames(geneExpr_wide14_DE)) %>%
+  pivot_wider(id_cols = measure, 
+              values_from = value, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             Bird)
+              ) %>%
+  mutate(gene = measure, .keep="unused") %>%
+  select(gene, order(names(.)))# %>%
+  # select(Bird %in% tidygeneExpr$Bird)
+
+eyescore_row_vec14 <- c(NA, as.numeric(as.vector(eyescore_row_df14[1,-1])))
+colnames(eyescore_row_df14) <-  colnames(geneExpr_wide14_DE)
+
+genPhen_dat14_DE <- rbind(geneExpr_wide14_DE, eyescore_row_df14)
+
+genPhen_dat_t.tmp14_DE <- as_tibble(cbind(bird = names(genPhen_dat14_DE), t(genPhen_dat14_DE)))
+
+colnames(genPhen_dat_t.tmp14_DE) <- genPhen_dat_t.tmp14_DE[1,]
+
+geno.x.pheno14_DE <- genPhen_dat_t.tmp14_DE %>% 
+  slice(-1) %>%
+  hablar::retype()
+
+cor.geno.x.pheno_DE <- geno.x.pheno14_DE %>%
+  correlate(method = "spearman") %>%
+  rearrange() %>%
+  shave() 
+
+# cor.geno.x.pheno_DE #%>%
+  # rplot() + 
+  # scale_x_discrete(guide = guide_axis(angle = 45))
+```
+
+```{r}
+cor.geno.x.pheno_DE %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  arrange(desc(r))
+  
+```
+
+```{r}
+# genes with the highest correlation (regardless of DE output)
+tidygeneExpr %>% # genes that correlate strongly with phenotypic eyescores
+  filter(gene %in% c("LOC103818289", 
+                     "JCHAIN", 
+                     "LOC108963957", 
+                     "TENT5C", 
+                     "LOC103818060", 
+                     "LOC103823243", 
+                     "CCR10", 
+                     "LOC108963113")) %>%
+  mutate(Day = as.numeric(Day)) %>%
+  left_join(., eyescores_tidy, by = c("Bird", "Day")) %>% # adding column of eyescore
+  ggplot(aes(x=Day, y =log10(tpm), color = MG, group = interaction(gene, Bird))) +
+  geom_line() +
+  geom_point(aes(size = as.numeric(value))) +
+  theme_classic() +
+  facet_wrap(~gene)
+
+
+tidygeneExpr %>% # genes that correlate strongly with phenotypic eyescores
+  filter(gene %in% c("LOC103818289", "JCHAIN", "LOC108963957", "TENT5C", "LOC103818060", "LOC103823243", "CCR10")) %>%
+  mutate(Day = as.numeric(Day)) %>%
+  left_join(., eyescores_tidy, by = c("Bird", "Day")) %>% # adding column of eyescore
+  ggplot(aes(x=Day, y =log10(tpm), color = MG, group = interaction(gene, Bird)), size = value) +
+  geom_line() +
+  geom_point(aes(size = value)) +
+  theme_classic() +
+  facet_wrap(~gene)
+
+tidygeneExpr %>%
+  filter(gene %in% c("PSMA7", "LOC115484857", "LECT2")) %>%
+  ggplot(aes(x=Day, y =log10(tpm), color = MG, group = interaction(gene, Bird))) +
+  geom_line() +
+  geom_point() +
+  theme_classic() +
+  facet_wrap(~gene)
+
+
+goi <- "LOC103818289"
+eyescores_tidy14 %>%
+  # make sure that only birds with both are included
+  filter(Bird %in% filter(tidygeneExpr, gene==goi & Day == 14)$Bird) %>%
+  ggplot(aes(x=Bird, y =10*value)) +
+  geom_bar(data = filter(tidygeneExpr, gene==goi & Day == 14),
+  # geom_bar(data = filter(tidygeneExpr, gene %in% c("LOC103826451", "LOC115485505","YPEL1") & Day == 21),
+           stat= "identity",
+           aes(x=Bird, y = tpm), alpha = 0.5, fill = "red"
+           ) +
+  geom_bar(stat = "identity", fill = "blue", alpha = 0.5) +
+  theme_classic() + 
+  scale_x_discrete(guide = guide_axis(angle = 60)) +
+  ggtitle("red = tpm, blue = eyescore*10") #+ 
+  # facet_wrap(~MG)
+```
+

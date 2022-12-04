@@ -822,257 +822,281 @@ ggVennDiagram(all)
 ```
 
 
-# Individual Genes of Interest
+<!-- # Individual Genes of Interest -->
 
-It looks like the CCR# receptors are enriched in the PROTEIN group but not the lipid group. 
-We take a look at how the expression of these genes changed over time for prot vs lipid ctl birds
+<!-- It looks like the CCR# receptors are enriched in the PROTEIN group but not the lipid group.  -->
+<!-- We take a look at how the expression of these genes changed over time for prot vs lipid ctl birds -->
 
-```{r getDataIn}
-g.tpm.l <- read.delim("~/Documents/GitHub/CanarySeq/globinModifiedGTFResults/rsem.merged.gene_tpm.tsv", 
-                                          header=TRUE)
-row.names(g.tpm.l) <- (g.tpm.l$gene_id)
-# View(g.tpm.l)
-g.tpm.l$ES89_Blue.049_Control.protein_0 <- NULL #remove the bad sample
+<!-- ```{r getDataIn} -->
+<!-- g.tpm.l <- read.delim("~/Documents/GitHub/CanarySeq/globinModifiedGTFResults/rsem.merged.gene_tpm.tsv",  -->
+<!--                                           header=TRUE) -->
+<!-- row.names(g.tpm.l) <- (g.tpm.l$gene_id) -->
+<!-- # View(g.tpm.l) -->
+<!-- g.tpm.l$ES89_Blue.049_Control.protein_0 <- NULL #remove the bad sample -->
 
-############ make the metadata table ######################
-meta <- data.frame(SampID = colnames(g.tpm.l[,c(3:106)]))
-meta <- meta %>% separate(SampID, 
-                          c("Sample.ID", "Bird.ID",
-                            "MG.Diet", "Day"), "_", 
-                          extra = "warn", fill = "warn", 
-                          remove = FALSE) 
-# View(meta)
+<!-- ############ make the metadata table ###################### -->
+<!-- meta <- data.frame(SampID = colnames(g.tpm.l[,c(3:106)])) -->
+<!-- meta <- meta %>% separate(SampID,  -->
+<!--                           c("Sample.ID", "Bird.ID", -->
+<!--                             "MG.Diet", "Day"), "_",  -->
+<!--                           extra = "warn", fill = "warn",  -->
+<!--                           remove = FALSE)  -->
+<!-- # View(meta) -->
 
-meta <- meta %>% separate(MG.Diet, 
-                          c("MG.Status", "Diet"), 
-                          sep = "[.]", extra = "warn", 
-                          fill = "warn", 
-                          remove = FALSE) 
+<!-- meta <- meta %>% separate(MG.Diet,  -->
+<!--                           c("MG.Status", "Diet"),  -->
+<!--                           sep = "[.]", extra = "warn",  -->
+<!--                           fill = "warn",  -->
+<!--                           remove = FALSE)  -->
 
-meta$MG.Diet.Day <- paste0(meta$MG.Diet, ".", meta$Day)
-meta$MG.Day <- paste0(meta$MG.Status, ".", meta$Day)
-meta$Diet.Day <- paste0(meta$Diet, ".", meta$Day)
+<!-- meta$MG.Diet.Day <- paste0(meta$MG.Diet, ".", meta$Day) -->
+<!-- meta$MG.Day <- paste0(meta$MG.Status, ".", meta$Day) -->
+<!-- meta$Diet.Day <- paste0(meta$Diet, ".", meta$Day) -->
 
-meta <- meta %>% mutate(MG.active = if_else(Day < 1, "NO", 
-                                            if_else(MG.Status == "Control",
-                                                    "NO", "YES")))
-meta$Exposure.MG <- paste0(meta$MG.active, ".", meta$MG.Status)
-meta$Exposure.Diet <- paste0(meta$MG.active, ".", meta$Diet)
+<!-- meta <- meta %>% mutate(MG.active = if_else(Day < 1, "NO",  -->
+<!--                                             if_else(MG.Status == "Control", -->
+<!--                                                     "NO", "YES"))) -->
+<!-- meta$Exposure.MG <- paste0(meta$MG.active, ".", meta$MG.Status) -->
+<!-- meta$Exposure.Diet <- paste0(meta$MG.active, ".", meta$Diet) -->
 
-# View(meta)
-row.names(meta) <- (meta$SampID)
-############ diff exp #################################
-My.dge<-DGEList(counts=g.tpm.l[,c(3:106)], group=meta$MG.Diet.Day)
-summary(My.dge)
-#barplot(My.dge$samples$lib.size*1e-6, names=1:ncol(My.dge), ylab="Library size (millions)")
+<!-- # View(meta) -->
+<!-- row.names(meta) <- (meta$SampID) -->
+<!-- ############ diff exp ################################# -->
+<!-- My.dge<-DGEList(counts=g.tpm.l[,c(3:106)], group=meta$MG.Diet.Day) -->
+<!-- summary(My.dge) -->
+<!-- #barplot(My.dge$samples$lib.size*1e-6, names=1:ncol(My.dge), ylab="Library size (millions)") -->
 
-## creates object from table of counts, 
-## with a data frame counting information for each sample
-# View(My.dge$samples)
-#keep <- filterByExpr(My.dge)
-keep <- rowSums(cpm(My.dge)>1) >= 6
-My.dge <- My.dge[keep, , keep.lib.sizes=FALSE]
-My.dge <- calcNormFactors(My.dge)
-geneExpr <- My.dge$counts
-## uses TMM (weighted trimmed mean of M-values) 
-## to calculate normalization factors (i.e. effective library sizes) 
-## for each sample.
+<!-- ## creates object from table of counts,  -->
+<!-- ## with a data frame counting information for each sample -->
+<!-- # View(My.dge$samples) -->
+<!-- #keep <- filterByExpr(My.dge) -->
+<!-- keep <- rowSums(cpm(My.dge)>1) >= 6 -->
+<!-- My.dge <- My.dge[keep, , keep.lib.sizes=FALSE] -->
+<!-- My.dge <- calcNormFactors(My.dge) -->
+<!-- geneExpr <- My.dge$counts -->
+<!-- ## uses TMM (weighted trimmed mean of M-values)  -->
+<!-- ## to calculate normalization factors (i.e. effective library sizes)  -->
+<!-- ## for each sample. -->
 
-## rule of thumb, require that genes have at least 10-15 reads 
-## in at least one condition to be considered expressed
-## removing unexpressed genes increases our statistical power 
-## to detect differential expression (because fewer tests)
-```
+<!-- ## rule of thumb, require that genes have at least 10-15 reads  -->
+<!-- ## in at least one condition to be considered expressed -->
+<!-- ## removing unexpressed genes increases our statistical power  -->
+<!-- ## to detect differential expression (because fewer tests) -->
+<!-- ``` -->
 
-See all of the CCR gene expression in control birds
-```{r}
-# tidy the data for graphing
-tidygeneExpr <- geneExpr %>%
-  as_tibble(rownames = "gene") %>%
-  pivot_longer(!gene, 
-               names_to = c("Lane", "Bird", "MG.Diet", "Day"),
-               names_sep = "_",
-               values_to = "tpm") %>%
-  separate(col = MG.Diet, c("MG", "Diet"))
+<!-- See all of the CCR gene expression in control birds -->
+<!-- ```{r} -->
+<!-- # tidy the data for graphing -->
+<!-- tidygeneExpr <- geneExpr %>% -->
+<!--   as_tibble(rownames = "gene") %>% -->
+<!--   pivot_longer(!gene,  -->
+<!--                names_to = c("Lane", "Bird", "MG.Diet", "Day"), -->
+<!--                names_sep = "_", -->
+<!--                values_to = "tpm") %>% -->
+<!--   separate(col = MG.Diet, c("MG", "Diet")) -->
 
-# let's look at the CCR# genes now in all control birds.
-tidygeneExpr %>% 
-  # filter(Day == "0" | MG == "Control") %>%
-  filter(MG == "Control") %>%
-  filter(str_detect(gene, 'CCR')) %>%
-  # filter(str_detect(gene, 'LOC108963957')) %>%
-  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
-         log10tpmadd1 = log10(tpm+1)) %>%
-  ggplot(aes(x=Day_jitter, 
-             y = #tpm,
-             log10tpmadd1,
-             color = gene)) +
-  geom_line(aes(group=interaction(Bird,gene))) +
-  geom_point() +
-  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
-  facet_wrap(~Diet+ MG) +
-  theme_classic() 
-```
-
-
-See all of the adaptive immune response gene expression in control birds
-```{r warning=FALSE}
+<!-- # let's look at the CCR# genes now in all control birds. -->
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   filter(MG == "Control") %>% -->
+<!--   filter(str_detect(gene, 'CCR')) %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day_jitter,  -->
+<!--              y = #tpm, -->
+<!--              log10tpmadd1, -->
+<!--              color = gene)) + -->
+<!--   geom_line(aes(group=interaction(Bird,gene))) + -->
+<!--   geom_point() + -->
+<!--   geom_smooth(method = "lm", aes(group = gene, fill = gene)) + -->
+<!--   facet_wrap(~Diet+ MG) + -->
+<!--   theme_classic()  -->
+<!-- ``` -->
 
 
-# let's look at the adaptive immune genes now in all control birds.
-tidygeneExpr %>% 
-  # filter(Day == "0" | MG == "Control") %>%
-  filter(MG == "Control") %>%
-  filter(gene %in% AdImUP) %>%
-  # filter(str_detect(gene, 'LOC108963957')) %>%
-  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
-         log10tpmadd1 = log10(tpm+1)) %>%
-  ggplot(aes(x=Day_jitter, 
-             y = #tpm,
-             log10tpmadd1,
-             color = gene)) +
-  geom_line(aes(group=interaction(Bird,gene))) +
-  geom_point() +
-  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
-  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
-  facet_wrap(~Diet) +
-  theme_classic() +
-  ggtitle("Adapt immune resp upregulated in Diet0")
-
-# let's look at the Positive B cell reg genes now in all control birds.
-tidygeneExpr %>% 
-  # filter(Day == "0" | MG == "Control") %>%
-  filter(MG == "Control") %>%
-  filter(gene %in% PosBUP) %>%
-  # filter(str_detect(gene, 'LOC108963957')) %>%
-  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
-         log10tpmadd1 = log10(tpm+1)) %>%
-  ggplot(aes(x=Day_jitter, 
-             y = tpm,
-             # log10tpmadd1,
-             color = gene)) +
-  geom_line(aes(group=interaction(Bird,gene))) +
-  geom_point() +
-  geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
-  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
-  facet_wrap(~Diet) +
-  theme_classic() +
-  ggtitle("pos b cell upregulated in Diet0")
-```
-
-It looks like the gene RSAD2 is acting differently between the two diet groups. Let's explore further
-```{r}
-tidygeneExpr %>% 
-  # filter(Day == "0" | MG == "Control") %>%
-  # filter(MG == "Control") %>%
-  filter(gene == "RSAD2") %>%
-  # filter(str_detect(gene, 'LOC108963957')) %>%
-  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
-         log10tpmadd1 = log10(tpm+1)) %>%
-  ggplot(aes(x=Day, 
-             y = tpm,
-             # log10tpmadd1,
-             fill = Bird)) +
-  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
-  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
-  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
-  facet_wrap(~Diet+MG) +
-  theme_classic() +
-  guides(fill = FALSE) +
-  ggtitle("RSAD2 gene expression lowest in high lipid diet uninfected birds")
-
-```
-Look at CD40 of B Cell pos reg GO term
-```{r}
-tidygeneExpr %>% 
-  # filter(Day == "0" | MG == "Control") %>%
-  # filter(MG == "Control") %>%
-  filter(gene == "CD40") %>%
-  # filter(str_detect(gene, 'LOC108963957')) %>%
-  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
-         log10tpmadd1 = log10(tpm+1)) %>%
-  ggplot(aes(x=Day, 
-             y = tpm,
-             # log10tpmadd1,
-             fill = Bird)) +
-  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
-  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
-  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
-  facet_wrap(~Diet+MG) +
-  theme_classic() +
-  guides(fill = FALSE) +
-  ggtitle("CD40 gene expression")
-```
-
-Alright now let us do the same thing but this time for downregulated in this scenario. First GO term I consider relevant would be translation (GO:0006412)
-```{r}
-translationGO <- "GO:0006412"# b cell pos reg (Diet post0)
-transDN <- genesInTerm(GOdata_up)[translationGO][[1]][genesInTerm(GOdata_up)[translationGO][[1]] %in% DEgenes_down]
-
-# let's look at the translation genes now in all control birds.
-tidygeneExpr %>% 
-  # filter(Day == "0" | MG == "Control") %>%
-  # filter(MG == "Control") %>%
-  filter(gene %in% transDN) %>%
-  # filter(str_detect(gene, 'LOC108963957')) %>%
-  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
-         log10tpmadd1 = log10(tpm+1)) %>%
-  ggplot(aes(x=Day_jitter, 
-             # y = tpm,
-             y = log10tpmadd1,
-             color = gene)) +
-  geom_line(aes(group=interaction(Bird,gene))) +
-  geom_point() +
-  # geom_smooth(method = "lm", aes(group = gene, fill = gene)) +
-  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
-  facet_wrap(~Diet+MG, nrow = 1) +
-  theme_classic() +
-  ggtitle("translation genes up in LIPID in Diet0")  +
-  guides(color = FALSE) 
+<!-- See all of the adaptive immune response gene expression in control birds -->
+<!-- ```{r warning=FALSE} -->
 
 
-tidygeneExpr %>% 
-  # filter(Day == "0" | MG == "Control") %>%
-  # filter(MG == "Control") %>%
-  filter(gene == "RPS29") %>%
-  # filter(str_detect(gene, 'LOC108963957')) %>%
-  mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)),
-         log10tpmadd1 = log10(tpm+1)) %>%
-  ggplot(aes(x=Day, 
-             y = #tpm,
-             log10tpmadd1,
-             fill = Bird)) +
-  geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) +
-  facet_wrap(~Diet+MG) +
-  theme_classic() +
-  guides(fill = FALSE) +
-  ggtitle("RPS29 gene expression")
-```
+<!-- # let's look at the adaptive immune genes now in all control birds. -->
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   filter(MG == "Control") %>% -->
+<!--   filter(gene %in% AdImUP) %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day_jitter,  -->
+<!--              y = #tpm, -->
+<!--              log10tpmadd1, -->
+<!--              color = gene)) + -->
+<!--   geom_line(aes(group=interaction(Bird,gene))) + -->
+<!--   geom_point() + -->
+<!--   geom_smooth(method = "lm", aes(group = gene, fill = gene)) + -->
+<!--   # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) + -->
+<!--   facet_wrap(~Diet) + -->
+<!--   theme_classic() + -->
+<!--   ggtitle("Adapt immune resp upregulated in Diet0") -->
+
+<!-- # let's look at the Positive B cell reg genes now in all control birds. -->
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   filter(MG == "Control") %>% -->
+<!--   filter(gene %in% PosBUP) %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day_jitter,  -->
+<!--              y = tpm, -->
+<!--              # log10tpmadd1, -->
+<!--              color = gene)) + -->
+<!--   geom_line(aes(group=interaction(Bird,gene))) + -->
+<!--   geom_point() + -->
+<!--   geom_smooth(method = "lm", aes(group = gene, fill = gene)) + -->
+<!--   # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) + -->
+<!--   facet_wrap(~Diet) + -->
+<!--   theme_classic() + -->
+<!--   ggtitle("pos b cell upregulated in Diet0") -->
+<!-- ``` -->
+
+<!-- It looks like the gene RSAD2 is acting differently between the two diet groups. Let's explore further -->
+<!-- ```{r} -->
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   # filter(MG == "Control") %>% -->
+<!--   filter(gene == "RSAD2") %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day,  -->
+<!--              y = tpm, -->
+<!--              # log10tpmadd1, -->
+<!--              fill = Bird)) + -->
+<!--   geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) + -->
+<!--   # geom_smooth(method = "lm", aes(group = gene, fill = gene)) + -->
+<!--   # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) + -->
+<!--   facet_wrap(~Diet+MG) + -->
+<!--   theme_classic() + -->
+<!--   guides(fill = FALSE) + -->
+<!--   ggtitle("RSAD2 gene expression lowest in high lipid diet uninfected birds") -->
 
 
-11/17/22 weekly meeting canary notes
-Set the thresholds. Most interesting part is going to be the discussion. What is the (potential) biological meaning of these results. How do top enriched genes relate to the bird outcomes (phenotypic data).
+<!-- ``` -->
+<!-- Look at CD40 of B Cell pos reg GO term -->
+<!-- ```{r} -->
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   # filter(MG == "Control") %>% -->
+<!--   filter(gene == "CD40") %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day,  -->
+<!--              y = tpm, -->
+<!--              # log10tpmadd1, -->
+<!--              fill = Bird)) + -->
+<!--   geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) + -->
+<!--   # geom_smooth(method = "lm", aes(group = gene, fill = gene)) + -->
+<!--   # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) + -->
+<!--   facet_wrap(~Diet+MG) + -->
+<!--   theme_classic() + -->
+<!--   guides(fill = FALSE) + -->
+<!--   ggtitle("CD40 gene expression") -->
+<!-- ``` -->
 
-Getting close to outlining and writing up the results. (we can think about where we want it to go and writing it accordingly). Jeff suggests a broad journal to start. Molecular Ecology an option. Also ProcB fxnl ecology. Other similar ones are out there.
+<!-- Alright now let us do the same thing but this time for downregulated in this scenario. First GO term I consider relevant would be translation (GO:0006412) -->
+<!-- ```{r} -->
+<!-- translationGO <- "GO:0006412"# b cell pos reg (Diet post0) -->
+<!-- transDN <- genesInTerm(GOdata_up)[translationGO][[1]][genesInTerm(GOdata_up)[translationGO][[1]] %in% DEgenes_down] -->
 
-Authorship...
+<!-- # let's look at the translation genes now in all control birds. -->
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   # filter(MG == "Control") %>% -->
+<!--   filter(gene %in% transDN) %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day_jitter,  -->
+<!--              # y = tpm, -->
+<!--              y = log10tpmadd1, -->
+<!--              color = gene)) + -->
+<!--   geom_line(aes(group=interaction(Bird,gene))) + -->
+<!--   geom_point() + -->
+<!--   # geom_smooth(method = "lm", aes(group = gene, fill = gene)) + -->
+<!--   # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) + -->
+<!--   facet_wrap(~Diet+MG, nrow = 1) + -->
+<!--   theme_classic() + -->
+<!--   ggtitle("translation genes up in LIPID in Diet0")  + -->
+<!--   guides(color = FALSE)  -->
 
-Intro and discussion Erin feels good about. Erin make first outline, esp what went into it prior and how we want to frame.
-I can handle (results and conclusion??)
-Make a figure flow chart. (lot's in the supplement)
-Make a Google slides of figures we can go through. I will make this and share with you.
-...will also want to put into that the phenotypic data.
 
-I want to have the phenotype data.
-Take all the data for each and do pearson corr for each. Use permutation test to get p-value.
-This has been done in yeast, a good idea. 
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   # filter(MG == "Control") %>% -->
+<!--   filter(gene == "RPS29") %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day,  -->
+<!--              y = #tpm, -->
+<!--              log10tpmadd1, -->
+<!--              fill = Bird)) + -->
+<!--   geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) + -->
+<!--   facet_wrap(~Diet+MG) + -->
+<!--   theme_classic() + -->
+<!--   guides(fill = FALSE) + -->
+<!--   ggtitle("RPS29 gene expression") -->
+<!-- ``` -->
 
-Quantitative measures. We could use as stat the given days values. also the time to recovery or AUC as sum stats.
-For path load make sure to log transformation. Also consider log transform and median center.
-Note log2 transformation for path load instead of log10.
 
-Think about using slope of decay of path load as variable to fit.
+<!-- 11/17/22 weekly meeting canary notes -->
+<!-- Set the thresholds. Most interesting part is going to be the discussion. What is the (potential) biological meaning of these results. How do top enriched genes relate to the bird outcomes (phenotypic data). -->
 
-Other variables that they have include: fat scores & mass stuff, but probably not worth looking into. antibody levels didn't look different between the trt groups but maybe worth looking at. Probably do other stuff first. white blood cell stuff don't want to go there.
+<!-- Getting close to outlining and writing up the results. (we can think about where we want it to go and writing it accordingly). Jeff suggests a broad journal to start. Molecular Ecology an option. Also ProcB fxnl ecology. Other similar ones are out there. -->
 
-What makes most sense for our story would be the eye score data. 
+<!-- Authorship... -->
+
+<!-- Intro and discussion Erin feels good about. Erin make first outline, esp what went into it prior and how we want to frame. -->
+<!-- I can handle (results and conclusion??) -->
+<!-- Make a figure flow chart. (lot's in the supplement) -->
+<!-- Make a Google slides of figures we can go through. I will make this and share with you. -->
+<!-- ...will also want to put into that the phenotypic data. -->
+
+<!-- I want to have the phenotype data. -->
+<!-- Take all the data for each and do pearson corr for each. Use permutation test to get p-value. -->
+<!-- This has been done in yeast, a good idea.  -->
+
+<!-- Quantitative measures. We could use as stat the given days values. also the time to recovery or AUC as sum stats. -->
+<!-- For path load make sure to log transformation. Also consider log transform and median center. -->
+<!-- Note log2 transformation for path load instead of log10. -->
+
+<!-- Think about using slope of decay of path load as variable to fit. -->
+
+<!-- Other variables that they have include: fat scores & mass stuff, but probably not worth looking into. antibody levels didn't look different between the trt groups but maybe worth looking at. Probably do other stuff first. white blood cell stuff don't want to go there. -->
+
+<!-- What makes most sense for our story would be the eye score data.  -->
+
+<!-- ```{r} -->
+<!-- # let me test a gene with biggest edgeR output diff in diet0 -->
+<!-- tidygeneExpr %>%  -->
+<!--   # filter(Day == "0" | MG == "Control") %>% -->
+<!--   # filter(MG == "Control") %>% -->
+<!--   filter(gene == "RIMBP2") %>% -->
+<!--   # filter(str_detect(gene, 'LOC108963957')) %>% -->
+<!--   mutate(Day_jitter = (as.numeric(Day) + rnorm(length(Day), sd = 0.2)), -->
+<!--          log10tpmadd1 = log10(tpm+1)) %>% -->
+<!--   ggplot(aes(x=Day,  -->
+<!--              # y = tpm, -->
+<!--              log10tpmadd1, -->
+<!--              fill = Bird)) + -->
+<!--   geom_col(position = "dodge", width = 0.5) +#aes(group=interaction(Bird,gene))) + -->
+<!--   # geom_smooth(method = "lm", aes(group = gene, fill = gene)) + -->
+<!--   # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) + -->
+<!--   facet_wrap(~Diet+MG) + -->
+<!--   theme_classic() + -->
+<!--   guides(fill = FALSE) + -->
+<!--   ggtitle("RIMBP2 gene expression lowest in high lipid diet uninfected birds") -->
+<!-- ``` -->
+
