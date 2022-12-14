@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
-GO:0006412,translation,352,86,36.83,5.2e-24,0
+GO:0006412,translation,370,86,38.7,5.8e-24,0
 GO:0015074,DNA integration,33,19,3.45,3.7e-11,0
-GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,21,4.29,5.4e-11,0
-GO:0006278,RNA-dependent DNA biosynthetic process,79,22,8.27,4.1e-10,0
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,21,4.29,5.3e-11,0
+GO:0006278,RNA-templated DNA biosynthetic process,79,22,8.26,4.1e-10,0
 GO:0044826,viral genome integration into host DNA,20,13,2.09,6.3e-09,0
 GO:0075713,establishment of integrated proviral latency,20,13,2.09,6.3e-09,0
-GO:0046718,viral entry into host cell,51,18,5.34,1.0e-07,2e-04
-GO:0042274,ribosomal small subunit biogenesis,24,9,2.51,4.0e-06,0.006
-GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,8,1.46,2.3e-05,0.0304
-GO:0006310,DNA recombination,160,22,16.74,4.2e-05,0.05
-GO:0007186,G protein-coupled receptor signaling pathway,222,41,23.23,6.7e-05,0.0725
-GO:0050790,regulation of catalytic activity,669,53,70,0.00015,0.1488
-GO:0006508,proteolysis,739,68,77.33,0.00046,0.4211
-GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,0.84,0.00053,0.4505
-GO:0006364,rRNA processing,84,17,8.79,0.00096,0.7617
-GO:2000435,negative regulation of protein neddylation,3,3,0.31,0.00114,0.8479
-GO:0032508,DNA duplex unwinding,37,9,3.87,0.00389,1
-GO:0090305,nucleic acid phosphodiester bond hydrolysis,86,30,9,0.00489,1
-GO:0007601,visual perception,26,9,2.72,0.00550,1
-GO:2000059,negative regulation of ubiquitin-dependent protein catabolic process,31,7,3.24,0.00588,1
-GO:0006811,ion transport,1073,105,112.28,0.00627,1
-GO:0035176,social behavior,13,5,1.36,0.00778,1
+GO:0046718,viral entry into host cell,50,18,5.23,6.2e-08,1e-04
+GO:0042274,ribosomal small subunit biogenesis,24,9,2.51,4.0e-06,0.0059
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,8,1.46,2.3e-05,0.0302
+GO:0006310,DNA recombination,160,22,16.74,4.2e-05,0.0496
+GO:0007186,G protein-coupled receptor signaling pathway,217,39,22.7,6.9e-05,0.0741
+GO:0050790,regulation of catalytic activity,651,52,68.1,1.0e-04,0.0985
+GO:0006508,proteolysis,742,68,77.62,0.00046,0.4181
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,0.84,0.00053,0.4473
+GO:0006364,rRNA processing,84,17,8.79,0.00096,0.7562
+GO:2000435,negative regulation of protein neddylation,3,3,0.31,0.00114,0.8419
+GO:0090305,nucleic acid phosphodiester bond hydrolysis,71,28,7.43,0.00366,1
+GO:0032508,DNA duplex unwinding,37,9,3.87,0.00388,1
+GO:0007601,visual perception,26,9,2.72,0.00549,1
+GO:0006811,ion transport,422,50,44.14,0.00580,1
+GO:2000059,negative regulation of ubiquitin-dependent protein catabolic process,31,7,3.24,0.00587,1
+GO:0035176,social behavior,13,5,1.36,0.00777,1
 GO:0007130,synaptonemal complex assembly,5,3,0.52,0.00970,1
-GO:0048016,inositol phosphate-mediated signaling,22,6,2.3,0.01088,1
-GO:1902473,regulation of protein localization to synapse,6,3,0.63,0.01092,1
-GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.21,0.01094,1
-GO:0007021,tubulin complex assembly,2,2,0.21,0.01094,1
-GO:1903028,positive regulation of opsonization,2,2,0.21,0.01094,1
-GO:0030916,otic vesicle formation,2,2,0.21,0.01094,1
-GO:0036335,intestinal stem cell homeostasis,2,2,0.21,0.01094,1
-GO:0033693,neurofilament bundle assembly,2,2,0.21,0.01094,1
-GO:0120197,mucociliary clearance,2,2,0.21,0.01094,1
-GO:2001311,lysobisphosphatidic acid metabolic process,2,2,0.21,0.01094,1
-GO:0099178,regulation of retrograde trans-synaptic signaling by endocanabinoid,2,2,0.21,0.01094,1
-GO:0006601,creatine biosynthetic process,2,2,0.21,0.01094,1
-GO:0060134,prepulse inhibition,2,2,0.21,0.01094,1
-GO:0120222,regulation of blastocyst development,2,2,0.21,0.01094,1
-GO:0006897,endocytosis,182,20,19.04,0.01138,1
-GO:0032259,methylation,167,12,17.47,0.01168,1
-GO:0006414,translational elongation,27,8,2.83,0.01505,1
-GO:0071320,cellular response to cAMP,15,5,1.57,0.01520,1
-GO:0070886,positive regulation of calcineurin-NFAT signaling cascade,6,3,0.63,0.01791,1
-GO:0016032,viral process,172,23,18,0.02129,1
-GO:0055091,phospholipid homeostasis,7,3,0.73,0.02893,1
-GO:0070859,positive regulation of bile acid biosynthetic process,3,2,0.31,0.03052,1
-GO:0019509,L-methionine salvage from methylthioadenosine,3,2,0.31,0.03052,1
-GO:0072282,metanephric nephron tubule morphogenesis,3,2,0.31,0.03052,1
-GO:0002227,innate immune response in mucosa,3,2,0.31,0.03052,1
-GO:0048172,regulation of short-term neuronal synaptic plasticity,3,2,0.31,0.03052,1
-GO:0097112,gamma-aminobutyric acid receptor clustering,3,2,0.31,0.03052,1
+GO:0048016,inositol phosphate-mediated signaling,22,6,2.3,0.01087,1
+GO:1902473,regulation of protein localization to synapse,5,3,0.52,0.01091,1
+GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.21,0.01093,1
+GO:0007021,tubulin complex assembly,2,2,0.21,0.01093,1
+GO:1903028,positive regulation of opsonization,2,2,0.21,0.01093,1
+GO:0030916,otic vesicle formation,2,2,0.21,0.01093,1
+GO:0036335,intestinal stem cell homeostasis,2,2,0.21,0.01093,1
+GO:0033693,neurofilament bundle assembly,2,2,0.21,0.01093,1
+GO:0120197,mucociliary clearance,2,2,0.21,0.01093,1
+GO:2001311,lysobisphosphatidic acid metabolic process,2,2,0.21,0.01093,1
+GO:0099178,regulation of retrograde trans-synaptic signaling by endocanabinoid,2,2,0.21,0.01093,1
+GO:0006601,creatine biosynthetic process,2,2,0.21,0.01093,1
+GO:0060134,prepulse inhibition,2,2,0.21,0.01093,1
+GO:0120222,regulation of blastocyst development,2,2,0.21,0.01093,1
+GO:0006897,endocytosis,182,20,19.04,0.01136,1
+GO:0032259,methylation,167,12,17.47,0.01166,1
+GO:0006414,translational elongation,27,8,2.82,0.01503,1
+GO:0071320,cellular response to cAMP,15,5,1.57,0.01519,1
+GO:0070886,positive regulation of calcineurin-NFAT signaling cascade,6,3,0.63,0.01789,1
+GO:0055091,phospholipid homeostasis,7,3,0.73,0.02890,1
+GO:0016032,viral process,171,23,17.89,0.02930,1
+GO:0070859,positive regulation of bile acid biosynthetic process,3,2,0.31,0.03051,1
+GO:0019509,L-methionine salvage from methylthioadenosine,3,2,0.31,0.03051,1
+GO:0072282,metanephric nephron tubule morphogenesis,3,2,0.31,0.03051,1
+GO:0002227,innate immune response in mucosa,3,2,0.31,0.03051,1
+GO:0048172,regulation of short-term neuronal synaptic plasticity,3,2,0.31,0.03051,1
+GO:0097112,gamma-aminobutyric acid receptor clustering,3,2,0.31,0.03051,1

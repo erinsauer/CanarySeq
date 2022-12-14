@@ -1,9 +1,9 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:1904707,positive regulation of vascular associated smooth muscle cell proliferation,11,6,1.03,0.00020,1
-GO:0006954,inflammatory response,195,33,18.17,0.00054,1
+GO:1904707,positive regulation of vascular associated smooth muscle cell proliferation,11,6,1.02,0.00020,1
+GO:0006954,inflammatory response,198,34,18.45,0.00053,1
 GO:0045429,positive regulation of nitric oxide biosynthetic process,9,5,0.84,0.00063,1
-GO:0070374,positive regulation of ERK1 and ERK2 cascade,58,14,5.41,0.00068,1
-GO:0045071,negative regulation of viral genome replication,14,6,1.3,0.00117,1
+GO:0070374,positive regulation of ERK1 and ERK2 cascade,58,14,5.4,0.00068,1
+GO:0045071,negative regulation of viral genome replication,14,6,1.3,0.00116,1
 GO:0048538,thymus development,26,8,2.42,0.00186,1
 GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,4,0.65,0.00208,1
 GO:0048711,positive regulation of astrocyte differentiation,4,3,0.37,0.00300,1
@@ -11,20 +11,20 @@ GO:0032700,negative regulation of interleukin-17 production,4,3,0.37,0.00300,1
 GO:0044205,'de novo' UMP biosynthetic process,4,3,0.37,0.00300,1
 GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.37,0.00300,1
 GO:0042742,defense response to bacterium,54,11,5.03,0.00379,1
-GO:0003007,heart morphogenesis,61,10,5.68,0.00383,1
-GO:0045087,innate immune response,173,29,16.12,0.00432,1
-GO:1902895,positive regulation of pri-miRNA transcription by RNA polymerase II,19,6,1.77,0.00602,1
-GO:0030509,BMP signaling pathway,55,9,5.13,0.00604,1
-GO:2000249,regulation of actin cytoskeleton reorganization,16,6,1.49,0.00638,1
-GO:0071380,cellular response to prostaglandin E stimulus,5,3,0.47,0.00698,1
-GO:1900227,positive regulation of NLRP3 inflammasome complex assembly,5,3,0.47,0.00698,1
-GO:0045637,regulation of myeloid cell differentiation,89,15,8.29,0.00854,1
-GO:0008272,sulfate transport,5,4,0.47,0.00863,1
+GO:0003007,heart morphogenesis,61,10,5.68,0.00382,1
+GO:0045087,innate immune response,173,29,16.12,0.00431,1
+GO:1902895,positive regulation of miRNA transcription,19,6,1.77,0.00601,1
+GO:0030509,BMP signaling pathway,55,9,5.12,0.00603,1
+GO:2000249,regulation of actin cytoskeleton reorganization,16,6,1.49,0.00637,1
+GO:0071380,cellular response to prostaglandin E stimulus,5,3,0.47,0.00697,1
+GO:1900227,positive regulation of NLRP3 inflammasome complex assembly,5,3,0.47,0.00697,1
+GO:0045637,regulation of myeloid cell differentiation,89,15,8.29,0.00853,1
+GO:0008272,sulfate transport,5,4,0.47,0.00862,1
 GO:0032964,collagen biosynthetic process,7,4,0.65,0.00863,1
-GO:0035564,regulation of kidney size,3,3,0.28,0.00865,1
+GO:0035564,regulation of kidney size,3,3,0.28,0.00864,1
 GO:1902730,positive regulation of proteoglycan biosynthetic process,5,3,0.47,0.00865,1
 GO:0010226,response to lithium ion,6,3,0.56,0.00865,1
-GO:0007586,digestion,21,4,1.96,0.00867,1
+GO:0007586,digestion,21,4,1.96,0.00866,1
 GO:2000660,negative regulation of interleukin-1-mediated signaling pathway,2,2,0.19,0.00867,1
 GO:0033292,T-tubule organization,2,2,0.19,0.00867,1
 GO:0061518,microglial cell proliferation,2,2,0.19,0.00867,1
@@ -47,5 +47,5 @@ GO:0090129,positive regulation of synapse maturation,2,2,0.19,0.00867,1
 GO:0030187,melatonin biosynthetic process,2,2,0.19,0.00867,1
 GO:0042659,regulation of cell fate specification,2,2,0.19,0.00867,1
 GO:0014807,regulation of somitogenesis,2,2,0.19,0.00867,1
-GO:0050873,brown fat cell differentiation,26,7,2.42,0.00935,1
-GO:0048536,spleen development,16,6,1.49,0.00935,1
+GO:0050873,brown fat cell differentiation,26,7,2.42,0.00934,1
+GO:0048536,spleen development,16,6,1.49,0.00934,1

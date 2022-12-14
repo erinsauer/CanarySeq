@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0006278,RNA-templated DNA biosynthetic process,79,29,15.82,0.00011,1
+GO:0045814,negative regulation of gene expression; epigenetic,45,11,9.01,0.00038,1
+GO:0006508,proteolysis,742,132,148.6,0.00050,1
+GO:0008217,regulation of blood pressure,35,15,7.01,0.00077,1
+GO:0044205,'de novo' UMP biosynthetic process,4,4,0.8,0.00160,1
+GO:0006268,DNA unwinding involved in DNA replication,11,7,2.2,0.00196,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,5,1.4,0.00468,1
+GO:0071360,cellular response to exogenous dsRNA,7,5,1.4,0.00468,1
+GO:0051289,protein homotetramerization,22,10,4.41,0.00612,1
+GO:0048146,positive regulation of fibroblast proliferation,16,8,3.2,0.00700,1
+GO:0051607,defense response to virus,97,27,19.43,0.00728,1
+GO:0007044,cell-substrate junction assembly,32,12,6.41,0.00796,1
+GO:0006098,pentose-phosphate shunt,8,5,1.6,0.00800,1
+GO:1902358,sulfate transmembrane transport,3,3,0.6,0.00802,1
+GO:0035928,rRNA import into mitochondrion,3,3,0.6,0.00802,1
+GO:0010745,negative regulation of macrophage derived foam cell differentiation,3,3,0.6,0.00802,1
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,16,8.21,0.00914,1
+GO:0061098,positive regulation of protein tyrosine kinase activity,10,5,2,0.01699,1
+GO:0033234,negative regulation of protein sumoylation,6,4,1.2,0.01700,1
+GO:0033690,positive regulation of osteoblast proliferation,6,4,1.2,0.01700,1
+GO:0002091,negative regulation of receptor internalization,6,4,1.2,0.01700,1
+GO:0070207,protein homotrimerization,6,4,1.2,0.01700,1
+GO:0045656,negative regulation of monocyte differentiation,6,4,1.2,0.01700,1
+GO:0016575,histone deacetylation,37,11,7.41,0.01810,1
+GO:0006310,DNA recombination,160,43,32.04,0.01906,1
+GO:0032481,positive regulation of type I interferon production,33,11,6.61,0.01954,1
+GO:0015074,DNA integration,33,12,6.61,0.02153,1
+GO:0070374,positive regulation of ERK1 and ERK2 cascade,58,19,11.62,0.02159,1
+GO:0070588,calcium ion transmembrane transport,94,25,18.82,0.02309,1
+GO:0042742,defense response to bacterium,54,15,10.81,0.02327,1
+GO:0055072,iron ion homeostasis,43,11,8.61,0.02683,1
+GO:0016556,mRNA modification,23,9,4.61,0.02714,1
+GO:0070509,calcium ion import,9,6,1.8,0.02715,1
+GO:0021587,cerebellum morphogenesis,13,6,2.6,0.02719,1
+GO:0034154,toll-like receptor 7 signaling pathway,6,4,1.2,0.02723,1
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.8,0.02726,1
+GO:0016554,cytidine to uridine editing,4,3,0.8,0.02726,1
+GO:1903934,positive regulation of DNA primase activity,4,3,0.8,0.02726,1
+GO:0010759,positive regulation of macrophage chemotaxis,4,3,0.8,0.02726,1
+GO:0010890,positive regulation of sequestering of triglyceride,4,3,0.8,0.02726,1
+GO:0010842,retina layer formation,4,3,0.8,0.02726,1
+GO:0030948,negative regulation of vascular endothelial growth factor receptor signaling pathway,4,3,0.8,0.02726,1
+GO:0060044,negative regulation of cardiac muscle cell proliferation,4,3,0.8,0.02726,1
+GO:0071872,cellular response to epinephrine stimulus,4,3,0.8,0.02726,1
+GO:0051591,response to cAMP,19,6,3.81,0.02726,1
+GO:0046718,viral entry into host cell,50,16,10.01,0.02726,1
+GO:0008535,respiratory chain complex IV assembly,12,4,2.4,0.02730,1
+GO:0075713,establishment of integrated proviral latency,20,8,4.01,0.03217,1
+GO:0044826,viral genome integration into host DNA,20,8,4.01,0.03217,1
+GO:0045071,negative regulation of viral genome replication,14,6,2.8,0.03284,1

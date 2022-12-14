@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0006278,RNA-templated DNA biosynthetic process,79,10,1.63,2.0e-07,0.0024
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,8,0.85,1.5e-06,0.0065
+GO:0044826,viral genome integration into host DNA,20,6,0.41,2.2e-06,0.0065
+GO:0075713,establishment of integrated proviral latency,20,6,0.41,2.2e-06,0.0065
+GO:0015074,DNA integration,33,6,0.68,4.9e-05,0.1158
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,4,0.29,0.00015,0.2954
+GO:0019068,virion assembly,32,5,0.66,0.00045,0.7596
+GO:0046718,viral entry into host cell,50,6,1.03,0.00053,0.7828
+GO:0061644,protein localization to CENP-A containing chromatin,3,2,0.06,0.00126,1
+GO:0006310,DNA recombination,160,7,3.31,0.00369,1
+GO:0060307,regulation of ventricular cardiac muscle cell membrane repolarization,6,2,0.12,0.00604,1
+GO:0019433,triglyceride catabolic process,8,2,0.17,0.01096,1
+GO:0086091,regulation of heart rate by cardiac conduction,8,2,0.17,0.01096,1
+GO:0051988,regulation of attachment of spindle microtubules to kinetochore,8,2,0.17,0.01096,1
+GO:0006334,nucleosome assembly,44,4,0.91,0.01255,1
+GO:0006508,proteolysis,742,15,15.35,0.01549,1
+GO:0030036,actin cytoskeleton organization,274,8,5.67,0.01594,1
+GO:0050790,regulation of catalytic activity,651,11,13.47,0.01945,1
+GO:0061371,determination of heart left/right asymmetry,19,2,0.39,0.02059,1
+GO:0006747,FAD biosynthetic process,1,1,0.02,0.02069,1
+GO:0120223,larynx morphogenesis,1,1,0.02,0.02069,1
+GO:0051256,mitotic spindle midzone assembly,1,1,0.02,0.02069,1
+GO:0021966,corticospinal neuron axon guidance,1,1,0.02,0.02069,1
+GO:0060539,diaphragm development,1,1,0.02,0.02069,1
+GO:0014718,positive regulation of satellite cell activation involved in skeletal muscle regeneration,1,1,0.02,0.02069,1
+GO:0000915,actomyosin contractile ring assembly,1,1,0.02,0.02069,1
+GO:0055113,epiboly involved in gastrulation with mouth forming second,1,1,0.02,0.02069,1
+GO:0000105,histidine biosynthetic process,1,1,0.02,0.02069,1
+GO:0090134,cell migration involved in mesendoderm migration,1,1,0.02,0.02069,1
+GO:0021798,forebrain dorsal/ventral pattern formation,1,1,0.02,0.02069,1
+GO:0072709,cellular response to sorbitol,1,1,0.02,0.02069,1
+GO:0106040,regulation of GABA-A receptor activity,1,1,0.02,0.02069,1
+GO:0021750,vestibular nucleus development,1,1,0.02,0.02069,1
+GO:1990092,calcium-dependent self proteolysis,1,1,0.02,0.02069,1
+GO:0060371,regulation of atrial cardiac muscle cell membrane depolarization,1,1,0.02,0.02069,1
+GO:0003400,regulation of COPII vesicle coating,1,1,0.02,0.02069,1
+GO:1904717,regulation of AMPA glutamate receptor clustering,1,1,0.02,0.02069,1
+GO:0070315,G1 to G0 transition involved in cell differentiation,1,1,0.02,0.02069,1
+GO:0072560,type B pancreatic cell maturation,1,1,0.02,0.02069,1
+GO:0055096,low-density lipoprotein particle mediated signaling,1,1,0.02,0.02069,1
+GO:1905188,positive regulation of metaphase/anaphase transition of meiosis I,1,1,0.02,0.02069,1
+GO:0055026,negative regulation of cardiac muscle tissue development,1,1,0.02,0.02069,1
+GO:0060128,corticotropin hormone secreting cell differentiation,1,1,0.02,0.02069,1
+GO:0021539,subthalamus development,1,1,0.02,0.02069,1
+GO:0045234,protein palmitoleylation,1,1,0.02,0.02069,1
+GO:0150175,regulation of phosphatidylethanolamine metabolic process,1,1,0.02,0.02069,1
+GO:0150178,regulation of phosphatidylserine metabolic process,1,1,0.02,0.02069,1
+GO:0030961,peptidyl-arginine hydroxylation,1,1,0.02,0.02069,1
+GO:0097155,fasciculation of sensory neuron axon,1,1,0.02,0.02069,1
+GO:0045726,positive regulation of integrin biosynthetic process,1,1,0.02,0.02069,1

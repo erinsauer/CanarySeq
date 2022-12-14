@@ -2,14 +2,27 @@
 title: "canaryGO Analysis"
 author: "Carson Stacy"
 date: "2022-09-29"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE, error=FALSE)
 ```
 
 ```{r}
+# ensure BiocManager is installed, install if not
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version = "3.16")
+
+#ensure all required packages are installed
+if(!"biomaRt" %in% installed.packages()) BiocManager::install("biomaRt")
+if(!"topGO" %in% installed.packages()) BiocManager::install("topGO")
+if(!"edgeR" %in% installed.packages()) BiocManager::install("edgeR")
+if(!"tidyverse" %in% installed.packages()) install.packages("tidyverse")
+
 library(tidyverse)
 library(topGO)
 library(biomaRt)
@@ -29,8 +42,12 @@ library(edgeR)
 MGLpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGLpost0.csv")
 MGpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGpost0.csv")
 MGd140 <- readr::read_csv("~/Desktop/canary/contrasts/MGd140.csv")
+MGd210 <- readr::read_csv("~/Desktop/canary/contrasts/MGd210.csv")
 MGPpost0 <- readr::read_csv("~/Desktop/canary/contrasts/MGPpost0.csv")
 MGd2114 <- readr::read_csv("~/Desktop/canary/contrasts/MGd2114.csv")
+MGDietd2114 <- readr::read_csv("~/Desktop/canary/contrasts/MGDietd2114.csv")
+MGLd2114 <- readr::read_csv("~/Desktop/canary/contrasts/MGLd2114.csv")
+MGPd2114 <- readr::read_csv("~/Desktop/canary/contrasts/MGPd2114.csv")
 Diet0 <- readr::read_csv("~/Desktop/canary/contrasts/Diet0.csv")
 MGDietpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/MGDietpost0.csv")
 CtlDietpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/CtlDietpost0.csv")
@@ -46,16 +63,20 @@ CtlPpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/CtlPpost0.c
 
 
 contrasts <- list(
-  # MGLpost0 = MGLpost0,
-  # MGpost0 = MGpost0,
-  # MGd140 = MGd140,
-  # MGPpost0 = MGPpost0,
-  # MGd2114 = MGd2114,
-  Diet0 = Diet0#,
-  # MGDietpost0 = MGDietpost0#,
-  # CtlDietpost0 = CtlDietpost0#, # I am checking if this was the contrast with the cool GO term enrichments... didn't look liek ti was, checking Diet- now
-  # CtlLpost0 = CtlLpost0#,
-  # CtlPpost0 = CtlPpost0
+  MGLpost0 = MGLpost0,
+  MGPpost0 = MGPpost0,
+  MGpost0 = MGpost0,
+  MGd140 = MGd140,
+  MGd210 = MGd210,
+  MGd2114 = MGd2114,
+  Diet0 = Diet0,
+  MGDietpost0 = MGDietpost0,
+  MGDietd2114 = MGDietd2114,
+  MGLd2114 = MGLd2114,
+  MGPd2114 = MGPd2114,
+  CtlDietpost0 = CtlDietpost0, # I am checking if this was the contrast with the cool GO term enrichments... didn't look liek ti was, checking Diet0 now
+  CtlLpost0 = CtlLpost0,
+  CtlPpost0 = CtlPpost0
 )
 ```
 
@@ -68,7 +89,7 @@ mart <- if(exists('mart') == TRUE){
 }
 ```
 
-```{r}
+```{r fig.height=10, fig.width=12, fig.fullwidth=TRUE}
 # loop through each dataset
 for(i in 1:length(contrasts)) {
   # get names of genes for which to get annotations
@@ -315,7 +336,148 @@ for(i in 1:length(contrasts)) {
     # dev.off()
   }
   
+  # visualize results at final j value
+  ntop <- 20
+
+  ggdata_up <- all_res_up[1:ntop,] %>%
+    mutate(enrichment = paste(names(contrasts[i]),"_UP", sep = ""),
+           `% overrepresented` = (Significant-Expected)/Annotated)
+  ggdata_up$Term <- factor(ggdata_up$Term, levels = rev(ggdata_up$Term)) # fixes order
+  
+  ggdata_down <- all_res_down[1:ntop,] %>%
+    mutate(enrichment = paste(names(contrasts[i]),"_DOWN", sep = ""),
+           `% overrepresented` = (Significant-Expected)/Annotated)
+  ggdata_down$Term <- factor(ggdata_down$Term, levels = rev(ggdata_down$Term))
+  
+  
+  # ggdata <- bind_rows(ggdata_up, ggdata_down) %>%
+  #   group_by(enrichment) %>%
+  #   mutate(Term = forcats::fct_reorder(.f = Term, as.numeric(weightFisher), .desc = TRUE))
+  
+  gg_up <- ggplot(ggdata_up,
+    aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+  
+    expand_limits(y = 1) +
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+      linetype = c("dotted", "longdash", "solid"),
+      colour = "black",
+      size = c(0.5, 1.5, 3)) +
+    geom_point(shape = 21) +
+    scale_size(range = c(2.5,12.5)) +
+    scale_fill_continuous(low = 'royalblue', high = 'red4') +
+  
+    xlab('') + 
+    # ylab('Enrichment score') +
+    ylab('') +
+    labs(
+      title = "Upregulated",
+      subtitle = paste('Top ',ntop,' terms ordered by weighted Fisher p-value', sep="")#,
+      # caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001'
+      ) +
+  
+    theme_bw(base_size = 24) +
+    theme(
+      legend.position = 'right',
+      legend.background = element_rect(),
+      plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+      plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+      plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+  
+      axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+      axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+      axis.title = element_text(size = 12, face = 'bold'),
+      axis.title.x = element_text(size = 12, face = 'bold'),
+      axis.title.y = element_text(size = 12, face = 'bold'),
+      axis.line = element_line(colour = 'black'),
+  
+      #Legend
+      legend.key = element_blank(), # removes the border
+      legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+      legend.text = element_text(size = 14, face = "bold"), # Text size
+      title = element_text(size = 14, face = "bold")) +
+  
+    # facet_grid(rows = vars(enrichment), scales = "free") +
+    coord_flip()
+    
+  gg_down <- ggplot(ggdata_down,
+    aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+  
+    expand_limits(y = 1) +
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+      linetype = c("dotted", "longdash", "solid"),
+      colour = "black",
+      size = c(0.5, 1.5, 3)) +
+    geom_point(shape = 21) +
+    scale_size(range = c(2.5,12.5)) +
+    scale_fill_continuous(low = 'royalblue', high = 'red4') +
+  
+    xlab('') + 
+    ylab('Enrichment score') +
+    labs(
+      title = "Downregulated",
+      # subtitle = paste('Top ',ntop,' terms ordered by weighted Fisher p-value', sep=""),
+      caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+  
+    theme_bw(base_size = 24) +
+    theme(
+      legend.position = 'right',
+      legend.background = element_rect(),
+      plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+      plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+      plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+  
+      axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+      axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+      axis.title = element_text(size = 12, face = 'bold'),
+      axis.title.x = element_text(size = 12, face = 'bold'),
+      axis.title.y = element_text(size = 12, face = 'bold'),
+      axis.line = element_line(colour = 'black'),
+  
+      #Legend
+      legend.key = element_blank(), # removes the border
+      legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+      legend.text = element_text(size = 14, face = "bold"), # Text size
+      title = element_text(size = 14, face = "bold")) +
+  
+    # facet_grid(rows = vars(enrichment), scales = "free") +
+    coord_flip()
+  
+  title <- paste('GO Biological processes enriched in contrast: ', 
+                 names(contrasts[i]))
+
+  # Create a text grob
+  tgrob <- ggpubr::text_grob(label = title, size = 20)
+  # Draw the text
+  plot_0 <- ggpubr::as_ggplot(tgrob) + theme(plot.margin = margin(0,2,0,0, "cm"))
+  
+  gg <- ggpubr::ggarrange(plot_0,
+                          gg_up, gg_down,
+                          nrow=3,
+                          align = "v",
+                          common.legend = TRUE,
+                          legend = "right",
+                          heights = c(0.5,5,5)
+                          ) +
+        ggpubr::bgcolor("White")
+  
+  print(gg)
+  
+  ggsave(gg, 
+         device = 'png',dpi = 500,
+         width = 14,
+         height = 10,
+         units = "in",
+         filename =  paste("~/Documents/GitHub/CanarySeq/GOanalysis/GO_VIZ_", names(contrasts)[i], ".png", sep = "")
+  )
+  
+  # save GOdata_up and down for i^th contrast at last j cutoff threshold
+  save(GOdata_up, GOdata_down, DEgenes_up, DEgenes_down, 
+       file = paste("~/Documents/GitHub/CanarySeq/GOanalysis/GOdataUPDN_", names(contrasts)[i], ".RData", sep = "")
+       )
+
 }
+
+
 ```
 
 ```{r}

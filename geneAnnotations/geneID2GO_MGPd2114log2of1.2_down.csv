@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0045603,positive regulation of endothelial cell differentiation,5,4,0.63,0.0011,1
+GO:0090179,planar cell polarity pathway involved in neural tube closure,3,3,0.38,0.0020,1
+GO:0018108,peptidyl-tyrosine phosphorylation,108,15,13.58,0.0039,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,6,1.76,0.0048,1
+GO:0006301,postreplication repair,17,6,2.14,0.0063,1
+GO:0032780,negative regulation of ATP-dependent activity,10,5,1.26,0.0063,1
+GO:0030214,hyaluronan catabolic process,7,4,0.88,0.0063,1
+GO:0048644,muscle organ morphogenesis,18,6,2.26,0.0072,1
+GO:2000320,negative regulation of T-helper 17 cell differentiation,4,3,0.5,0.0072,1
+GO:0090103,cochlea morphogenesis,4,3,0.5,0.0072,1
+GO:0034765,regulation of ion transmembrane transport,95,10,11.94,0.0073,1
+GO:0010941,regulation of cell death,580,71,72.93,0.0073,1
+GO:0046677,response to antibiotic,15,6,1.89,0.0114,1
+GO:0010804,negative regulation of tumor necrosis factor-mediated signaling pathway,8,4,1.01,0.0114,1
+GO:0042307,positive regulation of protein import into nucleus,21,7,2.64,0.0114,1
+GO:0071347,cellular response to interleukin-1,26,8,3.27,0.0118,1
+GO:0014044,Schwann cell development,12,5,1.51,0.0157,1
+GO:0032286,central nervous system myelin maintenance,2,2,0.25,0.0158,1
+GO:0030916,otic vesicle formation,2,2,0.25,0.0158,1
+GO:0000294,nuclear-transcribed mRNA catabolic process; endonucleolytic cleavage-dependent decay,2,2,0.25,0.0158,1
+GO:0060235,lens induction in camera-type eye,2,2,0.25,0.0158,1
+GO:0015770,sucrose transport,2,2,0.25,0.0158,1
+GO:0035574,histone H4-K20 demethylation,2,2,0.25,0.0158,1
+GO:0042487,regulation of odontogenesis of dentin-containing tooth,2,2,0.25,0.0158,1
+GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.25,0.0158,1
+GO:0006601,creatine biosynthetic process,2,2,0.25,0.0158,1
+GO:1903936,cellular response to sodium arsenite,2,2,0.25,0.0158,1
+GO:0006623,protein targeting to vacuole,18,4,2.26,0.0158,1
+GO:0042592,homeostatic process,565,66,71.04,0.0161,1
+GO:0045653,negative regulation of megakaryocyte differentiation,5,3,0.63,0.0163,1
+GO:0071391,cellular response to estrogen stimulus,5,3,0.63,0.0163,1
+GO:0007214,gamma-aminobutyric acid signaling pathway,5,3,0.63,0.0163,1
+GO:0071356,cellular response to tumor necrosis factor,69,17,8.68,0.0172,1
+GO:0030198,extracellular matrix organization,62,13,7.8,0.0186,1
+GO:0007010,cytoskeleton organization,542,68,68.15,0.0221,1
+GO:0006413,translational initiation,75,14,9.43,0.0230,1
+GO:0032259,methylation,167,24,21,0.0235,1
+GO:0032508,DNA duplex unwinding,37,9,4.65,0.0243,1
+GO:0007528,neuromuscular junction development,14,6,1.76,0.0277,1
+GO:0071493,cellular response to UV-B,6,3,0.75,0.0295,1
+GO:0032754,positive regulation of interleukin-5 production,6,3,0.75,0.0295,1
+GO:0032736,positive regulation of interleukin-13 production,6,3,0.75,0.0295,1
+GO:0060586,multicellular organismal iron ion homeostasis,6,3,0.75,0.0295,1
+GO:0006751,glutathione catabolic process,6,3,0.75,0.0295,1
+GO:1903672,positive regulation of sprouting angiogenesis,6,3,0.75,0.0295,1
+GO:0033169,histone H3-K9 demethylation,6,3,0.75,0.0295,1
+GO:0050790,regulation of catalytic activity,651,74,81.85,0.0325,1
+GO:1900264,positive regulation of DNA-directed DNA polymerase activity,11,4,1.38,0.0396,1
+GO:2000628,regulation of miRNA metabolic process,34,7,4.27,0.0433,1
+GO:0061178,regulation of insulin secretion involved in cellular response to glucose stimulus,13,4,1.63,0.0433,1

@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0006412,translation,370,54,30.72,1.2e-07,0.0014
+GO:0036158,outer dynein arm assembly,5,4,0.42,0.00022,1
+GO:0015937,coenzyme A biosynthetic process,10,5,0.83,0.00069,1
+GO:0043583,ear development,48,4,3.99,0.00217,1
+GO:0050911,detection of chemical stimulus involved in sensory perception of smell,14,5,1.16,0.00412,1
+GO:0016310,phosphorylation,786,71,65.27,0.00459,1
+GO:0035767,endothelial cell chemotaxis,11,4,0.91,0.00500,1
+GO:0120162,positive regulation of cold-induced thermogenesis,34,8,2.82,0.00562,1
+GO:0038065,collagen-activated signaling pathway,5,3,0.42,0.00687,1
+GO:1903936,cellular response to sodium arsenite,2,2,0.17,0.00688,1
+GO:0035998,7;8-dihydroneopterin 3'-triphosphate biosynthetic process,2,2,0.17,0.00688,1
+GO:0042853,L-alanine catabolic process,2,2,0.17,0.00688,1
+GO:0046415,urate metabolic process,2,2,0.17,0.00688,1
+GO:0006788,heme oxidation,2,2,0.17,0.00688,1
+GO:0006703,estrogen biosynthetic process,2,2,0.17,0.00688,1
+GO:0070194,synaptonemal complex disassembly,2,2,0.17,0.00688,1
+GO:0048016,inositol phosphate-mediated signaling,22,3,1.83,0.00690,1
+GO:0006413,translational initiation,75,11,6.23,0.00813,1
+GO:0050790,regulation of catalytic activity,651,45,54.06,0.01322,1
+GO:0007052,mitotic spindle organization,61,6,5.07,0.01375,1
+GO:0006813,potassium ion transport,50,10,4.15,0.01521,1
+GO:0044344,cellular response to fibroblast growth factor stimulus,28,5,2.33,0.01545,1
+GO:0060391,positive regulation of SMAD protein signal transduction,7,3,0.58,0.01547,1
+GO:0008344,adult locomotory behavior,29,6,2.41,0.01691,1
+GO:0007601,visual perception,26,6,2.16,0.01747,1
+GO:0044597,daunorubicin metabolic process,3,2,0.25,0.01951,1
+GO:0044598,doxorubicin metabolic process,3,2,0.25,0.01951,1
+GO:0007602,phototransduction,3,2,0.25,0.01951,1
+GO:0035616,histone H2B conserved C-terminal lysine deubiquitination,3,2,0.25,0.01951,1
+GO:0046328,regulation of JNK cascade,55,8,4.57,0.02312,1
+GO:0086091,regulation of heart rate by cardiac conduction,8,3,0.66,0.02324,1
+GO:0051315,attachment of mitotic spindle microtubules to kinetochore,8,3,0.66,0.02324,1
+GO:0030514,negative regulation of BMP signaling pathway,22,5,1.83,0.03121,1
+GO:0071549,cellular response to dexamethasone stimulus,9,3,0.75,0.03275,1
+GO:0071577,zinc ion transmembrane transport,7,3,0.58,0.03680,1
+GO:0007019,microtubule depolymerization,14,3,1.16,0.03687,1
+GO:0015671,oxygen transport,4,2,0.33,0.03689,1
+GO:0007023,post-chaperonin tubulin folding pathway,4,2,0.33,0.03689,1
+GO:0032466,negative regulation of cytokinesis,4,2,0.33,0.03689,1
+GO:0032489,regulation of Cdc42 protein signal transduction,4,2,0.33,0.03689,1
+GO:0030951,establishment or maintenance of microtubule cytoskeleton polarity,4,2,0.33,0.03689,1
+GO:0006450,regulation of translational fidelity,4,2,0.33,0.03689,1
+GO:0098719,sodium ion import across plasma membrane,4,2,0.33,0.03689,1
+GO:0071681,cellular response to indole-3-methanol,4,2,0.33,0.03689,1
+GO:0051930,regulation of sensory perception of pain,4,2,0.33,0.03689,1
+GO:0045629,negative regulation of T-helper 2 cell differentiation,4,2,0.33,0.03689,1
+GO:0034765,regulation of ion transmembrane transport,95,9,7.89,0.03696,1
+GO:0006629,lipid metabolic process,491,51,40.77,0.04175,1
+GO:0007186,G protein-coupled receptor signaling pathway,217,26,18.02,0.04510,1
+GO:0006414,translational elongation,27,6,2.24,0.04660,1

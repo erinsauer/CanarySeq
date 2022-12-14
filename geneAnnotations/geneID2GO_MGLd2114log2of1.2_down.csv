@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0071872,cellular response to epinephrine stimulus,4,4,0.42,0.00012,1
+GO:0071897,DNA biosynthetic process,129,22,13.53,0.00107,1
+GO:1901381,positive regulation of potassium ion transmembrane transport,7,5,0.73,0.00114,1
+GO:0001732,formation of cytoplasmic translation initiation complex,3,3,0.31,0.00115,1
+GO:1902358,sulfate transmembrane transport,3,3,0.31,0.00115,1
+GO:0055072,iron ion homeostasis,43,11,4.51,0.00115,1
+GO:0006541,glutamine metabolic process,8,6,0.84,0.00150,1
+GO:0060048,cardiac muscle contraction,35,15,3.67,0.00311,1
+GO:0035025,positive regulation of Rho protein signal transduction,7,4,0.73,0.00324,1
+GO:0006207,'de novo' pyrimidine nucleobase biosynthetic process,7,4,0.73,0.00324,1
+GO:0043030,regulation of macrophage activation,17,6,1.78,0.00421,1
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.42,0.00424,1
+GO:0075525,viral translational termination-reinitiation,4,3,0.42,0.00424,1
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.42,0.00424,1
+GO:0006270,DNA replication initiation,17,7,1.78,0.00524,1
+GO:0086091,regulation of heart rate by cardiac conduction,8,4,0.84,0.00595,1
+GO:0090050,positive regulation of cell migration involved in sprouting angiogenesis,8,4,0.84,0.00595,1
+GO:0051897,positive regulation of protein kinase B signaling,34,9,3.57,0.00687,1
+GO:0030509,BMP signaling pathway,55,13,5.77,0.00784,1
+GO:0032508,DNA duplex unwinding,37,10,3.88,0.00940,1
+GO:0061042,vascular wound healing,5,3,0.52,0.00977,1
+GO:0030325,adrenal gland development,5,3,0.52,0.00977,1
+GO:0006337,nucleosome disassembly,9,4,0.94,0.00983,1
+GO:0008152,metabolic process,4733,499,496.49,0.01089,1
+GO:0007586,digestion,21,6,2.2,0.01093,1
+GO:0098914,membrane repolarization during atrial cardiac muscle cell action potential,3,3,0.31,0.01096,1
+GO:0097623,potassium ion export across plasma membrane,4,3,0.42,0.01097,1
+GO:1902730,positive regulation of proteoglycan biosynthetic process,5,3,0.52,0.01097,1
+GO:0098915,membrane repolarization during ventricular cardiac muscle cell action potential,2,2,0.21,0.01099,1
+GO:1904158,axonemal central apparatus assembly,2,2,0.21,0.01099,1
+GO:0032286,central nervous system myelin maintenance,2,2,0.21,0.01099,1
+GO:0140199,negative regulation of adenylate cyclase-activating adrenergic receptor signaling pathway involved in heart process,2,2,0.21,0.01099,1
+GO:0032713,negative regulation of interleukin-4 production,2,2,0.21,0.01099,1
+GO:0000294,nuclear-transcribed mRNA catabolic process; endonucleolytic cleavage-dependent decay,2,2,0.21,0.01099,1
+GO:0002031,G protein-coupled receptor internalization,2,2,0.21,0.01099,1
+GO:1903281,positive regulation of calcium:sodium antiporter activity,2,2,0.21,0.01099,1
+GO:1903243,negative regulation of cardiac muscle hypertrophy in response to stress,2,2,0.21,0.01099,1
+GO:0006248,CMP catabolic process,2,2,0.21,0.01099,1
+GO:0017038,protein import,2,2,0.21,0.01099,1
+GO:0098708,glucose import across plasma membrane,2,2,0.21,0.01099,1
+GO:0006542,glutamine biosynthetic process,2,2,0.21,0.01099,1
+GO:0070294,renal sodium ion absorption,2,2,0.21,0.01099,1
+GO:0042158,lipoprotein biosynthetic process,58,5,6.08,0.01108,1
+GO:1900026,positive regulation of substrate adhesion-dependent cell spreading,25,7,2.62,0.01205,1
+GO:0021510,spinal cord development,15,5,1.57,0.01796,1
+GO:0033690,positive regulation of osteoblast proliferation,6,3,0.63,0.01803,1
+GO:0060307,regulation of ventricular cardiac muscle cell membrane repolarization,6,3,0.63,0.01803,1
+GO:1903672,positive regulation of sprouting angiogenesis,6,3,0.63,0.01803,1
+GO:0070886,positive regulation of calcineurin-NFAT signaling cascade,6,3,0.63,0.01803,1
+GO:0008217,regulation of blood pressure,35,10,3.67,0.02011,1

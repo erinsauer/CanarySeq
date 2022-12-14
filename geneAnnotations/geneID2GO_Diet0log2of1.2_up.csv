@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:0002250,adaptive immune response,116,35,15.53,1.8e-06,0.0214
-GO:0030890,positive regulation of B cell proliferation,21,10,2.81,0.00015,0.8926
-GO:0045582,positive regulation of T cell differentiation,37,16,4.95,0.00068,1
+GO:0002250,adaptive immune response,116,35,15.54,1.8e-06,0.0213
+GO:0030890,positive regulation of B cell proliferation,21,10,2.81,0.00015,0.8862
+GO:0045582,positive regulation of T cell differentiation,37,16,4.96,0.00068,1
 GO:0045060,negative thymic T cell selection,7,5,0.94,0.00071,1
 GO:0006189,'de novo' IMP biosynthetic process,5,4,0.67,0.00143,1
 GO:2000343,positive regulation of chemokine (C-X-C motif) ligand 2 production,5,4,0.67,0.00143,1
 GO:0050862,positive regulation of T cell receptor signaling pathway,5,4,0.67,0.00143,1
-GO:0045184,establishment of protein localization,621,51,83.12,0.00181,1
-GO:0090630,activation of GTPase activity,19,8,2.54,0.00193,1
-GO:0007015,actin filament organization,162,22,21.68,0.00200,1
-GO:0002906,negative regulation of mature B cell apoptotic process,3,3,0.4,0.00239,1
-GO:0006154,adenosine catabolic process,3,3,0.4,0.00239,1
-GO:0001570,vasculogenesis,24,10,3.21,0.00281,1
-GO:0048146,positive regulation of fibroblast proliferation,16,7,2.14,0.00286,1
-GO:0042100,B cell proliferation,38,17,5.09,0.00369,1
-GO:1902966,positive regulation of protein localization to early endosome,6,4,0.8,0.00382,1
-GO:0035563,positive regulation of chromatin binding,6,4,0.8,0.00382,1
-GO:0007186,G protein-coupled receptor signaling pathway,222,51,29.71,0.00531,1
-GO:0008340,determination of adult lifespan,10,5,1.34,0.00598,1
-GO:0002230,positive regulation of defense response to virus by host,10,5,1.34,0.00598,1
-GO:0050853,B cell receptor signaling pathway,27,10,3.61,0.00618,1
-GO:0006959,humoral immune response,32,11,4.28,0.00786,1
-GO:0040015,negative regulation of multicellular organism growth,7,4,0.94,0.00798,1
-GO:2000563,positive regulation of CD4-positive; alpha-beta T cell proliferation,7,4,0.94,0.00798,1
-GO:0014066,regulation of phosphatidylinositol 3-kinase signaling,28,9,3.75,0.00853,1
-GO:0002504,antigen processing and presentation of peptide or polysaccharide antigen via MHC class II,10,5,1.34,0.00857,1
-GO:0009113,purine nucleobase biosynthetic process,6,4,0.8,0.00859,1
-GO:0016554,cytidine to uridine editing,4,3,0.54,0.00861,1
-GO:0032825,positive regulation of natural killer cell differentiation,4,3,0.54,0.00861,1
-GO:0000255,allantoin metabolic process,4,3,0.54,0.00861,1
-GO:0042450,arginine biosynthetic process via ornithine,4,3,0.54,0.00861,1
-GO:0034351,negative regulation of glial cell apoptotic process,4,3,0.54,0.00861,1
-GO:0033089,positive regulation of T cell differentiation in thymus,4,3,0.54,0.00861,1
-GO:0002606,positive regulation of dendritic cell antigen processing and presentation,4,3,0.54,0.00861,1
-GO:0033153,T cell receptor V(D)J recombination,4,3,0.54,0.00861,1
-GO:0006268,DNA unwinding involved in DNA replication,11,5,1.47,0.00977,1
-GO:0007010,cytoskeleton organization,542,77,72.54,0.01119,1
-GO:0075713,establishment of integrated proviral latency,20,7,2.68,0.01197,1
-GO:0044826,viral genome integration into host DNA,20,7,2.68,0.01197,1
-GO:0030036,actin cytoskeleton organization,274,43,36.67,0.01227,1
-GO:0007165,signal transduction,1751,302,234.36,0.01332,1
-GO:0031295,T cell costimulation,9,5,1.2,0.01423,1
-GO:0006270,DNA replication initiation,17,6,2.28,0.01490,1
-GO:0048008,platelet-derived growth factor receptor signaling pathway,26,7,3.48,0.01492,1
-GO:0032743,positive regulation of interleukin-2 production,21,7,2.81,0.01593,1
-GO:0043368,positive T cell selection,17,7,2.28,0.01778,1
-GO:0001783,B cell apoptotic process,12,6,1.61,0.01779,1
-GO:0006526,arginine biosynthetic process,6,5,0.8,0.01780,1
-GO:1904894,positive regulation of receptor signaling pathway via STAT,11,5,1.47,0.01783,1
-GO:0033227,dsRNA transport,2,2,0.27,0.01790,1
+GO:0045184,establishment of protein localization,569,49,76.22,0.00176,1
+GO:0090630,activation of GTPase activity,19,8,2.55,0.00194,1
+GO:0007015,actin filament organization,162,22,21.7,0.00201,1
+GO:0002906,negative regulation of mature B cell apoptotic process,3,3,0.4,0.00240,1
+GO:0006154,adenosine catabolic process,3,3,0.4,0.00240,1
+GO:0001570,vasculogenesis,24,10,3.21,0.00282,1
+GO:0048146,positive regulation of fibroblast proliferation,16,7,2.14,0.00288,1
+GO:0042100,B cell proliferation,38,17,5.09,0.00370,1
+GO:1902966,positive regulation of protein localization to early endosome,6,4,0.8,0.00383,1
+GO:0035563,positive regulation of chromatin binding,6,4,0.8,0.00383,1
+GO:0007186,G protein-coupled receptor signaling pathway,217,49,29.07,0.00547,1
+GO:0008340,determination of adult lifespan,10,5,1.34,0.00600,1
+GO:0002230,positive regulation of defense response to virus by host,10,5,1.34,0.00600,1
+GO:0050853,B cell receptor signaling pathway,27,10,3.62,0.00621,1
+GO:0006959,humoral immune response,32,11,4.29,0.00788,1
+GO:0040015,negative regulation of multicellular organism growth,7,4,0.94,0.00800,1
+GO:2000563,positive regulation of CD4-positive; alpha-beta T cell proliferation,7,4,0.94,0.00800,1
+GO:0014066,regulation of phosphatidylinositol 3-kinase signaling,28,9,3.75,0.00855,1
+GO:0002504,antigen processing and presentation of peptide or polysaccharide antigen via MHC class II,10,5,1.34,0.00859,1
+GO:0009113,purine nucleobase biosynthetic process,6,4,0.8,0.00861,1
+GO:0016554,cytidine to uridine editing,4,3,0.54,0.00863,1
+GO:0032825,positive regulation of natural killer cell differentiation,4,3,0.54,0.00863,1
+GO:0000255,allantoin metabolic process,4,3,0.54,0.00863,1
+GO:0042450,arginine biosynthetic process via ornithine,4,3,0.54,0.00863,1
+GO:0034351,negative regulation of glial cell apoptotic process,4,3,0.54,0.00863,1
+GO:0033089,positive regulation of T cell differentiation in thymus,4,3,0.54,0.00863,1
+GO:0002606,positive regulation of dendritic cell antigen processing and presentation,4,3,0.54,0.00863,1
+GO:0033153,T cell receptor V(D)J recombination,4,3,0.54,0.00863,1
+GO:0006268,DNA unwinding involved in DNA replication,11,5,1.47,0.00980,1
+GO:0007010,cytoskeleton organization,542,77,72.6,0.01126,1
+GO:0075713,establishment of integrated proviral latency,20,7,2.68,0.01202,1
+GO:0044826,viral genome integration into host DNA,20,7,2.68,0.01202,1
+GO:0030036,actin cytoskeleton organization,274,43,36.7,0.01236,1
+GO:0007165,signal transduction,1813,308,242.85,0.01240,1
+GO:0050776,regulation of immune response,290,75,38.85,0.01248,1
+GO:0031295,T cell costimulation,9,5,1.21,0.01427,1
+GO:0006270,DNA replication initiation,17,6,2.28,0.01495,1
+GO:0048008,platelet-derived growth factor receptor signaling pathway,26,7,3.48,0.01497,1
+GO:0032743,positive regulation of interleukin-2 production,21,7,2.81,0.01600,1
+GO:0043368,positive T cell selection,17,7,2.28,0.01781,1
+GO:0001783,B cell apoptotic process,12,6,1.61,0.01782,1
+GO:0006526,arginine biosynthetic process,6,5,0.8,0.01783,1
+GO:1904894,positive regulation of receptor signaling pathway via STAT,11,5,1.47,0.01785,1

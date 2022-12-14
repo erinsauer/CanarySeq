@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_down
+GO:0007186,G protein-coupled receptor signaling pathway,217,59,24.39,4.8e-09,1e-04
+GO:0006955,immune response,464,105,52.15,7.7e-07,0.0045
+GO:0045087,innate immune response,173,33,19.44,1.5e-05,0.0591
+GO:0043547,positive regulation of GTPase activity,88,26,9.89,0.00013,0.3781
+GO:0034405,response to fluid shear stress,13,5,1.46,0.00016,0.3781
+GO:2000563,positive regulation of CD4-positive; alpha-beta T cell proliferation,7,5,0.79,0.00031,0.6105
+GO:0006954,inflammatory response,198,48,22.25,0.00087,1
+GO:0043306,positive regulation of mast cell degranulation,5,4,0.56,0.00141,1
+GO:0001957,intramembranous ossification,3,3,0.34,0.00141,1
+GO:0001568,blood vessel development,222,39,24.95,0.00142,1
+GO:0070986,left/right axis specification,6,4,0.67,0.00197,1
+GO:0007218,neuropeptide signaling pathway,6,4,0.67,0.00197,1
+GO:0009617,response to bacterium,159,40,17.87,0.00213,1
+GO:0071356,cellular response to tumor necrosis factor,69,12,7.75,0.00255,1
+GO:0090630,activation of GTPase activity,19,7,2.14,0.00329,1
+GO:0097190,apoptotic signaling pathway,258,40,28.99,0.00386,1
+GO:0034154,toll-like receptor 7 signaling pathway,6,4,0.67,0.00517,1
+GO:0048266,behavioral response to pain,4,3,0.45,0.00518,1
+GO:0033689,negative regulation of osteoblast proliferation,4,3,0.45,0.00518,1
+GO:0044205,'de novo' UMP biosynthetic process,4,3,0.45,0.00518,1
+GO:0002076,osteoblast development,4,3,0.45,0.00518,1
+GO:0051754,meiotic sister chromatid cohesion; centromeric,4,3,0.45,0.00518,1
+GO:0034144,negative regulation of toll-like receptor 4 signaling pathway,4,3,0.45,0.00518,1
+GO:0008630,intrinsic apoptotic signaling pathway in response to DNA damage,45,9,5.06,0.00587,1
+GO:0007166,cell surface receptor signaling pathway,786,122,88.33,0.00647,1
+GO:0050776,regulation of immune response,290,62,32.59,0.00669,1
+GO:0002250,adaptive immune response,116,21,13.04,0.00695,1
+GO:0071526,semaphorin-plexin signaling pathway,12,5,1.35,0.00713,1
+GO:0043491,protein kinase B signaling,73,9,8.2,0.00724,1
+GO:0031295,T cell costimulation,9,5,1.01,0.00761,1
+GO:0006541,glutamine metabolic process,8,4,0.9,0.00764,1
+GO:0006935,chemotaxis,143,32,16.07,0.01034,1
+GO:0050850,positive regulation of calcium-mediated signaling,13,5,1.46,0.01052,1
+GO:0050853,B cell receptor signaling pathway,27,9,3.03,0.01103,1
+GO:0045668,negative regulation of osteoblast differentiation,18,6,2.02,0.01117,1
+GO:0007188,adenylate cyclase-modulating G protein-coupled receptor signaling pathway,32,11,3.6,0.01166,1
+GO:0032651,regulation of interleukin-1 beta production,24,9,2.7,0.01171,1
+GO:0030534,adult behavior,40,9,4.5,0.01178,1
+GO:0032287,peripheral nervous system myelin maintenance,5,3,0.56,0.01187,1
+GO:0051895,negative regulation of focal adhesion assembly,5,3,0.56,0.01187,1
+GO:0006189,'de novo' IMP biosynthetic process,5,3,0.56,0.01187,1
+GO:0042572,retinol metabolic process,5,3,0.56,0.01187,1
+GO:0050862,positive regulation of T cell receptor signaling pathway,5,3,0.56,0.01187,1
+GO:0001765,membrane raft assembly,5,3,0.56,0.01187,1
+GO:2001234,negative regulation of apoptotic signaling pathway,109,15,12.25,0.01255,1
+GO:0001783,B cell apoptotic process,12,4,1.35,0.01259,1
+GO:0043368,positive T cell selection,17,4,1.91,0.01260,1
+GO:0060068,vagina development,2,2,0.22,0.01262,1
+GO:0036145,dendritic cell homeostasis,2,2,0.22,0.01262,1
+GO:0010524,positive regulation of calcium ion transport into cytosol,2,2,0.22,0.01262,1

@@ -1,51 +1,51 @@
 GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
-GO:0075713,establishment of integrated proviral latency,20,10,1.87,3.6e-06,0.021
-GO:0044826,viral genome integration into host DNA,20,10,1.87,3.6e-06,0.021
-GO:0006278,RNA-dependent DNA biosynthetic process,79,18,7.37,5.3e-06,0.021
-GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,14,3.83,1.5e-05,0.0446
-GO:0015074,DNA integration,33,11,3.08,0.00012,0.2856
-GO:0006310,DNA recombination,160,21,14.93,0.00034,0.6744
-GO:0046050,UMP catabolic process,3,3,0.28,0.00081,0.964
-GO:0046055,dGMP catabolic process,3,3,0.28,0.00081,0.964
-GO:0006249,dCMP catabolic process,3,3,0.28,0.00081,0.964
-GO:0097112,gamma-aminobutyric acid receptor clustering,3,3,0.28,0.00081,0.964
+GO:0075713,establishment of integrated proviral latency,20,10,1.87,3.6e-06,0.0209
+GO:0044826,viral genome integration into host DNA,20,10,1.87,3.6e-06,0.0209
+GO:0006278,RNA-templated DNA biosynthetic process,79,18,7.37,5.3e-06,0.0209
+GO:0090502,RNA phosphodiester bond hydrolysis; endonucleolytic,41,14,3.83,1.5e-05,0.0443
+GO:0015074,DNA integration,33,11,3.08,0.00012,0.2836
+GO:0006310,DNA recombination,160,21,14.93,0.00034,0.6696
+GO:0046050,UMP catabolic process,3,3,0.28,0.00081,0.9571
+GO:0046055,dGMP catabolic process,3,3,0.28,0.00081,0.9571
+GO:0006249,dCMP catabolic process,3,3,0.28,0.00081,0.9571
+GO:0097112,gamma-aminobutyric acid receptor clustering,3,3,0.28,0.00081,0.9571
+GO:0046718,viral entry into host cell,50,11,4.67,0.00197,1
 GO:0019068,virion assembly,32,7,2.99,0.00229,1
-GO:0046718,viral entry into host cell,51,11,4.76,0.00244,1
-GO:0007186,G protein-coupled receptor signaling pathway,222,37,20.72,0.00287,1
+GO:0007186,G protein-coupled receptor signaling pathway,217,36,20.25,0.00289,1
 GO:0046079,dUMP catabolic process,4,3,0.37,0.00301,1
 GO:0000255,allantoin metabolic process,4,3,0.37,0.00301,1
 GO:0051660,establishment of centrosome localization,4,3,0.37,0.00301,1
 GO:1903934,positive regulation of DNA primase activity,4,3,0.37,0.00301,1
 GO:0070098,chemokine-mediated signaling pathway,12,5,1.12,0.00386,1
-GO:0006777,Mo-molybdopterin cofactor biosynthetic process,5,3,0.47,0.00701,1
-GO:0032259,methylation,167,15,15.59,0.00703,1
-GO:0032757,positive regulation of interleukin-8 production,20,6,1.87,0.00800,1
-GO:0006508,proteolysis,739,61,68.98,0.00831,1
-GO:0007586,digestion,21,6,1.96,0.00864,1
+GO:0006777,Mo-molybdopterin cofactor biosynthetic process,5,3,0.47,0.00700,1
+GO:0032259,methylation,167,15,15.58,0.00702,1
+GO:0032757,positive regulation of interleukin-8 production,20,6,1.87,0.00799,1
+GO:0006508,proteolysis,742,61,69.24,0.00833,1
+GO:0007586,digestion,21,6,1.96,0.00863,1
 GO:0018119,peptidyl-cysteine S-nitrosylation,6,3,0.56,0.00868,1
-GO:0006691,leukotriene metabolic process,8,3,0.75,0.00869,1
-GO:1905602,positive regulation of receptor-mediated endocytosis involved in cholesterol transport,2,2,0.19,0.00870,1
-GO:0032324,molybdopterin cofactor biosynthetic process,2,2,0.19,0.00870,1
-GO:0019464,glycine decarboxylation via glycine cleavage system,2,2,0.19,0.00870,1
-GO:0033693,neurofilament bundle assembly,2,2,0.19,0.00870,1
-GO:0046074,dTMP catabolic process,2,2,0.19,0.00870,1
-GO:0031133,regulation of axon diameter,2,2,0.19,0.00870,1
-GO:0006363,termination of RNA polymerase I transcription,2,2,0.19,0.00870,1
-GO:0006161,deoxyguanosine catabolic process,2,2,0.19,0.00870,1
-GO:0006147,guanine catabolic process,2,2,0.19,0.00870,1
-GO:0060686,negative regulation of prostatic bud formation,2,2,0.19,0.00870,1
-GO:0071650,negative regulation of chemokine (C-C motif) ligand 5 production,2,2,0.19,0.00870,1
-GO:0006248,CMP catabolic process,2,2,0.19,0.00870,1
-GO:0006204,IMP catabolic process,2,2,0.19,0.00870,1
-GO:0060971,embryonic heart tube left/right pattern formation,2,2,0.19,0.00870,1
-GO:0070105,positive regulation of interleukin-6-mediated signaling pathway,2,2,0.19,0.00870,1
-GO:1901166,neural crest cell migration involved in autonomic nervous system development,2,2,0.19,0.00870,1
-GO:1905581,positive regulation of low-density lipoprotein particle clearance,2,2,0.19,0.00870,1
-GO:1902966,positive regulation of protein localization to early endosome,6,3,0.56,0.01305,1
-GO:0006693,prostaglandin metabolic process,18,4,1.68,0.01306,1
-GO:0006952,defense response,434,51,40.51,0.01590,1
-GO:0033209,tumor necrosis factor-mediated signaling pathway,36,8,3.36,0.02006,1
-GO:0051898,negative regulation of protein kinase B signaling,24,6,2.24,0.02016,1
-GO:0002250,adaptive immune response,116,14,10.83,0.02021,1
-GO:0016925,protein sumoylation,24,7,2.24,0.02105,1
-GO:0002088,lens development in camera-type eye,25,5,2.33,0.02124,1
+GO:0006691,leukotriene metabolic process,8,3,0.75,0.00868,1
+GO:1905602,positive regulation of receptor-mediated endocytosis involved in cholesterol transport,2,2,0.19,0.00869,1
+GO:0032324,molybdopterin cofactor biosynthetic process,2,2,0.19,0.00869,1
+GO:0019464,glycine decarboxylation via glycine cleavage system,2,2,0.19,0.00869,1
+GO:0033693,neurofilament bundle assembly,2,2,0.19,0.00869,1
+GO:0046074,dTMP catabolic process,2,2,0.19,0.00869,1
+GO:0031133,regulation of axon diameter,2,2,0.19,0.00869,1
+GO:0006363,termination of RNA polymerase I transcription,2,2,0.19,0.00869,1
+GO:0006161,deoxyguanosine catabolic process,2,2,0.19,0.00869,1
+GO:0006147,guanine catabolic process,2,2,0.19,0.00869,1
+GO:0060686,negative regulation of prostatic bud formation,2,2,0.19,0.00869,1
+GO:0071650,negative regulation of chemokine (C-C motif) ligand 5 production,2,2,0.19,0.00869,1
+GO:0006248,CMP catabolic process,2,2,0.19,0.00869,1
+GO:0006204,IMP catabolic process,2,2,0.19,0.00869,1
+GO:0060971,embryonic heart tube left/right pattern formation,2,2,0.19,0.00869,1
+GO:0070105,positive regulation of interleukin-6-mediated signaling pathway,2,2,0.19,0.00869,1
+GO:1901166,neural crest cell migration involved in autonomic nervous system development,2,2,0.19,0.00869,1
+GO:1905581,positive regulation of low-density lipoprotein particle clearance,2,2,0.19,0.00869,1
+GO:1902966,positive regulation of protein localization to early endosome,6,3,0.56,0.01304,1
+GO:0006693,prostaglandin metabolic process,18,4,1.68,0.01305,1
+GO:0033209,tumor necrosis factor-mediated signaling pathway,36,8,3.36,0.02004,1
+GO:0051898,negative regulation of protein kinase B signaling,24,6,2.24,0.02013,1
+GO:0002250,adaptive immune response,116,14,10.82,0.02019,1
+GO:0016925,protein sumoylation,24,7,2.24,0.02104,1
+GO:0002088,lens development in camera-type eye,25,5,2.33,0.02123,1
+GO:0071360,cellular response to exogenous dsRNA,7,3,0.65,0.02126,1

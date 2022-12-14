@@ -1,0 +1,51 @@
+GO.ID,Term,Annotated,Significant,Expected,weightFisher,p.adj_up
+GO:0006412,translation,370,103,76.54,5.1e-11,0
+GO:0002181,cytoplasmic translation,42,15,8.69,2.2e-05,0.13
+GO:0042274,ribosomal small subunit biogenesis,24,9,4.96,0.00039,1
+GO:0007023,post-chaperonin tubulin folding pathway,4,4,0.83,0.00183,1
+GO:0042632,cholesterol homeostasis,31,13,6.41,0.00583,1
+GO:0007186,G protein-coupled receptor signaling pathway,217,57,44.89,0.00721,1
+GO:0007214,gamma-aminobutyric acid signaling pathway,5,4,1.03,0.00762,1
+GO:0050773,regulation of dendrite development,19,6,3.93,0.00764,1
+GO:0007601,visual perception,26,12,5.38,0.00773,1
+GO:0030514,negative regulation of BMP signaling pathway,22,10,4.55,0.00778,1
+GO:0097009,energy homeostasis,13,7,2.69,0.00844,1
+GO:0061178,regulation of insulin secretion involved in cellular response to glucose stimulus,13,7,2.69,0.00880,1
+GO:0043303,mast cell degranulation,14,6,2.9,0.00882,1
+GO:0010510,regulation of acetyl-CoA biosynthetic process from pyruvate,3,3,0.62,0.00884,1
+GO:0008406,gonad development,48,12,9.93,0.00884,1
+GO:0007283,spermatogenesis,117,34,24.2,0.01089,1
+GO:1904667,negative regulation of ubiquitin protein ligase activity,8,5,1.65,0.01202,1
+GO:0006955,immune response,464,87,95.99,0.01356,1
+GO:0019722,calcium-mediated signaling,53,13,10.96,0.01379,1
+GO:0032259,methylation,167,36,34.55,0.01405,1
+GO:0090316,positive regulation of intracellular protein transport,61,13,12.62,0.01410,1
+GO:0001881,receptor recycling,20,7,4.14,0.01911,1
+GO:0045454,cell redox homeostasis,18,8,3.72,0.01970,1
+GO:0007018,microtubule-based movement,114,35,23.58,0.02087,1
+GO:0071549,cellular response to dexamethasone stimulus,9,5,1.86,0.02249,1
+GO:0018108,peptidyl-tyrosine phosphorylation,108,26,22.34,0.02472,1
+GO:0010941,regulation of cell death,580,123,119.98,0.02982,1
+GO:0043583,ear development,48,13,9.93,0.02982,1
+GO:0048644,muscle organ morphogenesis,18,6,3.72,0.02987,1
+GO:0023019,signal transduction involved in regulation of gene expression,4,3,0.83,0.02988,1
+GO:0045348,positive regulation of MHC class II biosynthetic process,4,3,0.83,0.02988,1
+GO:0042178,xenobiotic catabolic process,4,3,0.83,0.02988,1
+GO:0033089,positive regulation of T cell differentiation in thymus,4,3,0.83,0.02988,1
+GO:0007019,microtubule depolymerization,14,5,2.9,0.02988,1
+GO:0003281,ventricular septum development,28,8,5.79,0.03170,1
+GO:0006301,postreplication repair,17,10,3.52,0.03700,1
+GO:0007129,homologous chromosome pairing at meiosis,17,9,3.52,0.03716,1
+GO:0007528,neuromuscular junction development,14,7,2.9,0.03731,1
+GO:0045060,negative thymic T cell selection,7,4,1.45,0.03736,1
+GO:0048812,neuron projection morphogenesis,136,30,28.13,0.03742,1
+GO:0042592,homeostatic process,565,123,116.88,0.04247,1
+GO:0032872,regulation of stress-activated MAPK cascade,74,21,15.31,0.04252,1
+GO:0002317,plasma cell differentiation,4,4,0.83,0.04267,1
+GO:0019852,L-ascorbic acid metabolic process,4,4,0.83,0.04267,1
+GO:0043576,regulation of respiratory gaseous exchange,5,4,1.03,0.04269,1
+GO:0061469,regulation of type B pancreatic cell proliferation,3,3,0.62,0.04272,1
+GO:0036124,histone H3-K9 trimethylation,8,4,1.65,0.04272,1
+GO:0019430,removal of superoxide radicals,4,3,0.83,0.04273,1
+GO:0006788,heme oxidation,2,2,0.41,0.04277,1
+GO:0006703,estrogen biosynthetic process,2,2,0.41,0.04277,1
