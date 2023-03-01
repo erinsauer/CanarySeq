@@ -648,9 +648,9 @@ tidygeneExpr %>%
 # Checking correlatioons only for genes that were identified as DE via edgeR in post0 contrast
 ```{r}
 eyescores_tidy14 <- eyescores_days14 %>%
-  filter(Bird %in% tidygeneExpr$Bird) %>% # only birds with both phenotype and genotype data
-  mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
-  select(-ES) #%>% # remove ES column, replaced by 'value'
+  dplyr::filter(Bird %in% tidygeneExpr$Bird) %>% # only birds with both phenotype and genotype data
+  dplyr::mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  dplyr::select(-ES) #%>% # remove ES column, replaced by 'value'
   # mutate(Lane = NA, 
   #        gene = NA, 
   #        MG=)
@@ -665,30 +665,30 @@ eyescores_tidy14 <- eyescores_days14 %>%
 #   separate(col = MG.Diet, c("MG", "Diet"))
 
 geneExpr_wide14_DE <- tidygeneExpr %>% 
-  filter(Bird %in% eyescores_tidy14$Bird) %>% # just correlate with birds with both data types
+  dplyr::filter(Bird %in% eyescores_tidy14$Bird) %>% # just correlate with birds with both data types
   # filter(Day %in% c(0,7,14)) %>% # only days with pheno & geno measures
-  filter(Day == 14) %>% # alternative, just use this xday for analysis. alt to above line
-  filter(gene %in% filter(MGLpost0, FDR < 0.2)$...1) %>%
+  dplyr::filter(Day == 14) %>% # alternative, just use this xday for analysis. alt to above line
+  dplyr::filter(gene %in% filter(MGLpost0, FDR < 0.2)$...1) %>%
   pivot_wider(id_cols = gene, 
               values_from = tpm, 
               names_from = c(#Day, #only use this if looking at mulitple days
                              MG,
                              Bird)
               ) %>%
-  select(gene, order(names(.))) %>%
+  dplyr::select(gene, order(names(.))) %>%
   rename_all(~stringr::str_replace(.,"^.*_","")) %>%
-  select(gene, order(names(.)))
+  dplyr::select(gene, order(names(.)))
 
 eyescore_row_df14 <- eyescores_tidy14 %>%
   distinct() %>% # remove any duplicates (currently only orange.24)
-  filter(Bird %in% colnames(geneExpr_wide14_DE)) %>%
+  dplyr::filter(Bird %in% colnames(geneExpr_wide14_DE)) %>%
   pivot_wider(id_cols = measure, 
               values_from = value, 
               names_from = c(#Day, #only use this if looking at mulitple days
                              Bird)
               ) %>%
-  mutate(gene = measure, .keep="unused") %>%
-  select(gene, order(names(.)))# %>%
+  dplyr::mutate(gene = measure, .keep="unused") %>%
+  dplyr::select(gene, order(names(.)))# %>%
   # select(Bird %in% tidygeneExpr$Bird)
 
 eyescore_row_vec14 <- c(NA, as.numeric(as.vector(eyescore_row_df14[1,-1])))
@@ -829,6 +829,7 @@ eyescores_tidy <- eyescores_days %>%
 load("~/Documents/GitHub/CanarySeq/Geno.x.Pheno/tidygeneFC.RData",
      envir = knitr::knit_global())
 
+
 MGLpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/MGLpost0.csv")
 MGPpost0 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/MGPpost0.csv")
 MGd2114 <- readr::read_csv("~/Documents/GitHub/CanarySeq/contrasts/MGd2114.csv")
@@ -881,7 +882,7 @@ genPhen_dat_t.tmp14_DE_FC <- as_tibble(cbind(bird = names(genPhen_dat14_DE_FC), 
 colnames(genPhen_dat_t.tmp14_DE_FC) <- genPhen_dat_t.tmp14_DE_FC[1,]
 
 geno.x.pheno14_DE_FC <- genPhen_dat_t.tmp14_DE_FC %>% 
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   hablar::retype()
 
 cor.geno.x.pheno_DE_FC <- geno.x.pheno14_DE_FC %>%
@@ -899,6 +900,15 @@ cor.geno.x.pheno_DE_FC %>%
 
 # negative correlation
 cor.geno.x.pheno_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  arrange((r))
+
+
+# Use to compare top genes for diferrent measures.
+day14vsday14.cor <- cor.geno.x.pheno_DE_FC %>%
   arrange(desc(eye_score)) %>%
   stretch() %>%
   filter(x=="eye_score" | y == "eye_score") %>%
@@ -925,14 +935,14 @@ goi <- "MEF2D" # 0.79, myocyte enhancer factor 2D
 # goi <- "LOC103818060" # 0.78, Ig lambda chain C region-like
 
 genPhen_dat_t.tmp14_DE_FC %>%
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   add_column(Diet = c("lipid","lipid","protein","lipid",
   "lipid","lipid","protein","protein","protein",
   "protein","lipid","lipid","protein","lipid","protein",
   "lipid","protein","lipid")) %>%
   # add_column(Diet = "lipid") %>%
   hablar::retype() %>%
-  mutate(bird = gene) %>%
+  mutate(bird = gene) %>% 
 ggpubr::ggscatterhist(x = "eye_score",
                   y = goi,
                   alpha = 0.7,
@@ -942,22 +952,23 @@ ggpubr::ggscatterhist(x = "eye_score",
                   bins = 7,
                   title = paste("Correlation between log2(", 
                                 goi,
-                                ") and eye_score Day 14 MGpost0", sep = ""),
+                                ") & eyescore d14 MGpost0", sep = ""),
                   xlab = "Day 14 eye score"
                   )
 # main neg corr
 goi <- "LOC108963561" # -0.72, LOC108963561 1-phosphatidylinositol phosphodiesterase-like
-# goi <- "ABLIM3" # -0.71, LOC103817526 – actin binding LIM protein family member 3
+# goi <- "RPS17"
+goi <- "ABLIM3" # -0.71, LOC103817526 – actin binding LIM protein family member 3
 
 genPhen_dat_t.tmp14_DE_FC %>%
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   add_column(Diet = c("lipid","lipid","protein","lipid",
   "lipid","lipid","protein","protein","protein",
   "protein","lipid","lipid","protein","lipid","protein",
   "lipid","protein","lipid")) %>%
   # add_column(Diet = "lipid") %>%
   hablar::retype() %>%
-  mutate(bird = gene) %>%
+  dplyr::mutate(bird = gene) %>%
 ggpubr::ggscatterhist(x = "eye_score",
                   y = goi,
                   alpha = 0.7,
@@ -967,7 +978,7 @@ ggpubr::ggscatterhist(x = "eye_score",
                   bins = 7,
                   title = paste("Correlation between log2(", 
                                 goi,
-                                ") and eye_score Day 14 MGpost0", sep = ""),
+                                ") & eyescore D14 MGpost0", sep = ""),
                   xlab = "Day 14 eye score"
                   )
 ```
@@ -979,8 +990,8 @@ eyescores_tidy_summary <- eyescores_tidy %>%
   group_by(Bird) %>%
   summarise(max = max(value),
             auc = MESS::auc(Day,value, type = "spline"),
-            auc_daynorm = auc/(max(Day)-min(Day))#,
-            # recovery_time = min(Day[Day > 7 & value == min(value[Day > 7])]) # find day when eyescore is lowest post infection
+            auc_daynorm = auc/(max(Day)-min(Day)),
+            recovery_time = min(Day[Day > 7 & value == min(value[Day > 7])]) # find day when eyescore is lowest post infection
             )
 
 
@@ -1032,7 +1043,7 @@ ggpubr::ggline(x="Day", y="value", color = "Bird", shape = "Diet")
 eyescore_row_aucDayNorm <- eyescores_tidy_summary %>%
   distinct() %>% # remove any duplicates (currently only orange.24)
   filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
-  pivot_wider(!c(max, auc, recovery_time),#id_cols = measure, 
+  pivot_wider(!c(auc,max, recovery_trajectory, recovery_time),#id_cols = measure, 
               values_from = auc_daynorm, 
               names_from = c(#Day, #only use this if looking at mulitple days
                              Bird)
@@ -1047,14 +1058,14 @@ genPhen_dat_t.tmp14_auc_DE_FC <- as_tibble(cbind(bird = names(genPhen_dat14_auc_
 colnames(genPhen_dat_t.tmp14_auc_DE_FC) <- genPhen_dat_t.tmp14_auc_DE_FC[1,]
 
 
-geno.x.pheno14_auc_DE_FC <- genPhen_dat_t.tmp14_auc_DE_FC %>% 
-  slice(-1) %>%
+geno.x.pheno14_auc_DE_FC <- genPhen_dat_t.tmp14_auc_DE_FC[,!duplicated(colnames(genPhen_dat_t.tmp14_auc_DE_FC))] %>%
+  dplyr::slice(-1) %>%
   hablar::retype()
 
-cor.geno.x.pheno_auc_DE_FC <- geno.x.pheno14_auc_DE_FC %>%
-  correlate(method = "pearson") %>%
-  rearrange() %>%
-  shave() 
+cor.geno.x.pheno_aucNorm_DE_FC <- geno.x.pheno14_auc_DE_FC %>%
+  corrr::correlate(method = "pearson") %>%
+  corrr::rearrange() %>%
+  corrr::shave() 
 
 # positive correlation
 cor.geno.x.pheno_auc_DE_FC %>%
@@ -1066,6 +1077,13 @@ cor.geno.x.pheno_auc_DE_FC %>%
 
 # negative correlation
 cor.geno.x.pheno_auc_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  arrange((r))
+
+day14vsAUCnorm.cor <- cor.geno.x.pheno_aucNorm_DE_FC %>%
   arrange(desc(eye_score)) %>%
   stretch() %>%
   filter(x=="eye_score" | y == "eye_score") %>%
@@ -1142,10 +1160,10 @@ ggpubr::ggscatterhist(x = "eye_score",
 
 ## auc raw
 ```{r}
-eyescore_row_auc <- eyescores_tidy_summary %>%
+eyescore_row_auc <- eyescores_tidy_summary %>% 
   distinct() %>% # remove any duplicates (currently only orange.24)
   filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
-  pivot_wider(!c(max, auc_daynorm),#id_cols = measure, 
+  pivot_wider(!c(max, auc_daynorm, recovery_time, recovery_trajectory),#id_cols = measure, 
               values_from = auc, 
               names_from = c(#Day, #only use this if looking at mulitple days
                              Bird)
@@ -1161,13 +1179,20 @@ colnames(genPhen_dat_t.tmp14_auc_DE_FC) <- genPhen_dat_t.tmp14_auc_DE_FC[1,]
 
 
 geno.x.pheno14_auc_DE_FC <- genPhen_dat_t.tmp14_auc_DE_FC %>% 
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   hablar::retype()
 
 cor.geno.x.pheno_auc_DE_FC <- geno.x.pheno14_auc_DE_FC %>%
   correlate(method = "pearson") %>%
   rearrange() %>%
   shave() 
+
+day14vsAUC.cor <- cor.geno.x.pheno_auc_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  arrange((r))
 
 # positive correlation
 cor.geno.x.pheno_auc_DE_FC %>%
@@ -1259,8 +1284,8 @@ ggpubr::ggscatterhist(x = "eye_score",
 ```{r}
 eyescore_row_traj <- eyescores_tidy_summary %>%
   distinct() %>% # remove any duplicates (currently only orange.24)
-  filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
-  pivot_wider(!c(max, auc_daynorm, auc),#id_cols = measure, 
+  dplyr::filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
+  pivot_wider(!c(max, auc_daynorm, auc, recovery_time),#id_cols = measure, 
               values_from = recovery_trajectory, 
               names_from = c(#Day, #only use this if looking at mulitple days
                              Bird)
@@ -1276,13 +1301,25 @@ colnames(genPhen_dat_t.tmp14_traj_DE_FC) <- genPhen_dat_t.tmp14_traj_DE_FC[1,]
 
 
 geno.x.pheno14_traj_DE_FC <- genPhen_dat_t.tmp14_traj_DE_FC %>% 
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   hablar::retype()
 
 cor.geno.x.pheno_traj_DE_FC <- geno.x.pheno14_traj_DE_FC %>%
   correlate(method = "pearson") %>%
   rearrange() %>%
   shave() 
+
+
+day14vsTraj.cor <- cor.geno.x.pheno_traj_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  mutate(gene = case_when(x == "eye_score" ~ y,
+         TRUE ~ x)
+  ) %>%
+  arrange((r))
+
 
 # positive correlation
 cor.geno.x.pheno_traj_DE_FC %>%
@@ -1332,7 +1369,7 @@ write_delim(cor.traj.genes, file = "~/Documents/GitHub/CanarySeq/GOanalysis/cor.
 eyescore_row_max <- eyescores_tidy_summary %>%
   distinct() %>% # remove any duplicates (currently only orange.24)
   filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
-  pivot_wider(!c(auc, auc_daynorm),#id_cols = measure, 
+  pivot_wider(!c(auc, auc_daynorm, recovery_time, recovery_trajectory),#id_cols = measure, 
               values_from = max, 
               names_from = c(#Day, #only use this if looking at mulitple days
                              Bird)
@@ -1348,13 +1385,20 @@ colnames(genPhen_dat_t.tmp14_max_DE_FC) <- genPhen_dat_t.tmp14_max_DE_FC[1,]
 
 
 geno.x.pheno14_max_DE_FC <- genPhen_dat_t.tmp14_max_DE_FC %>% 
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   hablar::retype()
 
 cor.geno.x.pheno_max_DE_FC <- geno.x.pheno14_max_DE_FC %>%
   correlate(method = "pearson") %>%
   rearrange() %>%
   shave() 
+
+day14vsMax.cor <- cor.geno.x.pheno_max_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  arrange((r))
 
 # positive correlation
 cor.geno.x.pheno_max_DE_FC %>%
@@ -1411,9 +1455,10 @@ ggpubr::ggscatterhist(x = "eye_score",
 
 goi <- "DES"
 # goi <- "LOC115484764"
+goi <- "PEAR1"
 
 genPhen_dat_t.tmp14_max_DE_FC %>% 
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   add_column(Diet = c("lipid","lipid","protein","lipid",
   "lipid","lipid","protein","protein","protein",
   "protein","lipid","lipid","protein","lipid","protein",
@@ -1440,6 +1485,278 @@ ggpubr::ggscatterhist(x = "eye_score",
 
 
 
+
+
+
+## Combine top gene lists for the different phenotypes
+```{r}
+day14vsALL <-
+  dplyr::bind_rows(lst(day14vsAUC.cor, 
+                       day14vsAUCnorm.cor,
+                       day14vsday14.cor,
+                       day14vsMax.cor,
+                       day14vsTraj.cor),
+                   .id = 'id') %>%
+  mutate(gene = 
+           case_when(
+             x == "eye_score" ~ y,
+             y == "eye_score" ~ x
+             )#,
+         # r_health = 
+         #   case_when(
+         #     id == "day14vsTraj.cor" ~ -r,
+         #     TRUE ~ r
+         #     )
+         )
+
+neg_all_genes <- day14vsALL %>%
+  group_by(id) %>%
+  filter(id != "day14vsMax.cor", id != "day14vsAUC.cor") %>%
+  filter(r < -0.6)
+
+pos_all_genes <- day14vsALL %>%
+  group_by(id) %>%
+  filter(id != "day14vsMax.cor", id != "day14vsAUC.cor") %>%
+  filter(r > 0.6) #%>% View()
+
+split(neg_all_genes$gene, neg_all_genes$id) %>%
+   ggVennDiagram::ggVennDiagram() + ggtitle("genes with r < -0.6")
+
+split(pos_all_genes$gene, pos_all_genes$id) %>%
+   ggVennDiagram::ggVennDiagram() + ggtitle("genes with r > 0.6")
+
+
+neg_all_genes7 <- day14vsALL %>%
+  group_by(id) %>%
+  filter(id != "day14vsMax.cor", id != "day14vsAUC.cor") %>%
+  filter(r < -0.7)
+
+pos_all_genes7 <- day14vsALL %>%
+  group_by(id) %>%
+  filter(id != "day14vsMax.cor", id != "day14vsAUC.cor") %>%
+  filter(r > 0.7) #%>% View()
+
+split(neg_all_genes7$gene, neg_all_genes7$id) %>%
+   ggVennDiagram::ggVennDiagram() + ggtitle("genes with r < -0.7")
+
+split(pos_all_genes7$gene, pos_all_genes7$id) %>%
+   ggVennDiagram::ggVennDiagram() + ggtitle("genes with r > 0.7")
+
+# counts of phenotype per gene passing threshold
+neg_all_genes7 %>% group_by(gene) %>% count() %>% arrange(desc(n)) %>% head()
+pos_all_genes7 %>% group_by(gene) %>% count() %>% arrange(desc(n)) %>% head()
+
+neg_all_genes %>% group_by(gene) %>% count() %>% arrange(desc(n)) %>% head()
+pos_all_genes %>% group_by(gene) %>% count() %>% arrange(desc(n)) %>% head()
+
+# penalized average correlation coefficient per gene.
+neg_all_genes7 %>% group_by(gene) %>% count(wt = r/3) %>% arrange(n) %>% head()
+pos_all_genes7 %>% group_by(gene) %>% count(wt = r/3) %>% arrange(desc(n)) %>% head()
+
+neg_all_genes %>% group_by(gene) %>% count(wt = r/3) %>% arrange(n) %>% head()
+pos_all_genes %>% group_by(gene) %>% count(wt = r/3) %>% arrange(desc(n)) %>% head()
+
+
+
+day14vsALL %>%
+  group_by(id) %>%
+  filter(id != "day14vsMax.cor", id != "day14vsAUC.cor") %>%
+  group_by(gene) %>% count(wt = r/3) %>% arrange(desc(n)) %>% head(10)
+```
+
+Neg Corr genes: ABLIM phenotype by diet in infected birds
+```{r}
+
+goi <- "ABLIM3" #actin binding LIM protein family member 3
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+
+goi <- "LOC108963561" #1-phosphatidylinositol phosphodiesterase-like
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+
+
+
+```
+pos corr genes of interest
+```{r}
+
+
+goi <- "LOC103815182" # fatty-acid amide hydrolase 1-like
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+
+
+
+goi <- "LOC103818269" # Ig lambda chain V-1 region-like
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+
+
+goi <- "LOC103818060" # Ig lambda C region like
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+
+
+goi <- "MEF2D" # myocyte enhancer factor 2D
+# goi <- "THUMPD2" #tRNA methylation
+genPhen_dat_t.tmp14_traj_DE_FC %>%
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(",
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+
+
+goi <- "JCHAIN" #joining chain of multimeric IgA and IgM
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+```
+
+
+
+
+
+## corr of different phenotypes
+```{r}
+eyescores_tidy_summary %>%
+  distinct() %>% # remove any duplicates (currently only orange.24)
+  filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
+  corrr::correlate() %>%
+  # corrplot::corrplot() %>%
+  corrr::rplot(print_cor = TRUE) +
+  ggtitle("Correlation of different phenotype measures of eyescore")
+  # corrr::network_plot()
+```
 
 
 
@@ -1561,8 +1878,10 @@ ggpubr::ggscatterhist(x = "eye_score",
 goi <- "LOC108963561" # -0.96, LOC108963561 1-phosphatidylinositol phosphodiesterase-like
 # goi <- "LOC103813357" # -0.82, LOC103813357 - histone H1
 
+goi <- "LOC108963957" # most DE gene mgpost0
+
 genPhen_dat_t.tmp14_DE_FC %>%
-  slice(-1) %>%
+  dplyr::slice(-1) %>%
   add_column(Diet = "lipid") %>%
   hablar::retype() %>%
   mutate(bird = gene) %>%
@@ -1671,12 +1990,16 @@ ggpubr::ggscatterhist(x = "eye_score",
 
 ## same as results from day 14 only comparison
 goi <- "LOC108963561" # -0.94, LOC108963561 1-phosphatidylinositol phosphodiesterase-like
-# goi <- "ABLIM3" # -0.86, LOC103817526 – actin binding LIM protein family member 3
+goi <- "ABLIM3" # -0.86, LOC103817526 – actin binding LIM protein family member 3
 # goi <- "PHACTR1" # -0.80, LOC103814391 - phosphatase and actin regulator 1
 
 genPhen_dat_t.tmp14_auc_DE_FC %>% 
-  slice(-1) %>%
-  add_column(Diet = "lipid") %>%
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
   hablar::retype() %>%
   mutate(bird = gene) %>%
 ggpubr::ggscatterhist(x = "eye_score",
@@ -2321,3 +2644,558 @@ Key bullet point messages: (each should have at least a figure)
 What drives loss in lipid birds might be different than in protein birds(who lose all their fat)
 
 ## I think I want to make a PCA plot that is nicely organized.
+
+
+# pathogen loads PCR data
+```{r loads}
+canary_loads <- readr::read_csv("~/Documents/GitHub/CanarySeq/Geno.x.Pheno/canary_loads.csv")
+```
+```{r}
+loads_tidy <- canary_loads %>% # only birds with both phenotype and genotype data
+  # mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  mutate(Bird = stringr::str_replace(ID, " ", ".")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Orange", "orange")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "- ", "")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "-", ".")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "LD.19 239", "LD19.239")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Blue.045", "Blue.45")) %>%
+  dplyr::filter(Bird %in% unique(tidygeneExpr$Bird)) %>%
+  dplyr::select(-ID) 
+
+loads_tidy_summary <- loads_tidy %>%
+  group_by(Bird) %>%
+  summarise(max = max(logLoad),
+            auc = MESS::auc(day,logLoad, type = "spline"),
+            auc_daynorm = auc/(max(day)-min(day)),
+            recovery_time = min(day[day > 3 & logLoad == min(logLoad[day > 3])]) 
+            )
+
+
+loads_recovery_trajectory <-
+  loads_tidy %>%
+    group_by(Bird) %>%
+    # filter(Day >=2) %>%
+    filter(day >= min(day[logLoad == max(logLoad)])) %>% # start with point of max infection
+    filter(day <= min(day[logLoad == 0])) %>% # get rid of trailing 0's
+    group_modify(~ broom::tidy(lm(logLoad ~ day, data = .x, na.action=na.omit), conf.int = TRUE)) %>%
+    filter(term == "day") 
+
+loads_tidy_summary$recovery_trajectory <-
+  loads_recovery_trajectory$estimate
+
+pheno_summary <- left_join(
+  eyescores_tidy_summary,
+  loads_tidy_summary,
+  by = "Bird"
+)
+```
+
+
+## corrplots
+```{r}
+pheno_summary %>%
+  corrr::correlate(method = "pearson") %>%
+  corrr::rplot(print_cor = T, ) + 
+  theme(axis.text.x=element_text(angle = 45, hjust = 1)) +
+  ggtitle("x = eyescore, y = logLoad of Pathogen")
+
+pheno_summary %>%
+  corrr::correlate(method = "pearson") %>%
+  corrr::network_plot() +
+  ggtitle("  x = eyescore, y = logLoad of Pathogen")
+
+
+pheno_summary %>%
+  corrr::correlate(method = "kendall") %>%
+  corrr::rplot(print_cor = T, ) + 
+  theme(axis.text.x=element_text(angle = 45, hjust = 1)) +
+  ggtitle("x = eyescore, y = logLoad of Pathogen")
+
+pheno_summary %>%
+  corrr::correlate(method = "kendall") %>%
+  corrr::network_plot() +
+  ggtitle("  x = eyescore, y = logLoad of Pathogen")
+```
+
+## trajectory of pathogen load correlation to genes
+```{r}
+loads_row_traj <- loads_tidy_summary %>%
+  distinct() %>% # remove any duplicates (currently only orange.24)
+  dplyr::filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
+  pivot_wider(!c(max, auc_daynorm, auc, recovery_time),#id_cols = measure, 
+              values_from = recovery_trajectory, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             Bird)
+              ) %>%
+  mutate(gene = "eye_score", .keep="unused") %>%
+  dplyr::select(gene, order(names(.)))
+
+genPhen_dat14_traj_DE_FC <- rbind(geneExpr_wide14_DE_FC, loads_row_traj)
+
+genPhen_dat_t.tmp14_traj_DE_FC <- as_tibble(cbind(bird = names(genPhen_dat14_traj_DE_FC), t(genPhen_dat14_traj_DE_FC)))
+
+colnames(genPhen_dat_t.tmp14_traj_DE_FC) <- genPhen_dat_t.tmp14_traj_DE_FC[1,]
+
+
+load.geno.x.pheno14_traj_DE_FC <- genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  hablar::retype()
+
+load.cor.geno.x.pheno_traj_DE_FC <- load.geno.x.pheno14_traj_DE_FC %>%
+  correlate(method = "pearson") %>%
+  rearrange() %>%
+  shave() 
+
+
+day14vsTraj_loads.cor <- load.cor.geno.x.pheno_traj_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  arrange((r))
+```
+
+## visualize day14vsTraj_loads top genes
+```{r}
+
+goi <- "LOC103815742" #  interferon-induced GTP-binding protein Mx-like
+# goi <- 
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene#,
+         # eye_score = replace_na(eye_score, 0)
+         ) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and traj path load MGpost0", sep = ""),
+                  xlab = "traj logLoad"
+                  )
+
+```
+
+
+### see all translation genes expression
+```{r, warning=FALSE}
+
+genPhen_dat_t.tmp14_traj_DE_FC %>%
+  dplyr::slice(-1) %>%
+  # dplyr::na_if(., abs(.) < 0.5 )
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>% 
+  dplyr::mutate(bird = as.factor(gene), 
+                Diet = as.factor(Diet),
+                .keep="unused",
+         # eye_score = replace_na(eye_score, 0)
+         ) %>%
+  pivot_longer(.,-c(bird, Diet, eye_score), names_to = "gene", values_to = "l2fc") %>%
+  # dplyr::filter(gene %in% transDN) %>%# summary()
+  dplyr::filter(gene %in% day14vsTraj.cor$gene[(nrow(day14vsTraj.cor)-25):nrow(day14vsTraj.cor)]) %>%
+  ggplot(aes(y=eye_score, x=l2fc, color = Diet, group = gene)) +
+  geom_point() +
+  # stat_smooth(method="lm")
+  geom_smooth(method = "lm", #aes(group = gene),
+              se = F) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~gene, scales = "free_x") +
+  theme_classic() +
+  ggtitle("translation genes") # +
+  # guides(color = FALSE) 
+
+
+
+genPhen_dat_t.tmp14_DE_FC %>%
+  dplyr::slice(-1) %>%
+  # dplyr::na_if(., abs(.) < 0.5 )
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>% 
+  dplyr::mutate(bird = as.factor(gene), 
+                Diet = as.factor(Diet),
+                .keep="unused",
+         # eye_score = replace_na(eye_score, 0)
+         ) %>%
+  pivot_longer(.,-c(bird, Diet, eye_score), names_to = "gene", values_to = "l2fc") %>%
+  # dplyr::filter(gene %in% transDN) %>%# summary()
+  dplyr::filter(gene %in% day14vsday14.cor$y[(nrow(day14vsday14.cor)-8):nrow(day14vsday14.cor)] |
+                  gene %in% day14vsday14.cor$x[(nrow(day14vsday14.cor)-8):nrow(day14vsday14.cor)]) %>%
+  ggplot(aes(y=eye_score, x=l2fc, color = Diet, group = gene)) +
+  geom_point() +
+  # stat_smooth(method="lm")
+  geom_smooth(method = "lm", #aes(group = gene),
+              se = F) +
+  # geom_smooth(method = "lm", aes(group = Diet, fill = Diet)) +
+  facet_wrap(~gene, scales = "free_x") +
+  theme_classic() +
+  ggtitle("translation genes")
+```
+
+
+
+# viral loads max corr
+```{r}
+loads_row_max <- loads_tidy_summary %>%
+  distinct() %>% # remove any duplicates (currently only orange.24)
+  dplyr::filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
+  pivot_wider(!c(recovery_trajectory, auc_daynorm, auc, recovery_time),#id_cols = measure, 
+              values_from = max, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             Bird)
+              ) %>%
+  mutate(gene = "eye_score", .keep="unused") %>%
+  dplyr::select(gene, order(names(.)))
+
+genPhen_dat14_max_DE_FC <- rbind(geneExpr_wide14_DE_FC, loads_row_max)
+
+genPhen_dat_t.tmp14_max_DE_FC <- as_tibble(cbind(bird = names(genPhen_dat14_max_DE_FC), t(genPhen_dat14_max_DE_FC)))
+
+colnames(genPhen_dat_t.tmp14_max_DE_FC) <- genPhen_dat_t.tmp14_max_DE_FC[1,]
+
+
+load.geno.x.pheno14_max_DE_FC <- genPhen_dat_t.tmp14_max_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  hablar::retype()
+
+load.cor.geno.x.pheno_max_DE_FC <- load.geno.x.pheno14_max_DE_FC %>%
+  # mutate(across(is.numeric, function(x){replace(x, which(abs(x)<0.1), NA)})) %>%
+  correlate(method = "kendall", use = "pairwise.complete.obs") %>%
+  rearrange() %>%
+  shave() 
+
+# load.cor.geno.x.pheno_max_DE_FC <- load.geno.x.pheno14_max_DE_FC %>%
+#   correlate(method = "pearson", use = "pairwise.complete.obs") %>%
+#   rearrange() %>%
+#   shave() 
+  
+
+
+day14vsMax_loads.cor <- load.cor.geno.x.pheno_max_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  mutate(gene = case_when(x == "eye_score" ~ y,
+         TRUE ~ x)
+         ) %>%
+  dplyr::select(c(gene, r)) %>%
+  drop_na() %>%
+  arrange((r))
+```
+
+```{r}
+
+goi <- "PEAR1" # platelet endothelial aggregation receptor 1
+# goi <- "LOC103824010"
+genPhen_dat_t.tmp14_max_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene#,
+         # eye_score = replace_na(eye_score, 0)
+         ) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and max path load MGpost0", sep = ""),
+                  xlab = "max path logLoad"
+                  )
+
+goi <- "LOC103822941"
+goi <- "HSPA5"
+goi <- "LOC103824732"
+goi <- "JCHAIN"
+
+genPhen_dat_t.tmp14_max_DE_FC %>%
+  dplyr::slice(-1) %>%
+  # dplyr::na_if(., abs(.) < 0.5 )
+  
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  # mutate(across(is.numeric, function(x){replace(x, which(abs(x)<0.1), NA)})) %>%# trying to only correlate highly expressed genes
+  mutate(bird = gene#,
+         # eye_score = replace_na(eye_score, 0)
+         ) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and max path load MGpost0", sep = ""),
+                  xlab = "max path logLoad"
+                  )
+```
+
+
+
+
+# viral loads auc_norm corr
+```{r}
+loads_row_aucNorm <- loads_tidy_summary %>%
+  distinct() %>% # remove any duplicates (currently only orange.24)
+  dplyr::filter(Bird %in% colnames(geneExpr_wide14_DE_FC)) %>%
+  pivot_wider(!c(recovery_trajectory, max, auc, recovery_time),#id_cols = measure, 
+              values_from = auc_daynorm, 
+              names_from = c(#Day, #only use this if looking at mulitple days
+                             Bird)
+              ) %>%
+  mutate(gene = "eye_score", .keep="unused") %>%
+  dplyr::select(gene, order(names(.)))
+
+genPhen_dat14_aucNorm_DE_FC <- rbind(geneExpr_wide14_DE_FC, loads_row_aucNorm)
+
+genPhen_dat_t.tmp14_aucNorm_DE_FC <- as_tibble(cbind(bird = names(genPhen_dat14_aucNorm_DE_FC), t(genPhen_dat14_aucNorm_DE_FC)))
+
+colnames(genPhen_dat_t.tmp14_aucNorm_DE_FC) <- genPhen_dat_t.tmp14_aucNorm_DE_FC[1,]
+
+
+load.geno.x.pheno14_aucNorm_DE_FC <- genPhen_dat_t.tmp14_aucNorm_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  hablar::retype()
+
+load.cor.geno.x.pheno_aucNorm_DE_FC <- load.geno.x.pheno14_aucNorm_DE_FC %>%
+  correlate(method = "kendall") %>%
+  rearrange() %>%
+  shave() 
+
+
+day14vsaucNorm_loads.cor <- load.cor.geno.x.pheno_aucNorm_DE_FC %>%
+  arrange(desc(eye_score)) %>%
+  stretch() %>%
+  filter(x=="eye_score" | y == "eye_score") %>%
+  drop_na() %>%
+  arrange((r))
+```
+
+```{r}
+
+goi <- "LOC103824839" # E3 ubiquitin-protein ligase KCMF1-like
+
+genPhen_dat_t.tmp14_aucNorm_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene#,
+         # eye_score = replace_na(eye_score, 0)
+         ) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and avg path load MGpost0", sep = ""),
+                  xlab = "aucNorm path logLoad"
+                  )
+
+goi <- "RRP9" # 
+
+genPhen_dat_t.tmp14_aucNorm_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene#,
+         # eye_score = replace_na(eye_score, 0)
+         ) %>%
+ggpubr::ggscatterhist(x = "eye_score",
+                  y = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(", 
+                                goi,
+                                ") and avg path load MGpost0", sep = ""),
+                  xlab = "aucNorm path logLoad"
+                  )
+```
+
+
+
+# Curious logFC of E3 ubiquitin-protein ligase KCMF1 (LOC103824839) uninfected birds
+```{r}
+tidygeneFC %>% filter(gene == "LOC103824839") %>%
+  ggplot(aes(x = Bird, y = log2FC14, fill = Diet)) +
+  geom_col() +
+  facet_wrap(~MG, scales = "free_x") +
+  theme_minimal() +
+  ggtitle("log2FC of LOC103824839") +
+  scale_x_discrete(guide = guide_axis(angle = 45),
+                   limits = levels(tidygeneFC$Diet))
+```
+
+
+
+# make a pretty figure of the eyescore data
+```{r}
+
+# trajectory data
+eyescore_trajectory_data <- eyescores_tidy %>%
+    group_by(Bird) %>%
+    # filter(Day >=2) %>%
+    filter(Day >= min(Day[value == max(value)])) %>% # start with point of max infection
+    filter(Day <= min(Day[value == 0])) %>%
+  left_join(tidygeneFC %>% group_by(Bird) %>% summarise(MG = MG, Diet = Diet) %>% distinct()) 
+
+# just visualizing the birds
+eyescores_tidy %>%
+  arrange(Bird) %>%
+  left_join(tidygeneFC %>% group_by(Bird) %>% summarise(MG = MG, Diet = Diet) %>% distinct()) %>%
+  left_join(., recovery_trajectory, by = "Bird") %>%
+  group_by(Bird) %>%
+  dplyr::filter(MG == "MG") %>%
+  ggplot(aes(x=Day, y=value, color = Bird, group = Bird, shape = Diet)) +
+  geom_point(alpha = 0.7) +
+  geom_line(alpha = 0.7) +
+  theme_classic() +
+  ylim(0,6) +
+  ylab("eye_score") +
+  ggtitle("Eyescore Data") +
+  guides(color="none") +
+  facet_wrap(~Diet)
+
+
+# visualizing all of them
+eyescores_tidy %>%
+  arrange(Bird) %>%
+  left_join(tidygeneFC %>% group_by(Bird) %>% summarise(MG = MG, Diet = Diet) %>% distinct()) %>%
+  left_join(., recovery_trajectory, by = "Bird") %>%
+  group_by(Bird) %>%
+  ggplot(aes(x=Day, y=value, color = MG, group = Bird, shape = Diet)) +
+  geom_smooth(data = eyescore_trajectory_data,
+    method = "lm", se=F) +
+  geom_point(alpha = 0.7) +
+  geom_line(alpha = 0.7) + 
+  theme_classic() +
+  ylim(0,6) +
+  ylab("eye_score") +
+  ggtitle("Recovery trajectory slope regressions") +
+  facet_wrap(~Bird)
+  
+
+
+
+```
+
+```{r}
+
+goi <- "MEF2D" # myocyte enhancer factor 2D
+
+genPhen_dat_t.tmp14_DE_FC %>%
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(y = "eye_score",
+                  x = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(",
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "slope of eyescore recovery"
+                  )
+geno.x.pheno14_DE_FC %>%
+  # dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(y = "eye_score (Day 14)",
+                  x = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(",
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "Log2 FC Day14 vs Day0",
+                  ylab = "Eyescore (Day 14)"
+                  )
+
+# now for the loads
+load.geno.x.pheno14_max_DE_FC %>%
+  # dplyr::slice(-1) %>%
+  # add_column(Diet = "lipid") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+ggpubr::ggscatterhist(y = "eye_score",
+                  x = goi,
+                  alpha = 0.7,
+                  color = "Diet",
+                  shape = "Diet",
+                  margin.plot = "density",
+                  bins = 7,
+                  title = paste("Correlation between log2(",
+                                goi,
+                                ") and eye_score recovery MGpost0", sep = ""),
+                  xlab = "Log2 FC Day14 vs Day0",
+                  ylab = "MAX pathogen load (log10)"
+                  ) +
+  geom_smooth(method="lm")
+
+```
+

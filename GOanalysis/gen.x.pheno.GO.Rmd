@@ -88,7 +88,7 @@ results.table.bh=all_res_final[which(all_res_final$p.adj<=0.1),] %>%
       mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
 ```
 
-Quick visualizaiton of correlation of these neg_cor_traj genes with traj values.
+Quick visualizaiton of correlation of these pos and neg_cor_traj genes with traj values.
 ```{r}
 
 genPhen_dat_t.tmp14_traj_DE_FC %>% 
@@ -106,11 +106,13 @@ genPhen_dat_t.tmp14_traj_DE_FC %>%
   ggplot(aes(x=eye_score, y = fold_change)) +
   geom_point(aes(color = Diet)) +
   geom_smooth(method="lm", color = "black", alpha = 0.7) +
-  ggtitle("Correlation between L2FC and eye_score recovery slope MGpost0") +
+  ggtitle("NEGATIVE: Correlation between L2FC and eye_score recovery slope MGpost0") +
   labs(x = "slope of eye recovery regression",
        y = "log2FC (day 14 vs day 0)") +
-  facet_wrap(~gene_name, scales = "free_y") +
-  ggpubr::stat_cor(label.y = -0.5)+
+  facet_wrap(~gene_name
+             # , scales = "free_y"
+             ) +
+  ggpubr::stat_cor(label.y = -2.5)+
   theme_minimal()
 # 
 # ggpubr::ggscatterhist(x = "eye_score",
@@ -124,5 +126,52 @@ genPhen_dat_t.tmp14_traj_DE_FC %>%
 #                   xlab = "slope of eye recovery regression"
 #                   ) #+ 
   # facet_wrap(~gene_name)
+
+
+genPhen_dat_t.tmp14_traj_DE_FC %>% 
+  dplyr::slice(-1) %>%
+  # add_column(Diet = "protein") %>%
+  add_column(Diet = c("lipid","lipid","protein","lipid",
+  "lipid","lipid","protein","protein","protein",
+  "protein","lipid","lipid","protein","lipid","protein",
+  "lipid","protein","lipid")) %>%
+  hablar::retype() %>%
+  mutate(bird = gene) %>%
+  dplyr::select(-gene) %>%
+  pivot_longer(!c(bird, Diet, eye_score), names_to = "gene_name", values_to = "fold_change") %>%
+  filter(gene_name %in% pos_cor_traj_genes) %>%
+  ggplot(aes(x=eye_score, y = fold_change)) +
+  geom_point(aes(color = Diet)) +
+  geom_smooth(method="lm", color = "black", alpha = 0.7) +
+  ggtitle("POSITIVE: Correlation between L2FC and eye_score recovery slope MGpost0") +
+  labs(x = "slope of eye recovery regression",
+       y = "log2FC (day 14 vs day 0)") +
+  facet_wrap(~gene_name
+             # , scales = "free_y"
+             ) +
+  ggpubr::stat_cor(label.y = 1)+
+  theme_minimal()
+```
+
+In short, it appears that protein related genes most strongly correlate with recovery times, while ABLIM3 has the strongest slope + correlation combination for infection recovery.
+
+Hold up now, interferon is showing up more than I'd expect. 
+
+First, MDY88 has high pos corr, and is an IFN related gene. Then, there is USP18 who shows up in MGpost0 contrast but not here.
+
+LOC103818060 Ig lambda chain C region-like shows a R=.64 but mainly driven by those with slow recovery time
+LOC103818269 Ig lambda chain V-1 region-like shows R=0.7, but IS A WITHDRAWN GENE!
+
+
+# Load in PCR cor.traj data (not made yet)
+```{r load}
+
+```
+
+
+
+# Create a 3x3 correlation plot with the correlation between max eye score, (maybe just day14 as well?), AUC eyescore, and traj eyescores to see how well they compare
+```{r}
+library(corrplot)
 ```
 
