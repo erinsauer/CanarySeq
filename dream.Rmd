@@ -1,0 +1,1901 @@
+---
+title: "Dream Differential Expression"
+author: "Carson Stacy"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup , include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 5, 
+                      dev = "png",
+                      cache = TRUE)
+```
+
+# Differential Expression Analysis in EdgeR
+
+
+```{r library}
+# library(tidyverse)
+if (!require("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(edgeR, 
+               tidyverse,
+               limma, 
+               variancePartition, #dream included
+               topGO,
+               biomaRt,
+               GOplot,
+               here
+               # BiocParallel, 
+               # pander
+               )
+```
+
+```{r functions}
+# A function to tidy gene expression matrix
+get_tidy_expression <- function(data_path, meta, type = "tpm") {
+  if (type == "tpm") {
+    tpm_df <- readr::read_tsv(data_path,
+                              show_col_types = FALSE) %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0",
+          'transcript_id(s)'
+        )
+      )
+    
+    meta_subset <- meta %>%
+      dplyr::select(c(1,3,4,5,6,7))
+    
+    tpm_df <<- tpm_df %>%
+      as_tibble() %>%
+      pivot_longer(
+        !gene_id,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = type
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet")) %>%
+      left_join(meta_subset, join_by(Lane==SampID))
+    
+  } else if (type == "count") {
+    count_df <- readr::read_tsv(data_path,
+                                show_col_types = FALSE) %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0"
+        )
+      )
+    count_df <<-count_df %>%
+      as_tibble(rownames = "gene") %>%
+      pivot_longer(
+        !gene,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = type
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"))
+    
+  } else if (length(type)==2){
+    tpm_df <- readr::read_tsv(filepath_rsem_gene_tpm,
+                              show_col_types = FALSE) %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0"
+        )
+      )
+    tpm_df <<- tpm_df %>%
+      as_tibble(rownames = "gene") %>%
+      pivot_longer(
+        !gene,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = "tpm"
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"))
+    
+    count_df <- readr::read_tsv(filepath_rsem_gene_counts,
+                                show_col_types = FALSE) %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0"
+        )
+      )
+    count_df <<-count_df %>%
+      as_tibble(rownames = "gene") %>%
+      pivot_longer(
+        !gene,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = "count"
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"))
+    count_df <<- count_df
+  } else{
+    stop("Error in inputs")
+  }
+}
+
+
+# negate %in%
+`%ni%` <- Negate(`%in%`)
+
+
+# A function to take gene name and plot ggplot scatterboxplot
+geneviz <- function(gene, tpm_df, subset) {
+  ggdat <- 
+    if (subset=="CTLvsINF") {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        dplyr::filter(MG == "Control" | Day != 0)
+    } else if (subset=="DAY0") {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        dplyr::filter(Day == 0)
+    } else if (subset=="ALL_UNINF") {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        dplyr::filter(MG == "Control" | Day == 0)
+    } else {
+      tpm_df %>%
+        filter(gene_id == gene)
+    }
+  
+  # identify where anova stat should go
+  anova_y_low <- ggdat %>%
+    dplyr::mutate(log2tpm = log2(tpm+1)) %>%
+    dplyr::arrange(log2tpm) %>%
+    head(1) %>%
+    pull(log2tpm) %>% as.numeric()
+  
+  y_high <- ggdat %>%
+    dplyr::mutate(log2tpm = log2(tpm+1)) %>%
+    dplyr::arrange(desc(log2tpm)) %>%
+    head(1) %>%
+    pull(log2tpm) %>% as.numeric()
+    
+  
+  ggdat %>%
+    ggplot(aes(
+      x = interaction(Diet, MG),
+      y = log2(tpm+1),
+      #color=Diet,
+      shape = as.factor(Day),
+      group = interaction(Diet, MG)
+    )) +
+    # ylim(0,3) +
+    geom_boxplot(width = 0.3, outlier.shape = NA) +
+    ggbeeswarm::geom_quasirandom(cex = 1.5) +
+    ggpubr::stat_compare_means(
+      comparisons =
+        list(
+          c("lipid.Control", "protein.Control"),
+          c("lipid.MG", "protein.MG"),
+          c("lipid.Control", "lipid.MG"),
+          c("protein.Control", "protein.MG")
+        ),
+      method = "t.test",
+      # label = "p.signif",
+      label = "p.format",
+      # Add pairwise comparisons p-value
+      label.y = c(y_high+0.2,y_high+0.2,y_high+0.7,y_high+1.3)
+    ) +
+    # ylim(-1,8) +
+    ylim(anova_y_low-1, y_high+2) +
+    ggpubr::stat_compare_means(label.y = anova_y_low-0.5, method = "anova") +
+    ggtitle(paste0(gene, " expression - ", subset)) +
+    theme_classic()
+}
+
+
+# visualize gene expression over time
+timevizMG <- function(gene, tpm_df, include_control=T, diff=T) {
+  if (include_control==T) {
+    if (diff==T) {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        group_by(Bird) %>%
+        dplyr::select(c('gene_id', "Bird", "MG", "Diet", 
+                        "Day", "tpm")) %>%
+        dplyr::mutate(Day = paste0("Day", Day)) %>% 
+        # dplyr::filter(tpm>1) %>% # remove samples where gene has very low expression
+        pivot_wider(names_from=Day, values_from=tpm) %>%
+        dplyr::mutate(diff14v0 = log(Day14)-log(Day0),
+                  diff21v0 = log(Day21)-log(Day0)) %>%
+        dplyr::select("gene_id", "Bird", "MG", "Diet", 
+                        "diff14v0", "diff21v0") %>%
+        pivot_longer(c("diff14v0", "diff21v0"),names_to="comparison", values_to="LogDiff") %>%
+        ggplot(aes(
+          x = interaction(Diet,MG),
+          y = LogDiff,
+          shape = Diet
+        )) +
+        # geom_line() +
+        geom_boxplot(outlier.shape = NA) +
+        geom_point() +
+        ggtitle(paste0(gene, " expression changes")) +
+        theme_classic() +
+          facet_wrap(~comparison)
+    } else {
+    tpm_df %>%
+      filter(gene_id == gene) %>%
+      ggplot(aes(
+        x = Day,
+        y = log2(tpm+1),
+        shape = Diet,
+        group = Bird
+      )) +
+      geom_point() +
+      geom_line() +
+      # geom_boxplot() +
+      ggtitle(paste0(gene, " expression over time")) +
+      theme_classic() +
+        facet_wrap(~MG)
+    }
+  } else {
+  tpm_df %>%
+    filter(gene_id == gene,
+           MG == "MG") %>% # filter only the MG group
+    ggplot(aes(
+      x = Day,
+      y = log2(tpm+1),
+      shape = Diet,
+      group = Bird
+    )) +
+    geom_point() +
+    geom_line() +
+    # geom_boxplot() +
+    ggtitle(paste0(gene, " expression over time in MG infected birds")) +
+    theme_classic()
+  }
+}
+```
+
+```{r read-data}
+# assign file path locaiton of rsem.merged.gene_counts.tsv file
+filepath_rsem_gene_counts <- here::here("SerCan2020", "rsem.merged.gene_counts.tsv")
+#assign location of tpm file for later analysis
+filepath_rsem_gene_tpm <- here::here("SerCan2020", "rsem.merged.gene_tpm.tsv")
+
+# read in rsem.merged.gene_counts.tsv
+g.counts.l <- readr::read_tsv(filepath_rsem_gene_counts,
+                              show_col_types = FALSE)
+
+```
+
+
+
+### Remove problematic samples
+
+The Sample ES89 was removed due to failed sequencing.
+Samples ES31,ES32, and ES65 were removed due to incomplete sample metadata
+```{r remove-samples}
+g.counts.l <- g.counts.l %>%
+  dplyr::select(
+    -c(
+      "ES89_Blue-049_Control-protein_0",
+      "ES31_Blue-055_NA_0",
+      "ES32_Blue-055_NA_14",
+      "ES65_106_NA_0"
+    )
+  )
+```
+
+
+### generate metadata
+
+Using sample names, a tibble of metadata is generated.
+```{r generate-metadata}
+# create tibble metadata object, convert column names to sample ID column
+metadata <-
+  tibble(SampID = colnames(g.counts.l[, c(3:ncol(g.counts.l))])) %>%
+  separate(
+    SampID,
+    c("Sample.ID", "Bird.ID",
+      "MG.Diet", "Day"),
+    "_",
+    extra = "warn",
+    fill = "warn",
+    remove = FALSE
+  ) %>%
+  separate(
+    MG.Diet,
+    c("MG.Status", "Diet"),
+    sep = "[-]",
+    extra = "warn",
+    fill = "warn",
+    remove = FALSE
+  ) %>%
+  mutate(
+    MG.Diet.Day = paste0(MG.Diet, ".", Day),
+    MG.Day = paste0(MG.Status, ".", Day),
+    Diet.Day = paste0(Diet, ".", Day)
+  ) %>%
+  mutate(MG.active = if_else(Day < 1, "NO",
+                             if_else(MG.Status == "Control",
+                                     "NO", "YES"))) %>%
+  mutate(
+    Exposure.MG = paste0(MG.active, ".", MG.Status),
+    Exposure.Diet = paste0(MG.active, ".", Diet),
+    Exposure.Diet.Day = paste0(Exposure.Diet, ".", Day)
+  )
+
+
+# generate tidy data objects for downstream analysis
+get_tidy_expression(data_path=filepath_rsem_gene_tpm, 
+                    meta=metadata, 
+                    type = "tpm")
+
+# read in phenotype data
+
+## pathogen loads
+canary_loads <-
+  readr::read_csv(here("Geno.x.Pheno/canary_loads.csv")) %>% # only birds with both phenotype and genotype data
+  # mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  mutate(Bird = stringr::str_replace(ID, " ", ".")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Orange", "orange")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "- ", "")) %>%
+  # mutate(Bird = stringr::str_replace(Bird, "-", ".")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "LD.19 239", "LD19.239")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Blue.045", "Blue.45")) %>%
+  dplyr::filter(Bird %in% unique(metadata$Bird.ID)) %>%
+  dplyr::select(-ID)
+
+## semi-quantitative eyescore measures
+eyescores <-
+  readr::read_csv(
+    here("Geno.x.Pheno/canary_eyescores.csv"),
+    col_types = cols(Day = col_integer(),
+                     Date = col_character())
+  ) %>%
+  # correcting for errors in manual data entry
+  mutate(Bird = stringr::str_replace(ID, " ", "-")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Orange", "orange")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "- ", "")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "\\.", "-")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Nlue", "Blue")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "LD-19 239", "LD19-239")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Blue-045", "Blue-45")) %>%
+  dplyr::filter(Bird %in% unique(metadata$Bird.ID)) %>%
+  dplyr::mutate(day = replace(Day, which(Day<0), 0)) %>% # adjust day -1 to day 0
+  dplyr::select(Bird, day, ES)
+
+# inspired from https://support.bioconductor.org/p/p132992/
+
+# generate columns of phenotypic metadata I'd like to have
+# pathogen loads
+day3_loads <- canary_loads %>%
+  filter(day==3) %>%
+  mutate(logLoad_day3 = logLoad, r_logLoad_day3=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day3, r_logLoad_day3))
+
+day7_loads <- canary_loads %>%
+  filter(day==7) %>%
+  mutate(logLoad_day7 = logLoad, r_logLoad_day7=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day7, r_logLoad_day7))
+
+day14_loads <- canary_loads %>%
+  filter(day==14) %>%
+  mutate(logLoad_day14 = logLoad, r_logLoad_day14=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day14, r_logLoad_day14))
+
+day21_loads <- canary_loads %>%
+  filter(day==21) %>%
+  mutate(logLoad_day21 = logLoad, r_logLoad_day21=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day21, r_logLoad_day21))
+
+#AUC estimates
+day14_AUC_loads <- canary_loads %>%
+  filter(day<=14) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,logLoad, type = "spline")
+  ) %>%
+  mutate(logLoad_AUC_14 = auc, r_logLoad_AUC_14=auc/max(auc)) %>%
+  dplyr::select(c(Bird, logLoad_AUC_14, r_logLoad_AUC_14))
+
+day21_AUC_loads <- canary_loads %>%
+  filter(day<=21) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,logLoad, type = "spline")
+  ) %>%
+  mutate(logLoad_AUC_21 = auc, r_logLoad_AUC_21=auc/max(auc)) %>%
+  dplyr::select(c(Bird, logLoad_AUC_21, r_logLoad_AUC_21))
+
+
+load_phenotypes <- purrr::reduce(list(day3_loads,day7_loads,
+                                      day14_loads, day21_loads,
+                                      day14_AUC_loads, day21_AUC_loads), 
+                                 dplyr::left_join, by = 'Bird')
+
+## now do the same for eyescore data
+day_eyes <- eyescores %>%
+  filter(., day %in% c(0,14,21)) %>%
+  mutate(day=as.character(day)) %>%
+  dplyr::select(c(Bird, day, ES))
+
+day3_eyes <- eyescores %>%
+  filter(.,day==3) %>%
+  mutate(ES_day3 = ES, r_ES_day3=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day3, r_ES_day3))
+
+day7_eyes <- eyescores %>%
+  filter(.,day==7) %>%
+  mutate(ES_day7 = ES, r_ES_day7=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day7, r_ES_day7))
+
+day14_eyes <- eyescores %>%
+  filter(.,day==14) %>%
+  mutate(ES_day14 = ES, r_ES_day14=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day14, r_ES_day14))
+
+day21_eyes <- eyescores %>%
+  filter(.,day==21) %>%
+  mutate(ES_day21 = ES, r_ES_day21=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day21, r_ES_day21))
+
+#AUC estimates
+day7_AUC_eyes <- eyescores %>%
+  filter(.,day<=7) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,ES, type = "spline")
+  ) %>%
+  mutate(ES_AUC_7 = auc, r_ES_AUC_7=auc/max(auc)) %>%
+  dplyr::select(c(Bird, ES_AUC_7, r_ES_AUC_7))
+
+day14_AUC_eyes <- eyescores %>%
+  filter(.,day<=14) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,ES, type = "spline")
+  ) %>%
+  mutate(ES_AUC_14 = auc, r_ES_AUC_14=auc/max(auc)) %>%
+  dplyr::select(c(Bird, ES_AUC_14, r_ES_AUC_14))
+
+day21_AUC_eyes <- eyescores %>%
+  filter(.,day<=21) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,ES, type = "spline")
+  ) %>%
+  mutate(ES_AUC_21 = auc, r_ES_AUC_21=auc/max(auc)) %>%
+  dplyr::select(c(Bird, ES_AUC_21, r_ES_AUC_21))
+
+
+
+eye_phenotypes <- purrr::reduce(list(day3_eyes,day7_eyes,
+                                      day14_eyes, day21_eyes,
+                                      day7_AUC_eyes,
+                                      day14_AUC_eyes, day21_AUC_eyes), 
+                                 dplyr::left_join, by = 'Bird')
+
+## add phenotype data to existing metadata df
+metadata_phenotypes <- metadata %>%
+  left_join(load_phenotypes, by = join_by('Bird.ID' == "Bird")) %>%
+  left_join(eye_phenotypes, by = join_by('Bird.ID' == "Bird")) %>%
+  left_join(day_eyes, by = join_by('Bird.ID' == "Bird", "Day" == "day")) %>%
+  mutate_all(., ~replace_na(.,0)) %>%
+  distinct() %>% # to get rid of duplicated row
+  mutate(ES_minMax = ES/6) # normalized to 0 to 1
+```
+
+```{r make-DGElist}
+# Generate count matrix
+gene_expression_matrix <- g.counts.l %>% #View()
+  # Add rownames
+  column_to_rownames("gene_id") %>%
+  # remove unneeded column
+  dplyr::select(-`transcript_id(s)`) %>% 
+  # convert to matrix for edgeR
+  as.matrix()
+
+# group arrange samples by in DGEList
+# group <- metadata$Exposure.Diet
+group <- metadata$MG.active
+
+# make DGEList
+y <- DGEList(
+  counts = gene_expression_matrix,
+  group = group,
+  remove.zeros = TRUE
+)
+```
+
+
+```{r assign-variables}
+# Bird.ID <- metadata$Bird.ID
+Bird <- factor(metadata$Bird.ID)
+Disease <- factor(metadata$MG.active, levels=c("NO","YES"))
+Diet <- factor(metadata$Diet, levels=c("protein","lipid"))
+Day <- metadata$Day
+
+Treatment <- factor(metadata$MG.Status, levels=c("Control","MG"))
+# Trt.protein <- Treatment=="MG" & Diet == "protein"
+# Trt.lipid <- Treatment=="MG" & Diet == "lipid"
+# # MG <- Disease== "YES"
+# protein <- Diet=="protein"
+# control <- Disease=="NO"
+```
+
+
+```{r filter-genes}
+keep <- filterByExpr(y,min.total.count = 50)
+keep <- rowSums(cpm(y)>1) >= 15 # this was cpm>10 before, which missed some relevant genes.
+
+#filter genes
+y <- y[keep, , keep.lib.sizes=FALSE]
+```
+
+```{r normalize-expression}
+y <- calcNormFactors(y)
+```
+
+```{r setup-dream}
+param = SnowParam(5, "SOCK", progressbar=TRUE)
+```
+
+```{r fit-dream}
+design = model.matrix( ~ Disease + Diet, metadata_phenotypes)
+# vobj_tmp = voom( y, design, plot=FALSE)
+
+
+# The variable to be tested must be a fixed effect
+form <- ~ MG.active + Diet + (1|Bird.ID)
+#^ this one here works really well, except the Diet contrast doesn't have any significant interactions.
+
+
+# form <- ~ 0 + Exposure.Diet + (1|Bird.ID)
+
+# estimate weights using linear mixed model of dream
+vobjDream = voomWithDreamWeights( y, form, metadata, BPPARAM=param )
+
+# Fit the dream model on each gene
+# By default, uses the Satterthwaite approximation for the hypothesis test
+fitmm = dream( vobjDream, form, metadata )
+fitmm = eBayes(fitmm)
+```
+
+Get gene information from BioMart
+```{r generate-geneInfo}
+mart <- if(exists('mart') == TRUE){
+  mart
+} else {
+  biomaRt::useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
+}
+
+
+gene_info <- biomaRt::getBM(attributes = c(#'ensembl_transcript_id',
+                            # 'ensembl_peptide_id',
+                            'ensembl_gene_id', 
+                            # 'uniprot_gn_symbol',
+                            'wikigene_name',
+                            'entrezgene_id',
+                            'entrezgene_description',
+                            # '',
+                            'external_gene_name'
+                            # 'go_id',
+                            # 'description'
+                            ),
+             values = g.counts.l$gene_id,
+             mart = mart) %>%
+  dplyr::mutate(entrezgene_id = paste0("LOC",entrezgene_id)) %>%
+  dplyr::mutate(gene = ifelse(entrezgene_id %in% rownames(fitmm@.Data[[1]]), entrezgene_id, external_gene_name))
+  # dplyr::select(c("entrezgene_id", "wikigene_name", "entrezgene_description")) %>%
+  # distinct()
+
+```
+
+```{r identify-DEgenes}
+head(fitmm$design, 3)
+
+
+dream_DE_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf, p.value = 0.1
+                             ) %>% rownames_to_column("gene")# %>%
+   # filter(abs(logFC)>0.2)
+
+# dream_DE_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf, p.value = 0.1
+#                              ) %>% rownames_to_column("gene") %>%
+#   filter(abs(logFC)>log2(1.2))
+
+dream_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf#, p.value = 0.05
+                             ) %>% rownames_to_column("gene")
+
+#MG effect
+variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf#, p.value = 0.2
+                             ) %>% rownames_to_column("gene") %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+    dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) #%>%
+  # View()
+
+#Protein effect
+dream_Diet_genes <- variancePartition::topTable( fitmm, coef='Dietprotein',number = Inf,adjust.method	= "fdr", confint=T,#, p.value = 0.2
+                             ) %>% rownames_to_column("gene") %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+    dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) # %>% View()
+
+# #Dayz effect
+# variancePartition::topTable( fitmm, coef='Day21',number = Inf,adjust.method	= "fdr", confint=T,#, p.value = 0.2
+#                              ) %>% rownames_to_column("gene") %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+#     dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) %>% View()
+
+# interaction between protein and MG
+# variancePartition::topTable( fitmm, coef='MG.activeYES:Dietprotein',number = Inf#, p.value = 0.2
+#                              ) %>% rownames_to_column("gene") %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+#     dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) #%>%
+  # View()
+
+variancePartition::topTable( fitmm, coef='Dietprotein',number = Inf) %>% rownames_to_column("gene") #%>% View()
+
+
+# variancePartition::topTable( fitmm, coef='Exposure.DietYES.lipid',number = Inf) %>% rownames_to_column("gene") #%>% View()
+```
+
+
+```{r estimate-blockedDream}
+# estimate weights using linear mixed model of dream
+
+form <- ~ 0 + Exposure.Diet + (1|Bird.ID) #+ Day
+
+vobjDream = voomWithDreamWeights( y, form, metadata_phenotypes, BPPARAM=param )
+
+L = makeContrastsDream( form, metadata, 
+  contrasts = c("Exposure.DietYES.lipid - Exposure.DietNO.lipid", 
+                "Exposure.DietYES.protein - Exposure.DietNO.protein",
+                "(Exposure.DietYES.lipid + Exposure.DietYES.protein)/2 - (Exposure.DietNO.lipid + Exposure.DietNO.protein)/2",
+                "Exposure.DietYES.protein - Exposure.DietYES.lipid",
+                "Exposure.DietNO.protein - Exposure.DietNO.lipid",
+                "(Exposure.DietYES.protein + Exposure.DietNO.protein)/2 - (Exposure.DietNO.lipid + Exposure.DietYES.lipid)/2" # this used to break it...
+                # "Day21 - Day14"
+                ))
+
+fit = dream( vobjDream, form, metadata_phenotypes, L)
+fit = eBayes(fit)
+
+# get names of available coefficients and contrasts for testing
+colnames(fit)
+head(fit$design, 3)
+
+
+
+# Visualize contrast matrix
+plotContrasts(L)
+```
+
+```{r identify-blockedDEgenes}
+# look at DE genes across contrasts
+
+infected_lipid_topTags <- variancePartition::topTable( fit, coef="Exposure.DietYES.lipid - Exposure.DietNO.lipid", number = Inf) %>% rownames_to_column("gene") %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC) #%>%
+  # View()
+
+View(infected_lipid_topTags)
+# wow awesome, these look crazy.
+
+
+infected_protein_topTags <- variancePartition::topTable( fit, coef="Exposure.DietYES.protein - Exposure.DietNO.protein", number = Inf) %>% 
+  rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+    dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+infected_protein_topTags %>%
+  View()
+
+infVSuninf_both_topTags <- variancePartition::topTable( fit, coef="(Exposure.DietYES.lipid + Exposure.DietYES.protein)/2 - (Exposure.DietNO.lipid + Exposure.DietNO.protein)/2",number = Inf) %>% rownames_to_column("gene")  %>%
+left_join(.,gene_info, by='gene') %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+infVSuninf_both_topTags %>%
+  View()
+
+infected_protVSlipid_topTags <- variancePartition::topTable( fit, coef="Exposure.DietYES.protein - Exposure.DietYES.lipid", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+uninfected_both_topTags <- variancePartition::topTable( fit, coef="Exposure.DietNO.protein - Exposure.DietNO.lipid", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+infected_both_topTags <- variancePartition::topTable( fit, coef="Exposure.DietYES.protein - Exposure.DietYES.lipid", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+diet_topTags <- variancePartition::topTable( fit, coef="(Exposure.DietYES.protein + Exposure.DietNO.protein)/2 - (Exposure.DietNO.lipid + Exposure.DietYES.lipid)/2", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+# variancePartition::topTable( fit, coef="Day21 - Day 14", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+#   dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) %>%
+#   View()
+```
+
+
+
+## Phenotype model
+```{r fit-dreamPheno}
+form_pheno <- ~ ES + (1|Bird.ID) # this one worked well, trying to add path load scores as well.
+                                # can't do path load scores easily b/c they don't correspond to same days.
+form_pheno <- ~ ES + Diet + (1|Bird.ID)
+
+vobjDream_pheno = voomWithDreamWeights( y, form_pheno, metadata_phenotypes, BPPARAM=param )
+
+L_pheno = makeContrastsDream( form, metadata, 
+  contrasts = c("Exposure.DietYES.lipid - Exposure.DietNO.lipid", 
+                "Exposure.DietYES.protein - Exposure.DietNO.protein",
+                "(Exposure.DietYES.lipid + Exposure.DietYES.protein)/2 - (Exposure.DietNO.lipid + Exposure.DietNO.protein)/2",
+                "Exposure.DietYES.protein - Exposure.DietYES.lipid",
+                "Exposure.DietNO.protein - Exposure.DietNO.lipid"#,
+                # "Day21 - Day14"
+                ))
+
+fit_pheno = dream( vobjDream_pheno, form_pheno, metadata_phenotypes)#, L_pheno)
+fit_pheno = eBayes(fit_pheno)
+
+# get names of available coefficients and contrasts for testing
+colnames(fit_pheno)
+head(fit_pheno$design, 3)
+
+pheno_topTable_ES <- variancePartition::topTable( fit_pheno, coef="ES", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+pheno_topTable_Diet <- variancePartition::topTable( fit_pheno, coef="Dietprotein", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+```
+
+## pheno model with ES normalized to 0,1
+```{r fit-dreamEyescoreMinmax}
+form_pheno_MM <- ~ ES_minMax + Diet + (1|Bird.ID)
+
+vobjDream_pheno_MM = voomWithDreamWeights( y, form_pheno_MM, metadata_phenotypes, BPPARAM=param )
+
+L_pheno_MM = makeContrastsDream( form, metadata_phenotypes, 
+  contrasts = c("Exposure.DietYES.lipid - Exposure.DietNO.lipid", 
+                "Exposure.DietYES.protein - Exposure.DietNO.protein",
+                "(Exposure.DietYES.lipid + Exposure.DietYES.protein)/2 - (Exposure.DietNO.lipid + Exposure.DietNO.protein)/2",
+                "Exposure.DietYES.protein - Exposure.DietYES.lipid",
+                "Exposure.DietNO.protein - Exposure.DietNO.lipid"#,
+                # "Day21 - Day14"
+                ))
+
+fit_pheno_MM = dream( vobjDream_pheno_MM, form_pheno_MM, metadata_phenotypes)#, L_pheno_MM)
+fit_pheno_MM = eBayes(fit_pheno_MM)
+
+
+pheno_topTable_ES_MM <- variancePartition::topTable( fit_pheno_MM, coef="ES_minMax", number = Inf) %>% rownames_to_column("gene")  %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
+  dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description"))  %>%
+  # filter(adj.P.Val < 0.1) %>%
+  arrange(logFC)
+
+```
+
+# use the contrasts so we can get just the diet ones
+```{r}
+
+# form <- ~ 0 + Exposure.Diet + (1|Bird.ID) #+ Day
+# vobjDream = voomWithDreamWeights( y, form, metadata_phenotypes, BPPARAM=param )
+# L = makeContrastsDream( form, metadata, 
+#   contrasts = c("Exposure.DietYES.lipid - Exposure.DietNO.lipid", 
+#                 "Exposure.DietYES.protein - Exposure.DietNO.protein",
+#                 "(Exposure.DietYES.lipid + Exposure.DietYES.protein)/2 - (Exposure.DietNO.lipid + Exposure.DietNO.protein)/2",
+#                 "Exposure.DietYES.protein - Exposure.DietYES.lipid",
+#                 "Exposure.DietNO.protein - Exposure.DietNO.lipid"#,
+#                 # "Day21 - Day14"
+#                 ))
+
+
+# fit = dream( vobjDream, form, metadata_phenotypes, L)
+# fit = eBayes(fit)
+# # get names of available coefficients and contrasts for testing
+# colnames(fit)
+# head(fit$design, 3)
+# # Visualize contrast matrix
+# plotContrasts(L)
+
+
+```
+
+
+
+
+# Volcano Plots
+
+
+
+
+
+
+# needs adjustment!!
+```{r plot-DE-cleanerCode}
+# Function to clean and mutate the data
+clean_and_mutate_data <- function(data) {
+  data %>%
+    mutate(delabel = case_when(
+      stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+      TRUE ~ gene
+    )) %>%
+    mutate(delabel = case_when(
+      adj.P.Val < 0.05 ~ delabel,
+      abs(logFC) > 0.8 ~ delabel,
+      TRUE ~ NA
+    )) %>%
+    mutate(diffexpressed = case_when(
+      adj.P.Val > 0.05 ~ "NO",
+      logFC < 0 ~ "DOWN",
+      logFC > 0 ~ "UP"
+    )) %>%
+    mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP")))
+}
+
+# Function to create the plot
+create_gene_plot <- function(data, title) {
+  ggplot(data, aes(x = logFC, y = -log10(P.Value), col = diffexpressed, label = delabel)) +
+    geom_point() +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "black", "red")) +
+    geom_vline(xintercept = c(-0.585, 0.585), col = "red") +
+    geom_hline(yintercept = -log10(0.05), col = "red") +
+    ggrepel::geom_text_repel(size = 2) +
+    ggtitle(title)
+}
+
+
+## dream infection contrast
+infVSuninf_both_topTags %>%
+  clean_and_mutate_data() %>%
+  create_gene_plot("Genes Differentially Expressed (infected / uninfected contrast)")
+
+# infected lipid birds
+infected_lipid_topTags %>%
+  clean_and_mutate_data() %>%
+  create_gene_plot("Genes Differentially Expressed in infected lipid birds")
+
+# infected protein birds
+infected_protein_topTags %>%
+  clean_and_mutate_data() %>%
+  create_gene_plot("Genes Differentially Expressed in infected protein birds")
+
+## dream diet contrast
+uninfected_both_topTags %>%
+  clean_and_mutate_data() %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("N.S.", "Higher in Lipid", "Higher in Protein"))) %>%
+  create_gene_plot("Genes Differentially Expressed in uninfected birds")
+
+## phenotype (Eyescore)
+pheno_topTable_ES %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene
+  )) %>%
+  mutate(delabel = case_when(
+    adj.P.Val > 0.05 ~ NA,
+    TRUE ~ delabel
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "NO",
+    logFC < 0 ~ "DOWN",
+    logFC > 0 ~ "UP"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+  create_gene_plot("Genes Differentially Expressed According to Eyescore Phenotype")
+```
+
+
+```{r is-replaced1}
+## dream infection contrast
+infVSuninf_both_topTags %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val > 0.05 ~ NA,
+    TRUE ~ delabel
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "NO",
+    logFC < 0 ~ "DOWN",
+    logFC > 0 ~ "UP"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+  ggplot(aes(x=logFC, y=-log10(P.Value), col=diffexpressed, label=delabel)) +
+        geom_point() + 
+        theme_minimal() +
+        scale_color_manual(values=c("black", "blue", "red")) +
+        geom_vline(xintercept=c(-0.585, 0.585), col="grey") +
+        geom_hline(yintercept=-log10(0.00726), col="grey") +
+        ggrepel::geom_text_repel(size=2) +
+  ggtitle("Genes Differentially Expressed (infected / uninfected contrast)")
+# 
+# infVSuninf_both_topTags2 %>%
+#   mutate(delabel = case_when(
+#     stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+#     TRUE ~ gene)
+#     ) %>%
+#   mutate(delabel = case_when(
+#     adj.P.Val > 0.05 ~ NA,
+#     TRUE ~ delabel
+#   )) %>%
+#   mutate(diffexpressed = case_when(
+#     adj.P.Val > 0.05 ~ "NO",
+#     logFC < 0 ~ "DOWN",
+#     logFC > 0 ~ "UP"
+#   )) %>%
+#   mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+#   ggplot(aes(x=logFC, y=-log10(P.Value), col=diffexpressed, label=delabel)) +
+#         geom_point() + 
+#         theme_minimal() +
+#         scale_color_manual(values=c("black", "blue", "red")) +
+#         geom_vline(xintercept=c(-0.585, 0.585), col="grey") +
+#         geom_hline(yintercept=-log10(0.00726), col="grey") +
+#         ggrepel::geom_text_repel(size=2) +
+#   ggtitle("Genes Differentially Expressed (infected / uninfected contrast)")
+```
+
+```{r is-replaced2}
+# infected lipid birds
+infected_lipid_topTags %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val < 0.05 ~ delabel,
+    abs(logFC) > 0.8 ~ delabel,
+    TRUE ~ NA
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "NO",
+    logFC < 0 ~ "DOWN",
+    logFC > 0 ~ "UP"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+  ggplot(aes(x=logFC, y=-log10(adj.P.Val), col=diffexpressed, label=delabel)) +
+        geom_point() + 
+        theme_minimal() +
+        scale_color_manual(values=c("blue", "black", "red")) +
+        geom_vline(xintercept=c(-0.585, 0.585), col="red") +
+        geom_hline(yintercept=-log10(0.05), col="red") +
+        ggrepel::geom_text_repel(size=2) +
+  ggtitle("Genes Differentially Expressed in infected lipid birds")
+
+# infected protein birds
+infected_protein_topTags %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val < 0.05 ~ delabel,
+    abs(logFC) > 0.8 ~ delabel,
+    TRUE ~ NA
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "NO",
+    logFC < 0 ~ "DOWN",
+    logFC > 0 ~ "UP"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+  ggplot(aes(x=logFC, y=-log10(adj.P.Val), col=diffexpressed, label=delabel)) +
+        geom_point() + 
+        theme_minimal() +
+        scale_color_manual(values=c("blue", "black", "red")) +
+        geom_vline(xintercept=c(-0.585, 0.585), col="red") +
+        geom_hline(yintercept=-log10(0.05), col="red") +
+        ggrepel::geom_text_repel(size=2) +
+  ggtitle("Genes Differentially Expressed in infected protein birds")
+
+
+## dream diet contrast
+uninfected_both_topTags %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val < 0.05 ~ delabel,
+    abs(logFC) > 0.8 ~ delabel,
+    TRUE ~ NA
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "N.S.",
+    logFC < 0 ~ "Higher in Lipid",
+    logFC > 0 ~ "Higher in Protein"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("N.S.", 
+                                                          "Higher in Lipid", "
+                                                          Higher in Protein"))) %>%
+  ggplot(aes(x=logFC, y=-log10(P.Value), col=diffexpressed, label=delabel)) +
+        geom_point() + 
+        theme_minimal() +
+        scale_color_manual(values=c("blue", "black", "red")) +
+        geom_vline(xintercept=c(-0.585, 0.585), col="red") +
+        geom_hline(yintercept=-log10(0.05), col="red") +
+        ggrepel::geom_text_repel(size=2) +
+  ggtitle("Genes Differentially Expressed in uninfected birds") +
+  annotate("text", label = "Higher in Lipid", x = -1.5, y = 0) +
+  annotate("text", label = "Higher in Protein", x = 1, y = 0) 
+                             
+
+## phenotype (Eyescore)
+pheno_topTable_ES %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val > 0.05 ~ NA,
+    TRUE ~ delabel
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "NO",
+    logFC < 0 ~ "DOWN",
+    logFC > 0 ~ "UP"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+  ggplot(aes(x=logFC, y=-log10(P.Value), col=diffexpressed, label=delabel)) +
+        geom_point() + 
+        theme_minimal() +
+        scale_color_manual(values=c("blue", "black", "red")) +
+        geom_vline(xintercept=c(-0.585, 0.585), col="red") +
+        geom_hline(yintercept=-log10(0.05), col="red") +
+        ggrepel::geom_text_repel(size=2) +
+  ggtitle("Genes Differentially Expressed According to Eyescore Phenotype")
+
+# phenotype (Diet factor)
+pheno_topTable_Diet %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val < 0.05 ~ NA,
+    abs(logFC) < 0.8 ~ NA,
+    TRUE ~ delabel
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "N.S.",
+    logFC < 0 ~ "Higher in Lipid",
+    logFC > 0 ~ "Higher in Protein"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+  ggplot(aes(x=logFC, y=-log10(P.Value), col=diffexpressed, label=delabel)) +
+        geom_point() + 
+        theme_minimal() +
+        scale_color_manual(values=c("black", "blue", "red")) +
+        geom_vline(xintercept=c(-0.585, 0.585), col="grey") +
+        geom_hline(yintercept=-log10(0.05), col="grey") +
+        ggrepel::geom_text_repel(size=2) +
+  ggtitle("Genes Differentially Expressed According to Diet factor in Phenotype model (not good to use prb)")
+```
+
+## generate a boxplot that shows FC values in response to MG on left, another boxplot for FC in response to diet on the right, and lines connecting the genes.
+```{r generate-boxplots, warning=FALSE}
+# MG
+tmp_MG_tidy <- infVSuninf_both_topTags %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val > 0.05 ~ NA,
+    TRUE ~ delabel
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "NO",
+    logFC < 0 ~ "DOWN",
+    logFC > 0 ~ "UP"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>%
+  mutate(contrast = "MG")
+  # ggplot(aes(x=logFC, y=-log10(P.Value), col=diffexpressed, label=delabel)) +
+  #       geom_point() + 
+  #       theme_minimal() +
+  #       scale_color_manual(values=c("black", "blue", "red")) +
+  #       geom_vline(xintercept=c(-0.585, 0.585), col="grey") +
+  #       geom_hline(yintercept=-log10(0.00726), col="grey") +
+  #       ggrepel::geom_text_repel(size=2) +
+  # ggtitle("Genes Differentially Expressed (infected / uninfected contrast)")
+
+# Diet
+## dream diet contrast
+tmp_Diet_tidy <- uninfected_both_topTags %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val < 0.05 ~ delabel,
+    abs(logFC) > 0.8 ~ delabel,
+    TRUE ~ NA
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "N.S.",
+    logFC < 0 ~ "Higher in Lipid",
+    logFC > 0 ~ "Higher in Protein"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("N.S.", 
+                                                          "Higher in Lipid", "
+                                                          Higher in Protein"))) %>%
+  mutate(contrast = "Diet")
+  # ggplot(aes(x=logFC, y=-log10(P.Value), col=diffexpressed, label=delabel)) +
+  #       geom_point() + 
+  #       theme_minimal() +
+  #       scale_color_manual(values=c("blue", "black", "red")) +
+  #       geom_vline(xintercept=c(-0.585, 0.585), col="red") +
+  #       geom_hline(yintercept=-log10(0.05), col="red") +
+  #       ggrepel::geom_text_repel(size=2) +
+  # ggtitle("Genes Differentially Expressed in uninfected birds") +
+  # annotate("text", label = "Higher in Lipid", x = -1.5, y = 0) +
+  # annotate("text", label = "Higher in Protein", x = 1, y = 0) 
+
+# boxplot - paired
+tmp_MG_tidy %>%
+  bind_rows(tmp_Diet_tidy) %>%
+  filter(AveExpr > 1.5) %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene
+  )) %>%
+  mutate(diffexpressed = case_when(
+    diffexpressed == "N.S." ~ "NO",
+    TRUE ~ diffexpressed) %>% fct_relevel("NO", "UP", "DOWN")) %>%
+  mutate(delabel = case_when(abs(logFC) < 0.4 ~ NA,
+                             TRUE ~ delabel)) %>%
+  ggplot(aes(contrast, logFC, fill = contrast, label = delabel)) +
+  geom_line(aes(group = gene), alpha = 0.1, position = position_dodge(0.2), show.legend=FALSE) +
+  geom_point(aes(fill = contrast,  group = gene, shape = diffexpressed), size = 0.7, position = position_dodge(0.2), show.legend = c(shape=TRUE, fill=FALSE, group = FALSE)) +
+  # geom_line(aes(group = gene), alpha = 0.1) +
+  # ggbeeswarm::geom_quasirandom() +
+  geom_boxplot(width = 0.25, outlier.shape = NA,show.legend=FALSE) +
+  ggrepel::geom_text_repel(size = 2) +
+  theme_classic() +
+  # theme(legend.position = "none") +
+  theme(legend.position="right") +
+  annotate("text",
+           label = "Higher in Protein",
+           x = 0.9,
+           y = 1.35) +
+  annotate("text",
+           label = "Higher in Lipid",
+           x = 0.9,
+           y = -1.15) +
+  annotate("text",
+           label = "Higher in Infection",
+           x = 2.2,
+           y = 1.35) +
+  annotate("text",
+           label = "Lower in Infection",
+           x = 2.2,
+           y = -1.2) +
+  ggtitle("Same genes top lists of Expression Fold Changes in Diet and MG treatments")
+
+```
+# alternative visualization (scatter correlation plot):
+
+```{r}
+tmp_MG_tidy %>%
+  left_join(tmp_Diet_tidy, by = join_by(gene, external_gene_name, entrezgene_description)) %>%
+  filter(AveExpr.x > 1.5) %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene
+  )) %>%
+  mutate(delabel = case_when(abs(logFC.x) < 0.4 & abs(logFC.y) < 0.4 ~ NA,
+                             TRUE ~ delabel)) %>%
+  ggplot(aes(logFC.x, logFC.y, label = delabel)) +
+  # geom_line(aes(group = gene), alpha = 0.1, position = position_dodge(0.2)) +
+  geom_point(aes(group = gene),  alpha=0.2) +
+  # geom_boxplot(width = 0.25, outlier.shape = NA) +
+  # geom_smooth(method="lm") +
+  geom_abline(alpha=0.5) +
+  ggrepel::geom_text_repel(size = 2) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  annotate("text",
+           label = "Higher in Protein",
+           x = 1,
+           y = 1.35) +
+  annotate("text",
+           label = "Higher in Lipid",
+           x = -0.9,
+           y = -0.85) +
+  ggtitle("Correlation of Expression Fold Changes in effects of Diet and MG") +
+  xlab("logFC (MG infection)") +
+  ylab("logFC (Diet)")
+```
+
+
+## correlation plot beetween uninfected_both_toptags and pheno_topTable_Diet(not _uninfected)
+```{r}
+
+tmp_pheno_Diet_tidy <- pheno_topTable_Diet %>% # was pheno_topTable_Diet_uninfected 
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    adj.P.Val < 0.05 ~ delabel,
+    abs(logFC) > 0.8 ~ delabel,
+    TRUE ~ NA
+  )) %>%
+  mutate(diffexpressed = case_when(
+    adj.P.Val > 0.05 ~ "N.S.",
+    logFC < 0 ~ "Higher in Lipid",
+    logFC > 0 ~ "Higher in Protein"
+  )) %>%
+  mutate(diffexpressed = factor(diffexpressed, levels = c("N.S.", 
+                                                          "Higher in Lipid", "
+                                                          Higher in Protein"))) %>%
+  mutate(contrast = "Diet_pheno")
+
+# alternative visualization:
+tmp_pheno_Diet_tidy %>%
+  left_join(tmp_Diet_tidy, by = join_by(gene, external_gene_name, entrezgene_description)) %>%
+  filter(AveExpr.x > 1.5) %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene
+  )) %>%
+  mutate(delabel = case_when(abs(logFC.x) < 0.4 & abs(logFC.y) < 0.4 ~ NA,
+                             TRUE ~ delabel)) %>%
+  ggplot(aes(logFC.x, logFC.y, label = delabel)) +
+  # geom_line(aes(group = gene), alpha = 0.1, position = position_dodge(0.2)) +
+  geom_point(aes(group = gene), position = position_dodge(0.2), alpha=0.2) +
+  # geom_boxplot(width = 0.25, outlier.shape = NA) +
+  # geom_smooth(method="lm") +
+  geom_abline(alpha=0.5) +
+  ggrepel::geom_text_repel(size = 2) +
+  theme_classic() +
+  theme(legend.position = "none") +
+  annotate("text",
+           label = "Higher in Protein",
+           x = 2,
+           y = 1.35) +
+  annotate("text",
+           label = "Higher in Lipid",
+           x = -1,
+           y = -1) +
+  ggtitle("Correlation of Expression Fold Changes in effects of Diet (contrast vs pheno)") +
+  xlab("logFC (Diet Pheno)") +
+  ylab("logFC (Diet)")
+```
+
+
+
+## correlation plot between logFC MG and logFC EyeScores.
+```{r}
+full_join(pheno_topTable_ES, infVSuninf_both_topTags, by=c("gene", "external_gene_name", "entrezgene_description")) %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  dplyr::select(logFC.x, logFC.y) %>%
+  corrr::correlate()
+
+full_join(pheno_topTable_ES, infVSuninf_both_topTags, by=c("gene", "external_gene_name", "entrezgene_description")) %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    abs(logFC.x) < 0.3 ~ NA,
+    TRUE ~ delabel
+  )) %>%
+  ggplot(aes(x=logFC.x, y = logFC.y, label = delabel)) +
+  geom_point(alpha=0.5) +
+  ggrepel::geom_text_repel(size=2) +
+  geom_smooth(method="lm") +
+  # ggpubr::stat_cor(aes(label = ..rr.label..)) +
+  ggpubr::stat_regline_equation(
+    aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
+    formula = y ~ x
+  ) +
+  theme_classic() +
+  xlim(-1.2,1.5) +
+  ylim(-1.2,1.5) +
+  labs(
+    title = "Correlation of logFC estimates between EyeScore and MG group regression",
+    x = "logFC.EyeScore",
+    y = "logFC.MG"
+  )
+```
+# comparing eyescores normalized to 0,1 with MG
+```{r, warning=FALSE}
+full_join(pheno_topTable_ES_MM, infVSuninf_both_topTags, by=c("gene", "external_gene_name", "entrezgene_description")) %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  dplyr::select(logFC.x, logFC.y) %>%
+  corrr::correlate()
+
+full_join(pheno_topTable_ES_MM, infVSuninf_both_topTags, by=c("gene", "external_gene_name", "entrezgene_description")) %>%
+  mutate(delabel = case_when(
+    stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+    TRUE ~ gene)
+    ) %>%
+  mutate(delabel = case_when(
+    abs(logFC.x) < 0.3 ~ NA,
+    TRUE ~ delabel
+  )) %>%
+  ggplot(aes(x=logFC.x, y = logFC.y, label = delabel)) +
+  geom_point(alpha=0.5) +
+  geom_smooth(method="lm") +
+  ggrepel::geom_text_repel(size=2) +
+  # ggpubr::stat_cor(aes(label = ..rr.label..)) +
+  ggpubr::stat_regline_equation(
+    aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
+    formula = y ~ x
+  ) +
+  theme_classic() +
+  # xlim(-1.2,1.2) +
+  # ylim(-1.2,1.2) +
+  labs(
+    title = "Correlation of logFC estimates between EyeScore and MG group regression",
+    x = "logFC.EyeScore (minMax)",
+    y = "logFC.MG"
+  )
+```
+
+
+
+
+
+# GO enrichment of MG genes.
+```{r enrich-GO}
+# get biomart ensembl dataset for scanaria (has most GO terms)
+mart <- if(exists('mart') == TRUE){
+  mart
+} else {
+  biomaRt::useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
+}
+
+
+res <- getBM(attributes = c('ensembl_transcript_id',
+                            'ensembl_peptide_id',
+                            'ensembl_gene_id', 
+                            'uniprot_gn_symbol',
+                            'wikigene_name',
+                            'entrezgene_id',
+                            'external_gene_name',
+                            'go_id',
+                            'description'
+                            ),
+             values = dream_MG_genes$gene,
+             mart = mart)
+
+
+# getting GO terms grouped to gene names
+res_min <- res %>% 
+    mutate(wikigene_name = ifelse(wikigene_name %in% "", 
+                                  external_gene_name, 
+                                  wikigene_name)) %>% # get gene names
+    group_by(ensembl_gene_id) %>% # I think I need to change this...
+    mutate(GOterms = paste0(go_id, collapse = ",")) %>%
+    slice_head(n=1) %>% # get only one row per gene
+    ungroup()
+
+# tidy up data formatting
+res_min <- res_min %>%
+    mutate(GOterms = gsub("^,+|,+$|(,)+", "\\1", GOterms, perl=TRUE)) %>%  # tidy up the extra ;;; in Go terms
+    mutate(across(everything(), ~ifelse(.=="", NA, as.character(.))))
+
+  # combine different nomenclature types
+geneID2GO_combine_names <- res_min[,c(5,6,10)] %>%
+    mutate(gene = ifelse(is.na(res_min$wikigene_name), res_min$entrezgene_id, res_min$wikigene_name)) %>%
+    dplyr::select(-c(wikigene_name, entrezgene_id))
+
+geneID2GO_combine_names <- res_min[,c(5,6,10)] %>%
+    filter(!is.na(GOterms)) %>%
+    mutate(gene = paste0("LOC",entrezgene_id)) #%>%
+    # dplyr::select(-c(wikigene_name, entrezgene_id))
+  
+  # merge the data from BioMart and our input genes
+geneID_names <- left_join(dream_MG_genes, geneID2GO_combine_names, by = "gene") %>%
+  left_join(geneID2GO_combine_names[,c(1,3)], by = join_by("gene" == "wikigene_name")) %>%
+  mutate(GOterms = ifelse(is.na(GOterms.x), GOterms.y, GOterms.x))
+
+colnames(geneID_names)[1] <- "seq_name"
+
+
+# build the table of original GO terms with gene IDs (weird format needed)
+geneID2GO_build_BM <- tibble(geneID_names$seq_name,
+                             "\t",
+                             geneID_names$GOterms)
+# give appropriate column names
+colnames(geneID2GO_build_BM) <- c("seq_name", "\t", "go_i_ds")
+
+
+# load in Blast2GO results
+Blast2GO <-
+  read_delim(
+    "~/Desktop/canary/newGOterms_nomatchDEgenes.tsv",
+    delim = "\t",
+    escape_double = FALSE,
+    trim_ws = TRUE
+  ) %>%
+  janitor::clean_names() %>%
+  dplyr::select(seq_name, go_i_ds) %>%
+  #change formatting of the GO term seperators to ,
+  dplyr::mutate(go_i_ds = str_replace_all(go_i_ds, "; ", ",")) %>%
+  dplyr::mutate(go_i_ds = str_replace_all(go_i_ds, "[PFC]:", ""))
+
+combinedGOterms <-
+  left_join(geneID2GO_build_BM, Blast2GO, by = "seq_name")
+
+# now condense the two go_i_ds columns into single column of GO terms.
+combinedGOterms <-
+  tidyr::unite(
+    combinedGOterms,
+    GOterms,
+    go_i_ds.x:go_i_ds.y,
+    na.rm = TRUE,
+    remove = FALSE,
+    sep = ","
+  )
+
+geneID2GO_build_BM <- tibble(# canary_annotations$geneID_ncbi,
+  seq_name = combinedGOterms$seq_name,
+  "\t",
+  GOterms = combinedGOterms$GOterms)
+
+
+  # write out the geneID2GO_BM.map file
+  write.table(geneID2GO_build_BM, file=here("test_geneID2GO_BM.map"),
+              quote = F, row.names = F, col.names = F)
+  
+  # save(geneID2GO_build_BM, 
+  #      file = paste( "~/Documents/GitHub/CanarySeq/geneAnnotations/geneID2GO_", names(contrasts)[i], ".RData", sep= ""))
+  
+  # read in the mappings with readMappings from topGO
+  canary_geneID2GO_BM <- topGO::readMappings(file = here("test_geneid2GO_BM.map"))
+
+matches <- which(toupper(names(canary_geneID2GO_BM)) %in% dream_MG_genes$gene)
+
+  # used unique because there are some duplicates in output. (per isoform)
+  genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
+  
+  # assign desired fold change cutoff value (will be log2 tranformed in script)
+  j = 1.3
+
+  ## which gene list we are looking at
+  DEgenes_up <- filter(as.data.frame(dream_DE_MG_genes), logFC > log2(j)) %>% pull(gene)
+  DEgenes_down <- filter(dream_DE_MG_genes, logFC < -log2(j)) %>% pull(gene)
+    
+  # genes names with GO terms and DE.
+  DEgeneswithGO_up <- which(DEgenes_up %in% genesMatched)
+  DEgeneswithGO_down <- which(DEgenes_down %in% genesMatched)
+  
+  # select only genes that are DE and have GO terms
+  DEgenesGO_up <- DEgenes_up[DEgeneswithGO_up]
+  DEgenesGO_down <- DEgenes_down[DEgeneswithGO_down]
+   
+  #first, let's subset our canary geneIDtoGO to just these genes.
+  canary_geneID2GO_BM_DE_up <-
+    canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenesGO_up)]
+    
+  names(canary_geneID2GO_BM_DE_up)[!(DEgenesGO_up %in% names(canary_geneID2GO_BM_DE_up))]
+  
+  canary_geneID2GO_BM_DE_down <-
+    canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenesGO_down)]
+    
+  names(canary_geneID2GO_BM_DE_down)[!(DEgenesGO_down %in% names(canary_geneID2GO_BM_DE_down))]
+    
+    
+  #Let me also get my full edgeR gene list.
+  canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% genesMatched)]
+
+    
+  # weird formatting creating the geneList for topGO. this code seemed to work
+  all_genes_up <- factor(as.integer(toupper(filter(dream_MG_genes,AveExpr>1)$gene) %in% DEgenesGO_up),labels=c(0,1)) # create 0 1 factors.
+    names(all_genes_up) <- toupper(filter(dream_MG_genes,AveExpr>1)$gene) # add gene names
+    
+  all_genes_down <- factor(as.integer(toupper(filter(dream_MG_genes,AveExpr>1)$gene) %in% DEgenesGO_down)) # create 0 1 factors.
+  names(all_genes_down) <- toupper(filter(dream_MG_genes,AveExpr>1)$gene) # add gene names
+    
+    
+  GOdata_up=new('topGOdata', 
+         ontology='CC', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         allGenes = all_genes_up, # all 10188 genes that are in MGpost0 data from edgeR. 
+                                  # factor=1 for those that are DE.
+         annot = annFUN.gene2GO, # annotation function for custom annotation
+# I am thinking about switching this for one filtered to just edgeR genes:
+         gene2GO = canary_geneID2GO_BM_edgeR # annotation db from BiomaRt.
+           )
+    
+  GOdata_down=new('topGOdata', 
+         ontology='CC', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         allGenes = all_genes_down, # all 10188 genes that are in MGpost0 data from edgeR. 
+                                    # factor=1 for those that are DE.
+         annot = annFUN.gene2GO, # annotation function for custom annotation
+# I am thinking about switching this for one filtered to just edgeR genes:
+         gene2GO = canary_geneID2GO_BM_edgeR # annotation db from BiomaRt.
+
+           )
+    
+  #analysis
+  # define test using the weight01 algorithm (default) with fisher
+  # weight_fisher_result_up=runTest(GOdata_up, algorithm='weight01', statistic='fisher')
+  # weight_fisher_result_down=runTest(GOdata_down, algorithm='weight01', statistic='fisher')
+  weight_fisher_result_up=runTest(GOdata_up, algorithm = "elim", statistic = "fisher")
+  weight_fisher_result_down=runTest(GOdata_down, algorithm = "elim", statistic = "fisher")
+  
+     
+  # generate a table of results: we can use the GenTable function to generate a summary table with the results from tests applied to the topGOdata object.
+  allGO_up=usedGO(GOdata_up)
+  all_res_up=GenTable(GOdata_up, 
+                      weightFisher=weight_fisher_result_up, 
+                      orderBy='weightFisher', 
+                      topNodes=length(allGO_up), 
+                      numChar = 200)
+    
+    allGO_down=usedGO(GOdata_down)
+    all_res_down=GenTable(GOdata_down, 
+                          weightFisher=weight_fisher_result_down, 
+                          orderBy='weightFisher', 
+                          topNodes=length(allGO_down), 
+                          numChar = 200)
+    
+    #performing BH correction on our p values
+    p.adj_up=round(p.adjust(all_res_up$weightFisher,method="BH"),digits = 4)
+    p.adj_down=round(p.adjust(all_res_down$weightFisher,method="BH"),digits = 4)
+     
+    # create the file with all the statistics from GO analysis
+    all_res_final_up=cbind(all_res_up,p.adj_up)
+    all_res_final_up=all_res_final_up[order(all_res_final_up$p.adj),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+    all_res_final_down=cbind(all_res_down,p.adj_down)
+    all_res_final_down=all_res_final_down[order(all_res_final_down$p.adj),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+     
+    #get list of significant GO before multiple testing correction
+    results.table.p_up= all_res_final_up[which(as.numeric(all_res_final_up$weightFisher)<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";")) %>%
+      type_convert() %>%
+      filter(Annotated > 1) %>%
+      mutate(Sig_Anno = Significant/Expected)
+    
+    results.table.p_down= all_res_final_down[which(as.numeric(all_res_final_down$weightFisher)<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";")) %>%
+      type_convert() %>%
+      filter(Annotated > 1) %>%
+      mutate(Sig_Exp = Significant/Expected)
+    
+    #get list of significant GO after multiple testing correction
+    results.table.bh_up=all_res_final_up[which(all_res_final_up$p.adj<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+    results.table.bh_down=all_res_final_down[which(all_res_final_down$p.adj<=0.1),] %>%
+      mutate(across(everything(), gsub, pattern = ",", replacement = ";"))
+    
+# PLOT the GO hierarchy plot: the enriched GO terms are colored in yellow/red according to significance level
+    
+# pdf(file='~/Desktop/canary/test_topGO_MG_DAG_DOWN.pdf', height=12, width=12, paper='special', pointsize=18)
+showSigOfNodes(GOdata_down, score(weight_fisher_result_down), useInfo = "none",
+               sigForAll=TRUE, firstSigNodes=2)
+# dev.off()
+
+showSigOfNodes(GOdata_up, score(weight_fisher_result_up), useInfo = "all", sigForAll=TRUE, firstSigNodes=10)
+```
+
+
+```{r viz-GO.MG}
+#add genes to terms for GOplot (from https://github.com/W-L/ADA_coursework)
+add_genes_to_terms <- function(GO2genes, results){
+  for (i in seq(1, nrow(results))){
+    GOterm <- results$GO.ID[i]
+    results[i, "genes"] <- paste(GO2genes[GOterm][[1]], collapse=', ')
+  }
+  return(results)
+}
+
+GO2genes <- inverseList(canary_geneID2GO_BM_edgeR)
+
+all_res_down_GOplot <- add_genes_to_terms(GO2genes=GO2genes, results=all_res_down) %>%
+  mutate(Category="CC",
+         ID=GO.ID,
+         adj_pval=weightFisher) %>%
+  dplyr::select(Category, ID, Term, adj_pval, genes) %>%
+  readr::type_convert()
+
+DE_down_GOplot_genes <- infVSuninf_both_topTags %>%
+  # filter(gene %in% names(all_genes_down[all_genes_down == 1])) %>%
+  mutate(ID=gene) %>%
+  readr::type_convert()
+
+circ <- circle_dat(all_res_down_GOplot, DE_down_GOplot_genes) 
+```
+
+```{r}
+circ %>%
+  dplyr::filter(adj_pval < 0.05) %>%
+  dplyr::filter(category == 'CC') %>%
+  GOBar() +
+  coord_flip()
+```
+
+```{r}
+# Generate the bubble plot with a label threshold of 3
+# NEED TO FIX, has 
+GOBubble(circ, ID = T, table.legend = T, labels=3)
+```
+
+```{r}
+#Generate a circular visualization of the results of gene- annotation enrichment analysis
+GOCircle(circ)
+```
+
+```{r}
+
+DE_down_GOplot_genes_p05 <- DE_down_GOplot_genes %>%
+  filter(adj.P.Val < 0.1) %>%
+  dplyr::select(ID, logFC)
+
+process_enrich_down_CC <- all_res_down_GOplot %>%
+  filter(adj_pval < 0.05) %>%
+  pull(Term) %>% head(6)
+
+chord <- chord_dat(circ, DE_down_GOplot_genes_p05, process_enrich_down_CC)
+
+# chord <- circ %>%
+#   drop_na() #%>%
+#   filter(adj_pval < 0.2 | ID %in% c("GO:0032449", "GO:0042105", "GO:0044297", "GO:0016020", "GO:0043203", 
+# "GO:0005604", "GO:0072686", "GO:0000139", "GO:0000242", "GO:0045121", 
+# "GO:0098857"))
+
+
+
+
+GOCluster(
+  circ,
+  head(process_enrich_down_CC,6),
+  metric='minkowski',
+  clust.by = 'logFC',
+  term.width = 0.5,
+  lfc.width = 0.4,
+  lfc.space = 0.05,
+  term.space = 0.1,
+  clust = 'centroid'
+)
+
+```
+
+```{r}
+process_enrich_down_CC_chord <- all_res_down_GOplot %>%
+  filter(adj_pval < 0.03) %>%
+  pull(Term)# %>% head(10)
+
+chord_GO <- chord_dat(circ, DE_down_GOplot_genes_p05, c("GO:0042101", "GO:0001772"))
+
+GOChord(chord_GO, space = 0.03, gene.order = 'logFC', gene.space = 0.25, gene.size = 2)
+```
+
+```{r}
+# GOHeat(chord[,-9], nlfc = 0)
+
+# GOHeat(chord, nlfc=1, fill.col = c('darkgoldenrod1', 'black', 'cyan1'))
+```
+
+I see that JCAHIN (LOC103823426) has the largest logFC when looking at eyescores vs expression. Let's visualize just that gene to see how those correlate.
+```{r}
+
+
+
+# compare eyescore of the given day to FC of JCHAIN gene
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=ES_minMax, y=log2FC_normToDay0, color = Diet)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs Eyescore") +
+  facet_wrap(~Day) +
+  theme_classic()
+
+# comparing day7 eyescore to 
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=r_ES_day7, y = log2FC_normToDay0, color = Day)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs Day7 Eyescore") +
+  facet_wrap(~Diet) +
+  theme_classic()
+
+# comparing day3 eyescore to 
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=r_ES_day3, y = log2FC_normToDay0, color = Day)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs Day3 Eyescore") +
+  facet_wrap(~Diet) +
+  theme_classic()
+
+# logLoads
+# comparing day3 load to JCHAIN FC
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=r_logLoad_day3, y = log2FC_normToDay0, color = Day)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs Day3 Eyescore") +
+  facet_wrap(~Diet) +
+  theme_classic()
+
+# comparing day7 load to JCHAIN FC
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=r_logLoad_day7, y = log2FC_normToDay0, color = Day)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs Day7 Eyescore") +
+  facet_wrap(~Diet) +
+  theme_classic()
+
+# comparing day14 logload to JCHAIN FC
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=r_logLoad_day14, y = log2FC_normToDay0, color = Day)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs Day14 Eyescore") +
+  facet_wrap(~Diet) +
+  theme_classic()
+
+
+## with AUC instead
+# comparing day14 auclogload to JCHAIN FC
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=logLoad_AUC_14, y = log2FC_normToDay0, color = Day)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs aucDay14 Eyescore") +
+  facet_wrap(~Diet) +
+  theme_classic()
+
+
+# comparing day21 aucload to JCHAIN FC
+tpm_df %>%
+  dplyr::filter(gene_id == "LOC103823426") %>%
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
+                                        "Diet", "MG.Diet.Day", "MG.Day",
+                                        "Diet.Day", "MG.active", "Exposure.MG",
+                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        )) %>%
+  mutate(gene="JCHAIN") %>%
+  # normalize tpm to day 0 tpm.
+  group_by(Bird) %>%
+  mutate(RN = row_number(), log2FC_normToDay0 = log2(tpm/tpm[RN ==1])) %>%
+  filter(Day > 0, MG.active == "YES") %>%
+  ggplot(aes(x=logLoad_AUC_21, y = log2FC_normToDay0, color = Day)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("JCHAIN log2FC vs aucDay21 Eyescore") +
+  facet_wrap(~Diet) +
+  theme_classic()
+
+```
+
+
+
+
+
+# variance partition visualization
+```{r}
+varpart.form <- ~ (1|Diet) + (1|MG.active) + (1|Bird.ID)
+varPart <- fitExtractVarPartModel( vobjDream, varpart.form, metadata )
+
+vp <- sortCols( varPart )
+
+
+vp %>%
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>%
+  dplyr::filter(gene %in% DEgenes_up | gene %in% DEgenes_down) %>%
+  column_to_rownames("gene") %>%
+  slice_head(n=15) %>%
+  plotPercentBars()
+# plotPercentBars( vp[1:20,] )
+plotVarPart( vp )
+
+# vp %>% as.data.frame() %>% rownames_to_column("gene") %>% head()
+```
