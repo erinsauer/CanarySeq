@@ -16,3 +16,7 @@ Geno.x.Pheno/Gene_Analyses_files/figure-latex/viz key genes Day 21-2.pdf
 *.RData
 *.pdf
 *.pdf
+test_geneID2GO_BM.map
+*.png
+*.rdb
+*.rdx

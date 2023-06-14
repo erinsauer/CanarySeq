@@ -28,6 +28,7 @@ pacman::p_load(edgeR,
                topGO,
                biomaRt,
                GOplot,
+               gt,
                here
                # BiocParallel, 
                # pander
@@ -61,8 +62,12 @@ get_tidy_expression <- function(data_path, meta, type = "tpm") {
         names_sep = "_",
         values_to = type
       ) %>%
-      separate(col = MG.Diet, c("MG", "Diet")) %>%
-      left_join(meta_subset, join_by(Lane==SampID))
+      separate(col = MG.Diet, c("MG", "Diet"), remove=FALSE) %>%
+      left_join(meta_subset, join_by(Lane==SampID,
+                                     Bird==Bird.ID,
+                                     Diet==Diet,
+                                     Day==Day,
+                                     MG.Diet==MG.Diet))
     
   } else if (type == "count") {
     count_df <- readr::read_tsv(data_path,
@@ -83,7 +88,7 @@ get_tidy_expression <- function(data_path, meta, type = "tpm") {
         names_sep = "_",
         values_to = type
       ) %>%
-      separate(col = MG.Diet, c("MG", "Diet"))
+      separate(col = MG.Diet, c("MG", "Diet"), remove = FALSE)
     
   } else if (length(type)==2){
     tpm_df <- readr::read_tsv(filepath_rsem_gene_tpm,
@@ -124,7 +129,7 @@ get_tidy_expression <- function(data_path, meta, type = "tpm") {
         names_sep = "_",
         values_to = "count"
       ) %>%
-      separate(col = MG.Diet, c("MG", "Diet"))
+      separate(col = MG.Diet, c("MG", "Diet"),remove=FALSE)
     count_df <<- count_df
   } else{
     stop("Error in inputs")
@@ -336,11 +341,6 @@ metadata <-
   )
 
 
-# generate tidy data objects for downstream analysis
-get_tidy_expression(data_path=filepath_rsem_gene_tpm, 
-                    meta=metadata, 
-                    type = "tpm")
-
 # read in phenotype data
 
 ## pathogen loads
@@ -494,6 +494,12 @@ metadata_phenotypes <- metadata %>%
   mutate_all(., ~replace_na(.,0)) %>%
   distinct() %>% # to get rid of duplicated row
   mutate(ES_minMax = ES/6) # normalized to 0 to 1
+
+
+# generate tidy data objects for downstream analysis
+get_tidy_expression(data_path=filepath_rsem_gene_tpm, 
+                    meta=metadata_phenotypes, 
+                    type = "tpm")
 ```
 
 ```{r make-DGElist}
@@ -615,10 +621,10 @@ dream_DE_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',num
 #   filter(abs(logFC)>log2(1.2))
 
 dream_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf#, p.value = 0.05
-                             ) %>% rownames_to_column("gene")
+                             ) %>% rownames_to_column("gene") %>% gt()
 
 #MG effect
-variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf#, p.value = 0.2
+dream_MG_genes <-  variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf#, p.value = 0.2
                              ) %>% rownames_to_column("gene") %>% left_join(gene_info, by=c(gene = 'entrezgene_id')) %>%
     dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) #%>%
   # View()
@@ -639,7 +645,7 @@ dream_Diet_genes <- variancePartition::topTable( fitmm, coef='Dietprotein',numbe
 #     dplyr::select(c("gene", "external_gene_name", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B", "z.std", "entrezgene_description")) #%>%
   # View()
 
-variancePartition::topTable( fitmm, coef='Dietprotein',number = Inf) %>% rownames_to_column("gene") #%>% View()
+variancePartition::topTable( fitmm, coef='Dietprotein',number = Inf) %>% rownames_to_column("gene") %>% gt()
 
 
 # variancePartition::topTable( fitmm, coef='Exposure.DietYES.lipid',number = Inf) %>% rownames_to_column("gene") #%>% View()
@@ -1712,10 +1718,11 @@ I see that JCAHIN (LOC103823426) has the largest logFC when looking at eyescores
 # compare eyescore of the given day to FC of JCHAIN gene
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
-  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID",
+                                        "Day",
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
@@ -1733,9 +1740,9 @@ tpm_df %>%
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
   left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
@@ -1753,9 +1760,9 @@ tpm_df %>%
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
   left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
@@ -1774,9 +1781,9 @@ tpm_df %>%
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
   left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
@@ -1794,9 +1801,9 @@ tpm_df %>%
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
   left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
@@ -1813,10 +1820,10 @@ tpm_df %>%
 # comparing day14 logload to JCHAIN FC
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
-  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+  left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID", "Day",
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
@@ -1836,9 +1843,9 @@ tpm_df %>%
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
   left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
@@ -1857,9 +1864,9 @@ tpm_df %>%
 tpm_df %>%
   dplyr::filter(gene_id == "LOC103823426") %>%
   left_join(metadata_phenotypes, by = c("Bird" = "Bird.ID","Day",
-                                        "Diet", "MG.Diet.Day", "MG.Day",
-                                        "Diet.Day", "MG.active", "Exposure.MG",
-                                        "Exposure.Diet", "Exposure.Diet.Day"
+                                        "Diet"#, "MG.Diet.Day", "MG.Day",
+                                        # "Diet.Day", "MG.active", "Exposure.MG",
+                                        # "Exposure.Diet", "Exposure.Diet.Day"
                                         )) %>%
   mutate(gene="JCHAIN") %>%
   # normalize tpm to day 0 tpm.
