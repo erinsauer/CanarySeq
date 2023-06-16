@@ -615,13 +615,14 @@ head(fitmm$design, 3)
 dream_DE_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf, p.value = 0.1
                              ) %>% rownames_to_column("gene")# %>%
    # filter(abs(logFC)>0.2)
-
+dream_DE_Diet_genes <- variancePartition::topTable( fitmm, coef='Dietprotein',number = Inf, p.value = 0.1
+                             ) %>% rownames_to_column("gene")
 # dream_DE_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf, p.value = 0.1
 #                              ) %>% rownames_to_column("gene") %>%
 #   filter(abs(logFC)>log2(1.2))
 
 dream_MG_genes <- variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf#, p.value = 0.05
-                             ) %>% rownames_to_column("gene") %>% gt()
+                             ) %>% rownames_to_column("gene")# %>% gt()
 
 #MG effect
 dream_MG_genes <-  variancePartition::topTable( fitmm, coef='MG.activeYES',number = Inf#, p.value = 0.2
@@ -1375,7 +1376,7 @@ full_join(pheno_topTable_ES_MM, infVSuninf_both_topTags, by=c("gene", "external_
 
 
 # GO enrichment of MG genes.
-```{r enrich-GO}
+```{r prep-GO}
 # get biomart ensembl dataset for scanaria (has most GO terms)
 mart <- if(exists('mart') == TRUE){
   mart
@@ -1383,7 +1384,7 @@ mart <- if(exists('mart') == TRUE){
   biomaRt::useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
 }
 
-
+# get biomart gene information of all genes in expression matrix
 res <- getBM(attributes = c('ensembl_transcript_id',
                             'ensembl_peptide_id',
                             'ensembl_gene_id', 
@@ -1485,9 +1486,11 @@ geneID2GO_build_BM <- tibble(# canary_annotations$geneID_ncbi,
 
 matches <- which(toupper(names(canary_geneID2GO_BM)) %in% dream_MG_genes$gene)
 
-  # used unique because there are some duplicates in output. (per isoform)
-  genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
-  
+# used unique because there are some duplicates in output. (per isoform)
+genesMatched <- unique(toupper(names(canary_geneID2GO_BM))[matches])
+```
+
+```{r enrich-GO}
   # assign desired fold change cutoff value (will be log2 tranformed in script)
   j = 1.3
 
@@ -1528,7 +1531,8 @@ matches <- which(toupper(names(canary_geneID2GO_BM)) %in% dream_MG_genes$gene)
     
     
   GOdata_up=new('topGOdata', 
-         ontology='CC', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         # ontology='CC', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         ontology='BP',
          allGenes = all_genes_up, # all 10188 genes that are in MGpost0 data from edgeR. 
                                   # factor=1 for those that are DE.
          annot = annFUN.gene2GO, # annotation function for custom annotation
@@ -1537,7 +1541,8 @@ matches <- which(toupper(names(canary_geneID2GO_BM)) %in% dream_MG_genes$gene)
            )
     
   GOdata_down=new('topGOdata', 
-         ontology='CC', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         # ontology='CC', # 'BP' = Biological Process. Also tried 'ALL' but doesn't work.
+         ontology='BP',
          allGenes = all_genes_down, # all 10188 genes that are in MGpost0 data from edgeR. 
                                     # factor=1 for those that are DE.
          annot = annFUN.gene2GO, # annotation function for custom annotation
@@ -1613,6 +1618,240 @@ showSigOfNodes(GOdata_up, score(weight_fisher_result_up), useInfo = "all", sigFo
 ```
 
 
+
+
+
+# functions for GO enrichment
+```{r functional-GO}
+get_DE_genes <- function(dream_DE_MG_genes, j) {
+  DEgenes_up <- filter(as.data.frame(dream_DE_MG_genes), logFC > log2(j)) %>% pull(gene)
+  DEgenes_down <- filter(dream_DE_MG_genes, logFC < -log2(j)) %>% pull(gene)
+  
+  return(list(up = DEgenes_up, down = DEgenes_down))
+}
+
+get_DE_genes_with_GO <- function(DEgenes, genesMatched) {
+  DEgenes_with_GO <- which(DEgenes %in% genesMatched)
+  DEgenes_GO <- DEgenes[DEgenes_with_GO]
+  
+  return(DEgenes_GO)
+}
+
+# get_canary_geneID2GO_BM_DE <- function(canary_geneID2GO_BM, DEgenes_GO) {
+#   canary_geneID2GO_BM_DE <- canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% DEgenes_GO)]
+#   names(canary_geneID2GO_BM_DE)[!(DEgenes_GO %in% names(canary_geneID2GO_BM_DE))]
+#   
+#   return(canary_geneID2GO_BM_DE)
+# }
+
+get_canary_geneID2GO_BM_edgeR <- function(canary_geneID2GO_BM, genesMatched) {
+  canary_geneID2GO_BM_edgeR <- canary_geneID2GO_BM[which(toupper(names(canary_geneID2GO_BM)) %in% genesMatched)]
+  
+  return(canary_geneID2GO_BM_edgeR)
+}
+
+create_topGOdata <- function(all_genes, canary_geneID2GO_BM_edgeR, ontology) {
+  GOdata <- new('topGOdata',
+                ontology = paste0(ontology),
+                allGenes = all_genes,
+                annot = annFUN.gene2GO,
+                gene2GO = canary_geneID2GO_BM_edgeR)
+  
+  return(GOdata)
+}
+
+perform_enrichment_analysis <- function(GOdata) {
+  weight_fisher_result <- runTest(GOdata, algorithm = 'elim', statistic = 'fisher')
+  allGO <- usedGO(GOdata)
+  all_res <- GenTable(GOdata, weightFisher = weight_fisher_result, orderBy = 'weightFisher', topNodes = length(allGO), numChar = 200)
+  
+  return(all_res)
+}
+
+correct_p_values <- function(all_res_final) {
+  p.adj <- round(p.adjust(all_res_final$weightFisher, method = 'BH'), digits = 4)
+  all_res_final_adj <- cbind(all_res_final, p.adj)
+  all_res_final_adj <- all_res_final_adj[order(all_res_final_adj$p.adj),] %>%
+    mutate(across(everything(), gsub, pattern = ',', replacement = ';'))
+  
+  return(all_res_final_adj)
+}
+
+get_significant_GO <- function(all_res_final_adj, cutoff) {
+  results.table_p <- all_res_final_adj[which(as.numeric(all_res_final_adj$weightFisher) <= cutoff),] %>%
+    mutate(across(everything(), gsub, pattern = ',', replacement = ';')) %>%
+    type_convert() %>%
+    filter(Annotated > 1)
+  results.table_p <- results.table_p %>% mutate(Sig_Anno = Significant / Expected)
+  
+  return(results.table_p)
+}
+
+get_significant_GO_bh <- function(all_res_final_adj, cutoff) {
+  results.table_bh <- all_res_final_adj[which(all_res_final_adj$p.adj <= cutoff),]
+  results.table_bh <- results.table_bh %>% mutate(across(everything(), gsub, pattern = ',', replacement = ';'))
+  
+  return(results.table_bh)
+}
+```                         
+                                        
+```{r}                                        
+# Perform enrichment analysis for upregulated & downregulated genes
+  MG.DEgenes_up <- get_DE_genes(dream_MG_genes, 1.2)$up
+  MG.DEgenes_down <- get_DE_genes(dream_MG_genes, 1.2)$down
+
+  MG.DEgenes_with_GO_up <- get_DE_genes_with_GO(MG.DEgenes_up, genesMatched)
+  MG.DEgenes_with_GO_down <- get_DE_genes_with_GO(MG.DEgenes_down, genesMatched)
+
+  # canary_geneID2GO_BM_DE_up <- get_canary_geneID2GO_BM_DE(canary_geneID2GO_BM, MG.DEgenes_with_GO_up)
+  # canary_geneID2GO_BM_DE_down <- get_canary_geneID2GO_BM_DE(canary_geneID2GO_BM, DEgenes_with_GO_down)
+
+  canary_geneID2GO_BM_edgeR <- get_canary_geneID2GO_BM_edgeR(canary_geneID2GO_BM, genesMatched)
+
+  MG.all_genes_up <- factor(as.integer(toupper(filter(dream_MG_genes, AveExpr > 1)$gene) %in% MG.DEgenes_with_GO_up),
+                         labels = c(0, 1))
+  names(MG.all_genes_up) <- toupper(filter(dream_MG_genes, AveExpr > 1)$gene)
+
+  MG.all_genes_down <- factor(as.integer(toupper(filter(dream_MG_genes, AveExpr > 1)$gene) %in% MG.DEgenes_with_GO_down))
+  names(MG.all_genes_down) <- toupper(filter(dream_MG_genes, AveExpr > 1)$gene)
+
+  
+  #CC
+  ccMG.GOdata_up <- create_topGOdata(MG.all_genes_up, 
+                                     canary_geneID2GO_BM_edgeR, "CC")
+  ccMG.GOdata_down <- create_topGOdata(MG.all_genes_down, 
+                                       canary_geneID2GO_BM_edgeR, "CC")
+
+  ccMG.all_res_up <- perform_enrichment_analysis(ccMG.GOdata_up)
+  ccMG.all_res_down <- perform_enrichment_analysis(ccMG.GOdata_down)
+
+  ccMG.all_res_final_up <- correct_p_values(ccMG.all_res_up)
+  ccMG.all_res_final_down <- correct_p_values(ccMG.all_res_down)
+
+  ccMG.results.table_p_up <- get_significant_GO(ccMG.all_res_final_up,0.1)
+  ccMG.results.table_p_down <- get_significant_GO(ccMG.all_res_final_down,0.1)
+
+  ccMG.results.table_bh_up <- get_significant_GO_bh(ccMG.all_res_final_up,0.1)
+  ccMG.results.table_bh_down <- get_significant_GO_bh(ccMG.all_res_final_down,0.1)
+  
+  #BP
+  bpMG.GOdata_up <- create_topGOdata(MG.all_genes_up, 
+                                     canary_geneID2GO_BM_edgeR, "BP")
+  bpMG.GOdata_down <- create_topGOdata(MG.all_genes_down, 
+                                       canary_geneID2GO_BM_edgeR, "BP")
+
+  bpMG.all_res_up <- perform_enrichment_analysis(bpMG.GOdata_up)
+  bpMG.all_res_down <- perform_enrichment_analysis(bpMG.GOdata_down)
+
+  bpMG.all_res_final_up <- correct_p_values(bpMG.all_res_up)
+  bpMG.all_res_final_down <- correct_p_values(bpMG.all_res_down)
+
+  bpMG.results.table_p_up <- get_significant_GO(bpMG.all_res_final_up,0.1)
+  bpMG.results.table_p_down <- get_significant_GO(bpMG.all_res_final_down,0.1)
+
+  bpMG.results.table_bh_up <- get_significant_GO_bh(bpMG.all_res_final_up,0.1)
+  bpMG.results.table_bh_down <- get_significant_GO_bh(bpMG.all_res_final_down,0.1)
+  
+  #MF
+  mfMG.GOdata_up <- create_topGOdata(MG.all_genes_up, 
+                                     canary_geneID2GO_BM_edgeR, "MF")
+  mfMG.GOdata_down <- create_topGOdata(MG.all_genes_down, 
+                                       canary_geneID2GO_BM_edgeR, "MF")
+
+  mfMG.all_res_up <- perform_enrichment_analysis(mfMG.GOdata_up)
+  mfMG.all_res_down <- perform_enrichment_analysis(mfMG.GOdata_down)
+
+  mfMG.all_res_final_up <- correct_p_values(mfMG.all_res_up)
+  mfMG.all_res_final_down <- correct_p_values(mfMG.all_res_down)
+
+  mfMG.results.table_p_up <- get_significant_GO(mfMG.all_res_final_up,0.1)
+  mfMG.results.table_p_down <- get_significant_GO(mfMG.all_res_final_down,0.1)
+
+  mfMG.results.table_bh_up <- get_significant_GO_bh(mfMG.all_res_final_up,0.1)
+  mfMG.results.table_bh_down <- get_significant_GO_bh(mfMG.all_res_final_down,0.1)
+```
+
+
+```{r}
+#diet GO enrichments
+  Diet.DEgenes_up <- get_DE_genes(dream_Diet_genes, 1.2)$up
+  Diet.DEgenes_down <- get_DE_genes(dream_Diet_genes, 1.2)$down
+
+  Diet.DEgenes_with_GO_up <- get_DE_genes_with_GO(Diet.DEgenes_up, genesMatched)
+  Diet.DEgenes_with_GO_down <- get_DE_genes_with_GO(Diet.DEgenes_down, genesMatched)
+  
+  
+  Diet.all_genes_up <- factor(as.integer(toupper(filter(dream_Diet_genes, AveExpr > 1)$gene) %in% Diet.DEgenes_with_GO_up),
+                         labels = c(0, 1))
+  names(Diet.all_genes_up) <- toupper(filter(dream_Diet_genes, AveExpr > 1)$gene)
+
+  Diet.all_genes_down <- factor(as.integer(toupper(filter(dream_Diet_genes, AveExpr > 1)$gene) %in% Diet.DEgenes_with_GO_down))
+  names(Diet.all_genes_down) <- toupper(filter(dream_Diet_genes, AveExpr > 1)$gene)
+
+ 
+  #CC
+  ccDiet.GOdata_up <- create_topGOdata(Diet.all_genes_up, 
+                                     canary_geneID2GO_BM_edgeR, "CC")
+  ccDiet.GOdata_down <- create_topGOdata(Diet.all_genes_down, 
+                                       canary_geneID2GO_BM_edgeR, "CC")
+
+  ccDiet.all_res_up <- perform_enrichment_analysis(ccDiet.GOdata_up)
+  ccDiet.all_res_down <- perform_enrichment_analysis(ccDiet.GOdata_down)
+
+  ccDiet.all_res_final_up <- correct_p_values(ccDiet.all_res_up)
+  ccDiet.all_res_final_down <- correct_p_values(ccDiet.all_res_down)
+
+  ccDiet.results.table_p_up <- get_significant_GO(ccDiet.all_res_final_up,0.1)
+  ccDiet.results.table_p_down <- get_significant_GO(ccDiet.all_res_final_down,0.1)
+
+  ccDiet.results.table_bh_up <- get_significant_GO_bh(ccDiet.all_res_final_up,0.1)
+  ccDiet.results.table_bh_down <- get_significant_GO_bh(ccDiet.all_res_final_down,
+                                                        0.1)
+  
+  #BP
+  bpDiet.GOdata_up <- create_topGOdata(Diet.all_genes_up, 
+                                     canary_geneID2GO_BM_edgeR, "BP")
+  bpDiet.GOdata_down <- create_topGOdata(Diet.all_genes_down, 
+                                       canary_geneID2GO_BM_edgeR, "BP")
+
+  bpDiet.all_res_up <- perform_enrichment_analysis(bpDiet.GOdata_up)
+  bpDiet.all_res_down <- perform_enrichment_analysis(bpDiet.GOdata_down)
+
+  bpDiet.all_res_final_up <- correct_p_values(bpDiet.all_res_up)
+  bpDiet.all_res_final_down <- correct_p_values(bpDiet.all_res_down)
+
+  bpDiet.results.table_p_up <- get_significant_GO(bpDiet.all_res_final_up,0.1)
+  bpDiet.results.table_p_down <- get_significant_GO(bpDiet.all_res_final_down,0.1)
+
+  bpDiet.results.table_bh_up <- get_significant_GO_bh(bpDiet.all_res_final_up,
+                                                      0.1)
+  bpDiet.results.table_bh_down <- get_significant_GO_bh(bpDiet.all_res_final_down,
+                                                        0.1)
+  
+  #MF
+  mfDiet.GOdata_up <- create_topGOdata(Diet.all_genes_up, 
+                                     canary_geneID2GO_BM_edgeR, "MF")
+  mfDiet.GOdata_down <- create_topGOdata(Diet.all_genes_down, 
+                                       canary_geneID2GO_BM_edgeR, "MF")
+
+  mfDiet.all_res_up <- perform_enrichment_analysis(mfDiet.GOdata_up)
+  mfDiet.all_res_down <- perform_enrichment_analysis(mfDiet.GOdata_down)
+
+  mfDiet.all_res_final_up <- correct_p_values(mfDiet.all_res_up)
+  mfDiet.all_res_final_down <- correct_p_values(mfDiet.all_res_down)
+
+  mfDiet.results.table_p_up <- get_significant_GO(mfDiet.all_res_final_up,0.1)
+  mfDiet.results.table_p_down <- get_significant_GO(mfDiet.all_res_final_down,0.1)
+
+  mfDiet.results.table_bh_up <- get_significant_GO_bh(mfDiet.all_res_final_up,
+                                                      0.1)
+  mfDiet.results.table_bh_down <- get_significant_GO_bh(mfDiet.all_res_final_down,
+                                                        0.1)
+```
+
+
+# ?
+
 ```{r viz-GO.MG}
 #add genes to terms for GOplot (from https://github.com/W-L/ADA_coursework)
 add_genes_to_terms <- function(GO2genes, results){
@@ -1639,6 +1878,260 @@ DE_down_GOplot_genes <- infVSuninf_both_topTags %>%
 
 circ <- circle_dat(all_res_down_GOplot, DE_down_GOplot_genes) 
 ```
+
+
+#redo classic GO term viz
+```{r fig.height=4, fig.width=6}
+visualize_results <- function(all_res_down, all_res_up, gg_title) {
+  ntop <- 15
+  
+  # MG down
+  ggdata_down <- all_res_down[1:ntop,] %>%
+    mutate(enrichment = paste("MG","_DOWN", sep = ""),
+           `% overrepresented` = (Significant-Expected)/Annotated)
+  
+  ggdata_down$Term <- factor(ggdata_down$Term, levels = rev(ggdata_down$Term))
+  
+  gg_down <- ggplot(ggdata_down,
+                    aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+    expand_limits(y = 1) +
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+               linetype = c("dotted", "longdash", "solid"),
+               colour = "black",
+               linewidth = c(0.5, 1.5, 3)) +
+    geom_point(shape = 21) +
+    scale_size(range = c(2.5,12.5)) +
+    scale_fill_continuous(low = 'royalblue', high = 'red4') +
+    xlab('') + 
+    ylab('Enrichment score') +
+    labs(
+      # title = "Downregulated",
+      title = paste0("Downregulated ", gg_title, sep=" "),
+      caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+    theme_bw(base_size = 24) +
+    theme(
+      legend.position = 'right',
+      legend.background = element_rect(),
+      plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+      plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+      plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+      axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),  # Set the maximum width and overflow behavior),
+      axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+      axis.title = element_text(size = 12, face = 'bold'),
+      axis.title.x = element_text(size = 12, face = 'bold'),
+      axis.title.y = element_text(size = 12, face = 'bold'),
+      axis.line = element_line(colour = 'black'),
+      legend.key = element_blank(),
+      legend.key.size = unit(1, "cm"),
+      legend.text = element_text(size = 14, face = "bold"),
+      title = element_text(size = 14, face = "bold")) +
+    scale_x_discrete(label = function(x) stringr::str_trunc(x, 50)) +
+    coord_flip() 
+  
+  # MG up
+  ggdata_up<- all_res_up[1:ntop,] %>%
+    mutate(enrichment = paste("MG","_UP", sep = ""),
+           `% overrepresented` = (Significant-Expected)/Annotated)
+  
+  ggdata_up$Term <- factor(ggdata_up$Term, levels = rev(ggdata_up$Term)) 
+  
+  gg_up <- ggdata_up %>%
+    ggplot(
+                  aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+       expand_limits(y = 1) +
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+               linetype = c("dotted", "longdash", "solid"),
+               colour = "black",
+               linewidth = c(0.5, 1.5, 3)) +
+    geom_point(shape = 21) +
+    scale_size(range = c(2.5,12.5)) +
+    scale_fill_continuous(low = 'royalblue', high = 'red4') +
+    xlab('') + 
+    ylab('Enrichment score') +
+    labs(
+      # title = "Upregulated",
+      title = paste0("Upregulated ", gg_title, sep=" "),
+      caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+    theme_bw(base_size = 24) +
+    theme(
+      legend.position = 'right',
+      legend.background = element_rect(),
+      plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+      plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+      plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+      axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+      axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+      axis.title = element_text(size = 12, face = 'bold'),
+      axis.title.x = element_text(size = 12, face = 'bold'),
+      axis.title.y = element_text(size = 12, face = 'bold'),
+      axis.line = element_line(colour = 'black'),
+      legend.key = element_blank(),
+      legend.key.size = unit(1, "cm"),
+      legend.text = element_text(size = 14, face = "bold"),
+      title = element_text(size = 14, face = "bold")) +
+    scale_x_discrete(label = function(x) stringr::str_trunc(x, 50)) +
+    coord_flip()
+  
+  return(list(gg_down = gg_down, gg_up = gg_up))
+}
+
+visualize_results(bpMG.all_res_down, bpMG.all_res_up,
+                  # "Biological Processes: MG infection",
+                  "Biological Processes: MG infection")
+visualize_results(ccMG.all_res_down, ccMG.all_res_up,
+                  "Cellular Compartment: MG infection")
+visualize_results(mfMG.all_res_down, mfMG.all_res_up,
+                  "Molecular Function: MG infection")
+```
+
+# Diet GO term plots
+```{r fig.height=4, fig.width=6}
+visualize_results(bpDiet.all_res_down, bpDiet.all_res_up,
+                  # "Biological Processes: MG infection",
+                  "Biological Processes: Response to Protein Diet")
+visualize_results(ccDiet.all_res_down, ccDiet.all_res_up,
+                  "Cellular Compartment: Response to Protein Diet")
+visualize_results(mfDiet.all_res_down, mfDiet.all_res_up,
+                  "Molecular Function: Response to Protein Diet")
+```
+
+
+# classic GO term visualization
+```{r}
+
+# visualize results
+ntop <- 15
+
+ggdata_down <- all_res_down[1:ntop,] %>%
+    mutate(enrichment = paste("MG","_DOWN", sep = ""),
+           `% overrepresented` = (Significant-Expected)/Annotated)
+
+ggdata_down$Term <- factor(ggdata_down$Term, levels = rev(ggdata_down$Term))
+  
+
+gg_down <- ggplot(ggdata_down,
+    aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+  
+    expand_limits(y = 1) +
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+      linetype = c("dotted", "longdash", "solid"),
+      colour = "black",
+      linewidth = c(0.5, 1.5, 3)) +
+    geom_point(shape = 21) +
+    scale_size(range = c(2.5,12.5)) +
+    scale_fill_continuous(low = 'royalblue', high = 'red4') +
+  
+    xlab('') + 
+    ylab('Enrichment score') +
+    labs(
+      title = "Downregulated",
+      # subtitle = paste('Top ',ntop,' terms ordered by weighted Fisher p-value', sep=""),
+      caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+  
+    theme_bw(base_size = 24) +
+    theme(
+      legend.position = 'right',
+      legend.background = element_rect(),
+      plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+      plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+      plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+  
+      axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+      axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+      axis.title = element_text(size = 12, face = 'bold'),
+      axis.title.x = element_text(size = 12, face = 'bold'),
+      axis.title.y = element_text(size = 12, face = 'bold'),
+      axis.line = element_line(colour = 'black'),
+  
+      #Legend
+      legend.key = element_blank(), # removes the border
+      legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+      legend.text = element_text(size = 14, face = "bold"), # Text size
+      title = element_text(size = 14, face = "bold")) +
+  
+    # facet_grid(rows = vars(enrichment), scales = "free") +
+    coord_flip()
+
+#MG up
+ggdata_up<- all_res_up[1:ntop,] %>%
+    mutate(enrichment = paste("MG","_UP", sep = ""),
+           `% overrepresented` = (Significant-Expected)/Annotated)
+
+ggdata_up$Term <- factor(ggdata_up$Term, levels = rev(ggdata_up$Term))
+  
+
+gg_up <- ggplot(ggdata_up,
+    aes(x = Term, y = -log10(as.numeric(weightFisher)), size = log10(Annotated), fill = `% overrepresented`)) +
+    expand_limits(y = 1) +
+    geom_hline(yintercept = c(-log10(0.05), -log10(0.01), -log10(0.001)),
+      linetype = c("dotted", "longdash", "solid"),
+      colour = "black",
+      linewidth = c(0.5, 1.5, 3)) +
+    geom_point(shape = 21) +
+    scale_size(range = c(2.5,12.5)) +
+    scale_fill_continuous(low = 'royalblue', high = 'red4') +
+  
+    xlab('') + 
+    ylab('Enrichment score') +
+    labs(
+      title = "Upregulated",
+      # subtitle = paste('Top ',ntop,' terms ordered by weighted Fisher p-value', sep=""),
+      caption = 'Cut-off lines drawn at equivalents of p=0.05, p=0.01, p=0.001') +
+  
+    theme_bw(base_size = 24) +
+    theme(
+      legend.position = 'right',
+      legend.background = element_rect(),
+      plot.title = element_text(angle = 0, size = 16, face = 'bold', vjust = 1, hjust = 0.5),
+      plot.subtitle = element_text(angle = 0, size = 14, face = 'bold', vjust = 1),
+      plot.caption = element_text(angle = 0, size = 12, face = 'bold', vjust = 1),
+  
+      axis.text.x = element_text(angle = 0, size = 12, face = 'bold', hjust = 1.10),
+      axis.text.y = element_text(angle = 0, size = 12, face = 'bold', vjust = 0.5),
+      axis.title = element_text(size = 12, face = 'bold'),
+      axis.title.x = element_text(size = 12, face = 'bold'),
+      axis.title.y = element_text(size = 12, face = 'bold'),
+      axis.line = element_line(colour = 'black'),
+  
+      #Legend
+      legend.key = element_blank(), # removes the border
+      legend.key.size = unit(1, "cm"), # Sets overall area/size of the legend
+      legend.text = element_text(size = 14, face = "bold"), # Text size
+      title = element_text(size = 14, face = "bold")) +
+  
+    # facet_grid(rows = vars(enrichment), scales = "free") +
+    coord_flip()
+
+gg_down
+gg_up
+
+
+  title <- paste('GO Biological processes enriched in contrast: ', 
+                 "MG")
+
+  # Create a text grob
+  tgrob <- ggpubr::text_grob(label = title, size = 20)
+  # Draw the text
+  plot_0 <- ggpubr::as_ggplot(tgrob) + theme(plot.margin = margin(0,2,0,0, "cm"))
+  
+  gg <- ggpubr::ggarrange(plot_0,
+                          gg_up, gg_down,
+                          nrow=3,
+                          align = "v",
+                          common.legend = TRUE,
+                          legend = "right",
+                          heights = c(0.5,5,5)
+                          ) +
+        ggpubr::bgcolor("White")
+  
+gg
+```
+
+I like the above figure, but need it for CC, BP, MF for MG & Diet, up & Down. Need to do both of those asap. I have the output data for all of those now, just need to make the graphs.
+
+
+
+# newer GO term alternative visualizations
 
 ```{r}
 circ %>%

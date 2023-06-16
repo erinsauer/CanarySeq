@@ -20,3 +20,4 @@ test_geneID2GO_BM.map
 *.png
 *.rdb
 *.rdx
+.Rproj.user
