@@ -1,0 +1,249 @@
+---
+title: "Heatmap of DE genes"
+author: "Carson Stacy"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 5, 
+                      dev = "png",
+                      cache = TRUE)
+```
+
+
+```{r packages}
+if (!require("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(edgeR, 
+               tidyverse,
+               pheatmap,
+               here
+               # BiocParallel, 
+               # pander
+               )
+```
+
+```{r}
+
+log2FC_cutoff_heatmap = 1.4
+AveExpr_cutoff_heatmap = 1
+
+heat_DEgenes <- dream_MG_genes %>% # from dream.Rmd file
+  dplyr::filter(abs(logFC)> log2(log2FC_cutoff_heatmap)) %>%
+  dplyr::filter(adj.P.Val < 0.05) %>%
+  dplyr::filter(AveExpr >= AveExpr_cutoff_heatmap) %>%
+  dplyr::pull(gene)
+
+d_tpm_df_14 <- tpm_df %>%
+  filter(gene_id %in% heat_DEgenes) %>%
+  group_by(Bird) %>%
+  dplyr::select(-Lane) %>%
+  arrange(desc(MG)) %>%
+  pivot_wider(names_from = Day, values_from = tpm) %>% #View()
+  mutate(Day0 = `0`,
+         Day14 = `14`,
+         Day21 = `21`, .keep="unused") %>%
+  summarise(gene_id = gene_id,
+            d_tpm = log2(Day14) - log2(Day0)) %>%
+            # d_tpm = (log2(Day21) + log2(Day14))/2 - log2(Day0)) %>%
+  # dplyr::filter(!is.na(d_tpm)) %>%
+  # left_join(metadata, by = c("Bird" = "Bird.ID")) %>%
+  # dplyr::select("Bird", "gene_id", "d_tpm", "Diet", "MG.Status") %>%
+  distinct(.keep_all = TRUE) %>%# remove duplicate columns
+  pivot_wider(names_from=Bird, values_from = d_tpm) %>%
+  mutate(across(where(is.numeric), ~na_if(., Inf)), across(where(is.numeric), ~na_if(., -Inf))) %>%
+  column_to_rownames("gene_id")
+
+d_tpm_df_21 <- tpm_df %>%
+  mutate(Bird = case_when(
+    Lane == "ES96" ~ "615",
+    Lane == "ES19" ~ "610",
+    TRUE ~ Bird
+  ),
+  MG = case_when(
+    Lane == "ES96" ~ "Control",
+    Lane == "ES19" ~ "MG",
+    TRUE ~ MG
+  )
+  ) %>% 
+  filter(gene_id %in% heat_DEgenes) %>%
+  group_by(Bird) %>%
+  dplyr::select(-c(Lane,MG.Diet)) %>%
+  arrange(desc(MG)) %>%
+  pivot_wider(names_from = Day, values_from = tpm) %>% #View()
+  mutate(Day0 = `0`,
+         Day14 = `14`,
+         Day21 = `21`, .keep="unused") %>% #View()
+  summarise(gene_id = gene_id,
+            d_tpm = log2(Day21) - log2(Day0)) %>%
+            # d_tpm = (log2(Day21) + log2(Day14))/2 - log2(Day0)) %>%
+  # dplyr::filter(!is.na(d_tpm)) %>%
+  # left_join(metadata, by = c("Bird" = "Bird.ID")) %>%
+  # dplyr::select("Bird", "gene_id", "d_tpm", "Diet", "MG.Status") %>%
+  distinct(.keep_all = TRUE) %>%# remove duplicate columns
+  pivot_wider(names_from=Bird, values_from = d_tpm) %>%
+  mutate(across(where(is.numeric), ~na_if(., Inf)), across(where(is.numeric), ~na_if(., -Inf))) %>%
+  column_to_rownames("gene_id")
+
+
+my_sample_df <- colnames(d_tpm_df) %>%
+  as.tibble() %>%
+  rename("value" = "Bird.ID") %>%
+  left_join(metadata[3:6], by = "Bird.ID") %>%
+  dplyr::select(-MG.Diet) %>%
+  left_join(dplyr::select(metadata_phenotypes, c("Bird.ID", "r_ES_AUC_14","r_ES_AUC_21", "ES_day3",
+                                                 "ES_day7", "ES_day14", "ES_day21"))) %>%
+  arrange(desc(MG.Status),Diet) %>%
+  distinct(.keep_all = TRUE) %>%# remove duplicate columns
+  column_to_rownames("Bird.ID")
+```
+
+
+```{r fig.width = 5, fig.height = 10}
+
+
+breaksList = seq(-3, 3, by = 0.5)
+
+
+heat_MG_day14 <- d_tpm_df_14[,rownames(my_sample_df)] %>%
+  pheatmap(.,
+        annotation_col = dplyr::select(my_sample_df, c(MG.Status, Diet, r_ES_AUC_14,
+                                                       "ES_day3",
+                                                 "ES_day7", "ES_day14")),
+        cluster_cols = F,
+        scale="none",
+        breaks=breaksList,
+        color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)),
+        na_col = "grey",
+        main="Day 14 vs Day 0 log2FC: MG Infection"
+        )
+
+heat_MG_day21 <- d_tpm_df_21[,rownames(my_sample_df)] %>%
+  pheatmap(.,
+        annotation_col = dplyr::select(my_sample_df, c(MG.Status, Diet, r_ES_AUC_21,
+                                                       "ES_day3",
+                                                 "ES_day7", "ES_day21")),
+        # clustering_distance_rows = "minkowski",
+        cluster_cols = F,
+        breaks=breaksList,
+        color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)),
+        na_col = "grey",
+        main="Day 21 vs Day 0 log2FC: MG Infection"
+        )
+
+plot(heat_MG_day14$tree_row)
+plot(heat_MG_day21$tree_row)
+sort(cutree(heat_MG_day21$tree_row, h=10))
+
+
+# get names of genes in each cluster.
+clusDesignation14 <- cutree(heat_MG_day14$tree_row, h=10)
+clusDesignation21 <- cutree(heat_MG_day21$tree_row, h=10)
+clusDesignation14[clusDesignation14==2] %>% names()
+```
+
+
+```{r}
+heat_DEgenes_diet <- dream_Diet_genes %>% # from dream.Rmd file
+  dplyr::filter(abs(logFC)> log2(log2FC_cutoff_heatmap)) %>%
+  dplyr::filter(P.Value < 1) %>% #NOTE: not adj.p.value
+  dplyr::filter(AveExpr >= AveExpr_cutoff_heatmap) %>%
+  dplyr::pull(gene)
+
+d_tpm_df_14_diet <- tpm_df %>%
+  filter(gene_id %in% heat_DEgenes_diet) %>%
+  group_by(Bird) %>%
+  dplyr::select(-Lane) %>%
+  arrange(desc(MG)) %>%
+  pivot_wider(names_from = Day, values_from = tpm) %>% #View()
+  mutate(Day0 = `0`,
+         Day14 = `14`,
+         Day21 = `21`, .keep="unused") %>%
+  summarise(gene_id = gene_id,
+            d_tpm = log2(Day14) - log2(Day0)) %>%
+            # d_tpm = (log2(Day21) + log2(Day14))/2 - log2(Day0)) %>%
+  # dplyr::filter(!is.na(d_tpm)) %>%
+  # left_join(metadata, by = c("Bird" = "Bird.ID")) %>%
+  # dplyr::select("Bird", "gene_id", "d_tpm", "Diet", "MG.Status") %>%
+  distinct(.keep_all = TRUE) %>%# remove duplicate columns
+  pivot_wider(names_from=Bird, values_from = d_tpm) %>%
+  mutate(across(where(is.numeric), ~na_if(., Inf)), across(where(is.numeric), ~na_if(., -Inf))) %>%
+  column_to_rownames("gene_id")
+
+d_tpm_df_21_diet <- tpm_df %>%
+  mutate(Bird = case_when(
+    Lane == "ES96" ~ "615",
+    Lane == "ES19" ~ "610",
+    TRUE ~ Bird
+  ),
+  MG = case_when(
+    Lane == "ES96" ~ "Control",
+    Lane == "ES19" ~ "MG",
+    TRUE ~ MG
+  )
+  ) %>% 
+  filter(gene_id %in% heat_DEgenes_diet) %>%
+  group_by(Bird) %>%
+  dplyr::select(-c(Lane, MG.Diet)) %>%
+  arrange(desc(MG)) %>%
+  pivot_wider(names_from = Day, values_from = tpm) %>% #View()
+  mutate(Day0 = `0`,
+         Day14 = `14`,
+         Day21 = `21`, .keep="unused") %>%
+  summarise(gene_id = gene_id,
+            d_tpm = log2(Day21) - log2(Day0)) %>%
+            # d_tpm = (log2(Day21) + log2(Day14))/2 - log2(Day0)) %>%
+  # dplyr::filter(!is.na(d_tpm)) %>%
+  # left_join(metadata, by = c("Bird" = "Bird.ID")) %>%
+  # dplyr::select("Bird", "gene_id", "d_tpm", "Diet", "MG.Status") %>%
+  distinct(.keep_all = TRUE) %>%# remove duplicate columns
+  pivot_wider(names_from=Bird, values_from = d_tpm) %>%
+  mutate(across(where(is.numeric), ~na_if(., Inf)), across(where(is.numeric), ~na_if(., -Inf))) %>%
+  column_to_rownames("gene_id")
+
+
+my_sample_df_diet <- colnames(d_tpm_df_14_diet) %>%
+  as.tibble() %>%
+  rename("value" = "Bird.ID") %>%
+  left_join(metadata[3:6], by = "Bird.ID") %>%
+  dplyr::select(-MG.Diet) %>%
+  left_join(dplyr::select(metadata_phenotypes, c("Bird.ID", "r_ES_AUC_14","r_ES_AUC_21", "ES_day3",
+                                                 "ES_day7", "ES_day14", "ES_day21"))) %>%
+  arrange(Diet,desc(MG.Status)) %>%
+  distinct(.keep_all = TRUE) %>%# remove duplicate columns
+  column_to_rownames("Bird.ID")
+```
+
+
+```{r fig.width = 5, fig.height = 10}
+
+# breaksList = seq(-7, 7, by = 1)
+
+d_tpm_df_14_diet[,rownames(my_sample_df_diet)] %>%
+  pheatmap(.,
+        annotation_col = dplyr::select(my_sample_df_diet, c(MG.Status, Diet, r_ES_AUC_14,
+                                                       "ES_day3",
+                                                 "ES_day7", "ES_day14")),
+        cluster_cols = F,
+        breaks=breaksList,
+        color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)),
+        na_col = "grey",
+        main="Day 14 vs Day 0 log2FC: Diet"
+        )
+
+d_tpm_df_21_diet[,rownames(my_sample_df_diet)] %>%
+  pheatmap(.,
+        annotation_col = dplyr::select(my_sample_df_diet, c(MG.Status, Diet, r_ES_AUC_21,
+                                                       "ES_day3",
+                                                 "ES_day7", "ES_day21")),
+        # clustering_distance_rows = "minkowski",
+        breaks=breaksList,
+        color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)),
+        cluster_cols = F,
+        na_col = "grey",
+        main="Day 21 vs Day 0 log2FC: Diet"
+        )
+```
