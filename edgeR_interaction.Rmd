@@ -1,0 +1,5083 @@
+---
+title: "edgeR Canary DE Analysis"
+author: "Carson Stacy"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(edgeR)
+library(ComplexUpset)
+library(ComplexHeatmap)
+library("AnnotationHub")
+library(tidyverse)
+library(here)
+library(clusterProfiler)
+library(flextable)
+library(GGally)
+```
+
+# load in data
+```{r}
+# get annotation hub (orgdb)
+
+ah <- AnnotationHub()
+orgs <- subset(ah, ah$rdataclass == "OrgDb")
+orgdb <- query(orgs, "Serinus canaria")[[1]]
+```
+
+## define functions
+```{r functions}
+# A function to tidy gene expression matrix
+get_tidy_expression <- function(data, meta, from_file=T, type = "tpm") {
+  if (type == "tpm") {
+    # tpm_df <- readr::read_tsv(data_path,
+    #                           show_col_types = FALSE) %>%
+    if (from_file) {
+      tpm_df <- data.table::fread(data_path, sep="\t") %>%
+      tibble() %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0",
+          'transcript_id(s)'
+        )
+      )
+      meta_subset <- meta %>%
+      dplyr::select(c(1,3,4,5,6,7))
+    
+    tpm_df <<- tpm_df %>%
+      as_tibble() %>%
+      mutate(gene = gene_id) %>%
+      dplyr::select(-gene_id) %>%
+      pivot_longer(
+        !gene,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = type
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"), remove=FALSE) %>%
+      left_join(meta_subset, join_by(Lane==SampID,
+                                     Bird==Bird.ID,
+                                     Diet==Diet,
+                                     Day==Day,
+                                     MG.Diet==MG.Diet)) %>%
+      left_join(result_BM_merged,
+    #gene_GO_tbl |>
+              #mutate(gene = as.character(entrezgene_id)),
+            by = "gene")
+    } else {
+      # when data is already in R.
+      tpm_df <- data
+      
+      meta_subset <- meta %>%
+      dplyr::select(c(1,3,4,5,6,7))
+    
+    tpm_df <<- tpm_df %>%
+      as_tibble(rownames = "gene_gff") %>%
+      pivot_longer(
+        !gene_gff,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = "tpm"
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"), remove=FALSE) %>%
+      left_join(#entrez_IDs |> dplyr::select(-go_id),
+            result_BM_merged,
+            by = "gene_gff", multiple = "first") %>%
+      left_join(meta_subset, join_by(Lane==SampID,
+                                     Bird==Bird.ID,
+                                     Diet==Diet,
+                                     Day==Day,
+                                     MG.Diet==MG.Diet)) 
+    }
+    
+    
+    
+    
+  } else if (type == "count") {
+    # count_df <- readr::read_tsv(data_path,
+    #                             show_col_types = FALSE) %>%
+    if (from_file) {
+      count_df <- data.table::fread(data_path, sep="\t") %>%
+      tibble() %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0"
+        )
+      )
+    count_df <<-count_df %>%
+      as_tibble(rownames = "gene") %>%
+      pivot_longer(
+        !gene,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = type
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"), remove = FALSE)
+    } else {
+      error("Error, input of count data object not supported at this time. Convert to TPM.")
+    }
+    
+    
+  } else if (length(type)==2){
+    # tpm_df <- readr::read_tsv(filepath_rsem_gene_tpm,
+    #                           show_col_types = FALSE) %>%
+    tpm_df <- data.table::fread(filepath_rsem_gene_tpm, sep="\t") %>%
+      tibble() %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0"
+        )
+      )
+    tpm_df <<- tpm_df %>%
+      as_tibble(rownames = "gene") %>%
+      pivot_longer(
+        !gene,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = "tpm"
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"))
+    
+    # count_df <- readr::read_tsv(filepath_rsem_gene_counts,
+                                # show_col_types = FALSE) %>%
+    count_df <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>%
+      tibble() %>%
+      dplyr::select(
+        -c(
+          "ES89_Blue-049_Control-protein_0",
+          "ES31_Blue-055_NA_0",
+          "ES32_Blue-055_NA_14",
+          "ES65_106_NA_0"
+        )
+      )
+    count_df <<-count_df %>%
+      as_tibble(rownames = "gene") %>%
+      pivot_longer(
+        !gene,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = "count"
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"),remove=FALSE)
+    count_df <<- count_df
+  } else {
+    stop("Error in inputs")
+  }
+}
+
+
+# negate %in%
+`%ni%` <- Negate(`%in%`)
+
+
+# A function to take gene name and plot ggplot scatterboxplot
+geneviz <- function(gene, tpm_df, subset) {
+  ggdat <- 
+    if (subset=="CTLvsINF") {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        dplyr::filter(MG == "Control" | Day != 0)
+    } else if (subset=="DAY0") {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        dplyr::filter(Day == 0)
+    } else if (subset=="ALL_UNINF") {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        dplyr::filter(MG == "Control" | Day == 0)
+    } else {
+      tpm_df %>%
+        filter(gene_id == gene)
+    }
+  
+  # identify where anova stat should go
+  anova_y_low <- ggdat %>%
+    dplyr::mutate(log2tpm = log2(tpm+1)) %>%
+    dplyr::arrange(log2tpm) %>%
+    head(1) %>%
+    pull(log2tpm) %>% as.numeric()
+  
+  y_high <- ggdat %>%
+    dplyr::mutate(log2tpm = log2(tpm+1)) %>%
+    dplyr::arrange(desc(log2tpm)) %>%
+    head(1) %>%
+    pull(log2tpm) %>% as.numeric()
+    
+  
+  ggdat %>%
+    ggplot(aes(
+      x = interaction(Diet, MG),
+      y = log2(tpm+1),
+      #color=Diet,
+      shape = as.factor(Day),
+      group = interaction(Diet, MG)
+    )) +
+    # ylim(0,3) +
+    geom_boxplot(width = 0.3, outlier.shape = NA) +
+    ggbeeswarm::geom_quasirandom(cex = 1.5) +
+    ggpubr::stat_compare_means(
+      comparisons =
+        list(
+          c("lipid.Control", "protein.Control"),
+          c("lipid.MG", "protein.MG"),
+          c("lipid.Control", "lipid.MG"),
+          c("protein.Control", "protein.MG")
+        ),
+      method = "t.test",
+      # label = "p.signif",
+      label = "p.format",
+      # Add pairwise comparisons p-value
+      label.y = c(y_high+0.2,y_high+0.2,y_high+0.7,y_high+1.3)
+    ) +
+    # ylim(-1,8) +
+    ylim(anova_y_low-1, y_high+2) +
+    ggpubr::stat_compare_means(label.y = anova_y_low-0.5, method = "anova") +
+    ggtitle(paste0(gene, " expression - ", subset)) +
+    theme_classic()
+}
+
+
+# visualize gene expression over time
+timevizMG <- function(gene, tpm_df, include_control=T, diff=T) {
+  if (include_control==T) {
+    if (diff==T) {
+      tpm_df %>%
+        filter(gene_id == gene) %>%
+        group_by(Bird) %>%
+        dplyr::select(c('gene_id', "Bird", "MG", "Diet", 
+                        "Day", "tpm")) %>%
+        dplyr::mutate(Day = paste0("Day", Day)) %>% 
+        # dplyr::filter(tpm>1) %>% # remove samples where gene has very low expression
+        pivot_wider(names_from=Day, values_from=tpm) %>%
+        dplyr::mutate(diff14v0 = log(Day14)-log(Day0),
+                  diff21v0 = log(Day21)-log(Day0)) %>%
+        dplyr::select("gene_id", "Bird", "MG", "Diet", 
+                        "diff14v0", "diff21v0") %>%
+        pivot_longer(c("diff14v0", "diff21v0"),names_to="comparison", values_to="LogDiff") %>%
+        ggplot(aes(
+          x = interaction(Diet,MG),
+          y = LogDiff,
+          shape = Diet
+        )) +
+        # geom_line() +
+        geom_boxplot(outlier.shape = NA) +
+        geom_point() +
+        ggtitle(paste0(gene, " expression changes")) +
+        theme_classic() +
+          facet_wrap(~comparison)
+    } else {
+    tpm_df %>%
+      filter(gene_id == gene) %>%
+      ggplot(aes(
+        x = Day,
+        y = log2(tpm+1),
+        shape = Diet,
+        group = Bird
+      )) +
+      geom_point() +
+      geom_line() +
+      # geom_boxplot() +
+      ggtitle(paste0(gene, " expression over time")) +
+      theme_classic() +
+        facet_wrap(~MG)
+    }
+  } else {
+  tpm_df %>%
+    filter(gene_id == gene,
+           MG == "MG") %>% # filter only the MG group
+    ggplot(aes(
+      x = Day,
+      y = log2(tpm+1),
+      shape = Diet,
+      group = Bird
+    )) +
+    geom_point() +
+    geom_line() +
+    # geom_boxplot() +
+    ggtitle(paste0(gene, " expression over time in MG infected birds")) +
+    theme_classic()
+  }
+}
+```
+
+```{r read-data}
+# assign file path locaiton of rsem.merged.gene_counts.tsv file
+filepath_rsem_gene_counts <- here::here("SerCan2020", "rsem.merged.gene_counts.tsv")
+
+#assign location of tpm file for later analysis
+filepath_rsem_gene_tpm <- here::here("SerCan2020", "rsem.merged.gene_tpm.tsv")
+
+# read in rsem.merged.gene_counts.tsv
+g.counts.l <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>% as_tibble()
+  # readr::read_tsv(filepath_rsem_gene_counts, show_col_types = FALSE, trim_ws = FALSE,
+  #          name_repair = "minimal", progress = TRUE, skip=1)
+# i don't know why read_tsv is not working, i'm using fread instead.
+```
+
+## Remove problematic samples
+
+The Sample ES89 was removed due to failed sequencing.
+Samples ES31,ES32, and ES65 were removed due to incomplete sample metadata.
+Samples from bird SEM19-1481 had their metadata corrected due to an error in recording of diet received.
+```{r remove-samples}
+g.counts.l <- g.counts.l %>%
+  dplyr::select(-c(
+      "ES89_Blue-049_Control-protein_0",
+      "ES31_Blue-055_NA_0",
+      "ES32_Blue-055_NA_14",
+      "ES65_106_NA_0" )) %>% 
+  # change diet group of bird SEM19-1481 from MG-lipid to MG-protein
+  dplyr::rename(all_of(
+       # c(`ES64_SEM19-1481_MG-lipid_21`="ES64_SEM19-1481_MG-protein_21",
+       #   `ES52_SEM19-1481_MG-lipid_14`="ES52_SEM19-1481_MG-protein_14",
+       #   `ES83_SEM19-1481_MG-lipid_0`="ES83_SEM19-1481_MG-protein_0"))
+       # )
+       c(`ES64_SEM19-1481_MG-protein_21`="ES64_SEM19-1481_MG-lipid_21",
+         `ES52_SEM19-1481_MG-protein_14`="ES52_SEM19-1481_MG-lipid_14",
+         `ES83_SEM19-1481_MG-protein_0`="ES83_SEM19-1481_MG-lipid_0"))
+       )
+```
+
+
+
+## generate metadata
+
+Using sample names, a tibble of metadata is generated.
+```{r generate-metadata}
+# create tibble metadata object, convert column names to sample ID column
+metadata <-
+  tibble(SampID = colnames(g.counts.l[, c(3:ncol(g.counts.l))])) %>%
+  separate(
+    SampID,
+    c("Sample.ID", "Bird.ID",
+      "MG.Diet", "Day"),
+    "_",
+    extra = "warn",
+    fill = "warn",
+    remove = FALSE
+  ) %>%
+  separate(
+    MG.Diet,
+    c("MG.Status", "Diet"),
+    sep = "[-]",
+    extra = "warn",
+    fill = "warn",
+    remove = FALSE
+  ) %>%
+  mutate(
+    MG.Diet.Day = paste0(MG.Diet, ".", Day),
+    MG.Day = paste0(MG.Status, ".", Day),
+    Diet.Day = paste0(Diet, ".", Day)
+  ) %>%
+  mutate(MG.active = if_else(Day < 1, "NO",
+                             if_else(MG.Status == "Control",
+                                     "NO", "YES"))) %>%
+  mutate(
+    Exposure.MG = paste0(MG.active, ".", MG.Status),
+    Exposure.Diet = paste0(MG.active, ".", Diet),
+    Exposure.Diet.Day = paste0(Exposure.Diet, ".", Day)
+  )
+
+
+# read in phenotype data
+
+## pathogen loads
+canary_loads <-
+  # only birds with both phenotype and genotype data
+  # readr::read_csv(here("Geno.x.Pheno/canary_loads.csv")) %>% 
+  data.table::fread(here("Geno.x.Pheno/canary_loads.csv"),sep=",") %>% 
+  tibble() %>%
+  # mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
+  mutate(Bird = stringr::str_replace(ID, " ", ".")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Orange", "orange")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "- ", "")) %>%
+  # mutate(Bird = stringr::str_replace(Bird, "-", ".")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "LD.19 239", "LD19.239")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Blue.045", "Blue.45")) %>%
+  dplyr::filter(Bird %in% unique(metadata$Bird.ID)) %>%
+  dplyr::select(-ID)
+
+## semi-quantitative eyescore measures
+eyescores <-
+  # readr::read_csv(
+  data.table::fread(
+    here("Geno.x.Pheno/canary_eyescores.csv"),
+    sep=","
+    # col_types = cols(Day = col_integer(),
+    #                  Date = col_character())
+  ) %>%
+  tibble() %>%
+  mutate(Day = as.integer(Day),
+         Date = as.character(Date)) %>%
+  # correcting for errors in manual data entry
+  mutate(Bird = stringr::str_replace(ID, " ", "-")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Orange", "orange")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "- ", "")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "\\.", "-")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Nlue", "Blue")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "LD-19 239", "LD19-239")) %>%
+  mutate(Bird = stringr::str_replace(Bird, "Blue-045", "Blue-45")) %>%
+  dplyr::filter(Bird %in% unique(metadata$Bird.ID)) %>%
+  dplyr::mutate(day = replace(Day, which(Day<0), 0)) %>% # adjust day -1 to day 0
+  dplyr::select(Bird, day, ES)
+
+# inspired from https://support.bioconductor.org/p/p132992/
+
+# generate columns of phenotypic metadata I'd like to have
+# pathogen loads
+day3_loads <- canary_loads %>%
+  filter(day==3) %>%
+  mutate(logLoad_day3 = logLoad, r_logLoad_day3=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day3, r_logLoad_day3))
+
+day7_loads <- canary_loads %>%
+  filter(day==7) %>%
+  mutate(logLoad_day7 = logLoad, r_logLoad_day7=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day7, r_logLoad_day7))
+
+day14_loads <- canary_loads %>%
+  filter(day==14) %>%
+  mutate(logLoad_day14 = logLoad, r_logLoad_day14=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day14, r_logLoad_day14))
+
+day21_loads <- canary_loads %>%
+  filter(day==21) %>%
+  mutate(logLoad_day21 = logLoad, r_logLoad_day21=logLoad/max(logLoad)) %>%
+  dplyr::select(c(Bird, logLoad_day21, r_logLoad_day21))
+
+#AUC estimates
+day14_AUC_loads <- canary_loads %>%
+  filter(day<=14) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,logLoad, type = "spline")
+  ) %>%
+  mutate(logLoad_AUC_14 = auc, r_logLoad_AUC_14=auc/max(auc)) %>%
+  dplyr::select(c(Bird, logLoad_AUC_14, r_logLoad_AUC_14))
+
+day21_AUC_loads <- canary_loads %>%
+  filter(day<=21) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,logLoad, type = "spline")
+  ) %>%
+  mutate(logLoad_AUC_21 = auc, r_logLoad_AUC_21=auc/max(auc)) %>%
+  dplyr::select(c(Bird, logLoad_AUC_21, r_logLoad_AUC_21))
+
+
+load_phenotypes <- purrr::reduce(list(day3_loads,day7_loads,
+                                      day14_loads, day21_loads,
+                                      day14_AUC_loads, day21_AUC_loads), 
+                                 dplyr::left_join, by = 'Bird')
+
+## now do the same for eyescore data
+day_eyes <- eyescores %>%
+  filter(., day %in% c(0,14,21)) %>%
+  mutate(day=as.character(day)) %>%
+  dplyr::select(c(Bird, day, ES))
+
+day3_eyes <- eyescores %>%
+  filter(.,day==3) %>%
+  mutate(ES_day3 = ES, r_ES_day3=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day3, r_ES_day3))
+
+day7_eyes <- eyescores %>%
+  filter(.,day==7) %>%
+  mutate(ES_day7 = ES, r_ES_day7=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day7, r_ES_day7))
+
+day14_eyes <- eyescores %>%
+  filter(.,day==14) %>%
+  mutate(ES_day14 = ES, r_ES_day14=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day14, r_ES_day14))
+
+day21_eyes <- eyescores %>%
+  filter(.,day==21) %>%
+  mutate(ES_day21 = ES, r_ES_day21=ES/max(ES)) %>%
+  dplyr::select(c(Bird, ES_day21, r_ES_day21))
+
+#AUC estimates
+day7_AUC_eyes <- eyescores %>%
+  filter(.,day<=7) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,ES, type = "spline")
+  ) %>%
+  mutate(ES_AUC_7 = auc, r_ES_AUC_7=auc/max(auc)) %>%
+  dplyr::select(c(Bird, ES_AUC_7, r_ES_AUC_7))
+
+day14_AUC_eyes <- eyescores %>%
+  filter(.,day<=14) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,ES, type = "spline")
+  ) %>%
+  mutate(ES_AUC_14 = auc, r_ES_AUC_14=auc/max(auc)) %>%
+  dplyr::select(c(Bird, ES_AUC_14, r_ES_AUC_14))
+
+day21_AUC_eyes <- eyescores %>%
+  filter(.,day<=21) %>%
+  group_by(Bird) %>%
+  summarise(
+  auc = MESS::auc(day,ES, type = "spline")
+  ) %>%
+  mutate(ES_AUC_21 = auc, r_ES_AUC_21=auc/max(auc)) %>%
+  dplyr::select(c(Bird, ES_AUC_21, r_ES_AUC_21))
+
+
+
+eye_phenotypes <- purrr::reduce(list(day3_eyes,day7_eyes,
+                                      day14_eyes, day21_eyes,
+                                      day7_AUC_eyes,
+                                      day14_AUC_eyes, day21_AUC_eyes), 
+                                 dplyr::left_join, by = 'Bird')
+
+## add phenotype data to existing metadata df
+metadata_phenotypes <- metadata %>%
+  left_join(load_phenotypes, by = join_by('Bird.ID' == "Bird")) %>%
+  left_join(eye_phenotypes, by = join_by('Bird.ID' == "Bird")) %>%
+  left_join(day_eyes, by = join_by('Bird.ID' == "Bird", "Day" == "day")) %>%
+  mutate_all(., ~replace_na(.,0)) %>%
+  distinct() %>% # to get rid of duplicated row
+  mutate(ES_minMax = ES/6) %>% # normalized to 0 to 1
+  mutate(logLoad = case_when(
+    Day == 0 ~ logLoad_day3,
+    Day == 14 ~ logLoad_day14,
+    Day == 21 ~ logLoad_day21,
+    TRUE ~ NA
+  ),
+  ES_day0_analysis = case_when(
+    Day == 0 ~ ES_day3,
+    TRUE ~ ES
+  )
+  ) %>%
+  # mutate(tolerance = (logLoad/(ES_day0_analysis+1))-1) # current tolerance index
+  # mutate(tolerance = log((logLoad)/(ES_day0_analysis+1))) # new better tolerance index
+  # mutate(tolerance = (logLoad)-log(ES_day0_analysis+1)) %>% # is this even better??
+  mutate(tolerance = (1+logLoad)/(ES_day0_analysis+1)-1) # this is the best one??
+
+
+```
+
+```{r make-DGElist}
+# Generate count matrix
+gene_expression_matrix <- g.counts.l %>% #View()
+  # remove globin genes
+  dplyr::filter(gene_id != "LOC103824466" ) %>%
+  dplyr::filter(gene_id != "LOC103817748" ) %>%
+  dplyr::filter(gene_id != "LOC103817749" ) %>%
+  dplyr::filter(gene_id != "LOC115485052" ) %>%
+  dplyr::filter(gene_id != "103817748" ) %>%
+  # Add rownames
+  column_to_rownames("gene_id") %>%
+  # remove unneeded column
+  dplyr::select(-`transcript_id(s)`) %>% 
+  # convert to matrix for edgeR
+  as.matrix()
+
+# generate tidy data objects for downstream analysis
+get_tidy_expression(
+  #data_path=filepath_rsem_gene_tpm,
+  data =
+    g.counts.l %>% #View()
+    dplyr::select(-`transcript_id(s)`) %>% 
+    # remove globin genes
+    dplyr::filter(gene_id != "LOC103824466") %>%
+    dplyr::filter(gene_id != "LOC103817748") %>%
+    dplyr::filter(gene_id != "LOC103817749") %>%
+    dplyr::filter(gene_id != "LOC115485052") %>%
+    dplyr::filter(gene_id != "103817748")%>%
+    # Add rownames
+    column_to_rownames("gene_id") %>%
+    # convert to matrix for edgeR
+    as.matrix(),
+  from_file = FALSE,
+  meta = metadata_phenotypes,
+  type = "tpm"
+)
+
+
+
+
+```
+
+```{r}
+metadata_phenotypes_ixn <- metadata_phenotypes |>
+  group_by(Bird.ID) |>
+  mutate(tolerance_median = median(tolerance, na.rm = TRUE)) |>
+  ungroup()|>
+  # metadata_phenotypes |>
+  # # filter(Day==0) |>
+  # ## filter(MG.active=="YES") |>
+  # # add 1 to avoid undefined
+  # mutate(tolerance_1 = ES_AUC_7/(1+logLoad_AUC_14), 
+  #        tolerance_2 = ES_AUC_7/(1+logLoad_day14),
+  #        tolerance_3 = ES_day7/(1+logLoad_day7),
+  #        tolerance_4 = r_ES_day3/(1+r_logLoad_day3), # maybe best?
+  #        tolerance_5 = (1+r_logLoad_day3)/(1+r_ES_day3)-1, # this format works better for "tolerance"
+  #        #tolerance_6 = (1+logLoad_day14)/(1+r_ES_AUC_14)-1,
+  #        tolerance_0 = 1+logLoad/(1+ES)-1
+  #        ) %>%
+  # ## filter(MG.Status != "Control") %>%
+  # # filter(!Sample.ID %in% c("ES12", "ES25", "ES36", "ES58", "ES84", "ES53")) %>%
+  #mutate(#tolerance_5_cat = dplyr::ntile(tolerance_5,3),
+  #        tolerance_5_cat = dplyr::ntile(tolerance_5,3),
+         # tolerance_cat = dplyr::ntile(tolerance,4)) %>%
+  # group_by(Bird.ID) |>
+  # mutate(tolerance_median = median(tolerance, na.rm = TRUE)) |>
+  # ungroup() |>#)
+  mutate(
+         tolerance_cat = case_when(
+           tolerance_median > 0 ~ "tolerant",
+           tolerance_median < 0 ~ "susceptible",
+           TRUE ~ "intermediate"
+         )) %>%
+  mutate(tolerance_cat = factor(tolerance_cat, levels = c("susceptible", "intermediate",#"intermediate1",
+                                                          "tolerant"))) %>%
+  mutate(diet.tolerance = paste0(Diet, ".",tolerance_cat)) %>%
+  # mutate(SampID = str_replace_all(SampID,"\\.","-")) %>%
+  column_to_rownames("SampID")
+
+metadata_phenotypes_ixn  %>%
+  rownames_to_column("Sample.Name") %>%
+  dplyr::select("Sample.Name", "Sample.ID", "Bird.ID", "MG.Status", "MG.active", "Diet", "Day", "ES_day0_analysis", "logLoad", "tolerance", "tolerance_median", "tolerance_cat") %>%
+  rename("ES_day0_analysis"= "ES" ,  "tolerance"="tolerance.day" ,  "tolerance_median" = "tolerance.bird",
+         "tolerance_cat" = "tolerance.category" 
+         ) %>%
+  mutate(Day = as.numeric(Day)) %>% 
+  # left_join(eyescores[,-3], by = c("Bird.ID"="Bird", "Day" = "day"))
+  write_tsv(., "metadata_tolerance_scores.tsv")
+```
+
+```{r}
+
+```
+
+# Pull gene annotations
+```{r}
+# mart2 <- if(exists('mart2') == TRUE){
+#   mart2
+# } else {
+#   biomaRt::useMart(biomart = "ensembl", dataset = "scanaria_gene_ensembl")
+# }
+# 
+# listDatasets(mart2)
+# 
+# 
+# gene_info2 <- biomaRt::getBM(attributes = c(#'ensembl_transcript_id',
+#                             # 'ensembl_peptide_id',
+#                             'ensembl_gene_id', 
+#                             # 'uniprot_gn_symbol',
+#                             'wikigene_name',
+#                             'entrezgene_id',
+#                             'entrezgene_description',
+#                             # '',
+#                             'external_gene_name'
+#                             # 'go_id',
+#                             # 'description'
+#                             ),
+#              values = g.counts.l$gene_id,
+#              mart = mart) %>%
+#   dplyr::mutate(entrezgene_id = paste0("LOC",entrezgene_id)) %>%
+#   dplyr::mutate(gene = ifelse(entrezgene_id %in% rownames(fitmm@.Data[[1]]), entrezgene_id, external_gene_name))
+
+library(biomartr)
+# more complete annotation for genes.
+biomartr::getCollection( db = "refseq", organism = "Serinus canaria")
+
+scan_gff <- biomartr::read_gff("./_db_downloads/collections/refseq/Serinus_canaria/Serinus_canaria_genomic_refseq.gff.gz") %>%
+  filter(type=="gene", source == "Gnomon") %>%
+  # create new column pulling out gene name
+  mutate(gene_common_name = str_extract(attribute, "ID=gene-([^;]+)"),
+         gene_ID = str_extract(attribute, "Dbxref=GeneID:([^;]+)")) %>%
+  mutate(gene_common_name = str_remove(gene_common_name, "ID=gene-") ,
+         gene_ID = str_remove(gene_ID, "Dbxref=GeneID:"))
+
+# get list of gene IDs
+gene_set <- unique(scan_gff$gene_ID)
+
+# get result BM
+result_BM <- biomartr::biomart( genes      = gene_set, # genes were retrieved using biomartr::getGenome()
+                                mart       = "ENSEMBL_MART_ENSEMBL", # marts were selected with biomartr::getMarts()
+                                dataset    = "scanaria_gene_ensembl", # datasets were selected with biomartr::getDatasets()
+                                attributes = c(#'ensembl_transcript_id',
+                            # 'ensembl_peptide_id',
+                            'ensembl_gene_id',
+                            # 'uniprot_gn_symbol',
+                            'wikigene_name',
+                            #'entrezgene_id',
+                            'entrezgene_description',
+                            # '',
+                            'external_gene_name'
+                            # 'go_id',
+                            # 'description'
+                            ), # attributes were selected with biomartr::getAttributes()
+                              filters    = "entrezgene_id"
+                            ) # specify what ID type was stored in the fasta file retrieved with biomartr::getGenome()
+
+head(result_BM)
+
+GO_tbl <- biomartr::getGO(organism = "Serinus canaria",
+                          genes    = gene_set,
+                          filters  = "entrezgene_id"
+                          )
+
+head(GO_tbl)
+
+
+# gff anno
+gene_anno <- scan_gff %>%
+  dplyr::select(gene_ID, gene_common_name, attribute) %>%
+  dplyr::rename(entrezgene_id = gene_ID,
+                gene_gff = gene_common_name) %>%
+  # split attribute column based on ; separator, column name comes before =
+  separate_wider_delim(attribute, delim = ";", names= c("ID", "LOC_id", "common_name", "description",
+                                                        "endrange", "genbank_key", "gene_name", "gene_type"),
+                       too_many = "merge",
+                       too_few = "align_start") %>%
+  dplyr::select(entrezgene_id, gene_gff, description) %>%
+  mutate(description = str_remove(description, "description="))
+
+# gene_GO_tbl <- merge(result_BM, GO_tbl, by = "entrezgene_id", all = TRUE)
+
+result_BM_merged <- result_BM %>%
+  mutate(entrezgene_id = as.character(entrezgene_id)) %>%
+  full_join(gene_anno, by = "entrezgene_id") %>%
+  mutate(gene_name = case_when(
+    str_detect(gene_gff, "LOC1") & !str_detect(external_gene_name, "LOC1") & !is.na(external_gene_name) & external_gene_name != "" ~ external_gene_name,
+    str_detect(gene_gff, "LOC1") & !str_detect(wikigene_name, "LOC1") & !is.na(wikigene_name) ~ wikigene_name,
+    #str_detect(gene_gff, "LOC10") ~ gene_gff,
+    TRUE ~ gene_gff#paste0("LOC",entrezgene_id)
+  ),
+  gene_tag = case_when(
+    paste0("LOC",entrezgene_id) %in% rownames(gene_expression_matrix) ~ paste0("LOC",entrezgene_id),
+    gene_name %in% rownames(gene_expression_matrix) ~ gene_name,
+    TRUE ~ NA),
+  gene = case_when(
+    paste0("LOC",entrezgene_id) %in% rownames(gene_expression_matrix) ~ entrezgene_id,
+    gene_name %in% rownames(gene_expression_matrix) ~ gene_name,
+    TRUE ~ NA)
+  ) %>%
+  # remove formatting issue for commas in description.
+  mutate(description = str_replace_all(description, "%2", ",")) %>%
+  mutate(description = str_replace_all(description, ",C", ",")) 
+
+```
+
+
+```{r}
+gene_expression_matrix_ixn <- gene_expression_matrix |>
+  data.frame() |>
+  ## dplyr::select(!ends_with("_0")) |>
+  ## dplyr::select(contains("MG")) |>
+  # these are birds who PCR shows no pathogen
+  # dplyr::select(-contains("ES12")) |>
+  # dplyr::select(-contains("ES25")) |>
+  # dplyr::select(-contains("ES36")) |>
+  # dplyr::select(-contains("ES58")) |>
+  # dplyr::select(-contains("ES84")) |>
+  # dplyr::select(-contains("ES53")) |>
+  as.matrix()
+
+# design matrix
+#tolerance_1 <- metadata_phenotypes_ixn$tolerance_5 # careful need to update this...
+#tolerance_1 <- metadata_phenotypes_ixn$tolerance # careful need to update this...
+#Diet_ixn <- 1+as.numeric(as.factor(metadata_phenotypes_ixn$Diet)) #%>% gsub(1,4, .) %>% gsub(2,1, .)
+Diet_ixn <- as.factor(metadata_phenotypes_ixn$Diet)
+
+MG.Active <- as.factor(metadata_phenotypes_ixn$MG.Status)
+#grouping_var <- interaction(Diet_ixn, metadata_phenotypes_ixn$MG.Status) %>% as.factor()
+
+# Bird.ID <- as.factor(metadata_phenotypes_ixn$Bird.ID)
+# this one is not appropriate to use
+#design <- model.matrix(~ Diet_ixn:tolerance_1)
+#design
+
+# try this one 12/18/23
+# is appropriate to use, doesn't give significant FDR
+#design <- model.matrix(~ Diet_ixn+tolerance_1+Diet_ixn:tolerance_1)#+ Day_tolerance)
+
+# above design works well, but hard to make contrasts. use pseudogroupings instead
+# generate groupings
+diet_inf <- interaction(Diet_ixn, MG.Active) #%>% as.factor()
+design_ixn <- model.matrix(~ 0 + diet_inf) #+ Day_tolerance)
+
+# entrez_IDs <- getBM(attributes = c(#'ensembl_transcript_id',
+#                             #'ensembl_peptide_id',
+#                             # 'ensembl_gene_id', 
+#                             # 'uniprot_gn_symbol',
+#                             'wikigene_name',
+#                             'entrezgene_id',
+#                             'external_gene_name',
+#                             'go_id'
+#                             ),
+#              values = rownames(gene_expression_matrix_ixn),
+#              mart = mart) |>f
+#   mutate(entrezgene_id = as.character(entrezgene_id))
+
+entrez_names_gene_expression_matrix_ixn <-
+  gene_expression_matrix_ixn |>
+  data.frame() |>
+  rownames_to_column("external_gene_name") |> 
+  left_join(#entrez_IDs |> dplyr::select(-go_id),
+            result_BM_merged,
+            by = "external_gene_name", multiple = "first") |> #View()
+  mutate(entrezID = case_when(
+    str_detect(external_gene_name, "^LOC") ~ str_replace(external_gene_name, "^LOC", ""),
+    !is.na(entrezgene_id) ~ as.character(entrezgene_id),
+    TRUE ~ external_gene_name
+  )) |> #View()
+  pull(entrezID)
+
+rownames(gene_expression_matrix_ixn) <- entrez_names_gene_expression_matrix_ixn
+
+
+
+# get tidy expression data for later
+# returns tpm_df
+# get_tidy_expression(
+#   #data_path=filepath_rsem_gene_tpm,
+#   data = gene_expression_matrix_ixn,
+#   from_file = FALSE,
+#   meta = metadata_phenotypes,
+#   type = "tpm"
+# )
+```
+
+
+```{r}
+y_ixn <- DGEList(
+  counts = gene_expression_matrix_ixn,
+  # names= entrez_names_gene_expression_matrix_ixn,
+  # group=Active_1,
+  remove.zeros = TRUE
+)
+
+#determine cpm cutoff
+cpm_cutoff <- as.numeric(round(cpm(10, mean(y_ixn$samples$lib.size)),1))
+# cpm_cutoff <- 1
+# apply cutoff
+keep <- rowSums(cpm(y_ixn) > cpm_cutoff) >= 8
+y_ixn <- y_ixn[keep,]
+summary(keep)
+
+y_ixn <- calcNormFactors(y_ixn)
+y_ixn <- estimateDisp(y_ixn, design_ixn)#, robust=TRUE)
+
+y_ixn$samples$group <- #grouping_var
+  diet_inf %>% as.factor()
+  # interaction(Diet_ixn, metadata_phenotypes_ixn$tolerance_5_cat) %>% as.factor()
+
+# y_ixn$samples$group <- #grouping_var
+#   interaction(Diet_ixn, metadata_phenotypes_ixn$tolerance_cat) %>% as.factor()
+
+
+contrast_ixn <- makeContrasts(
+  #design, #metadata,
+  contrasts = c(
+    # Interaction contrast
+    # infection response in protein - infection response in lipid
+    "(diet_infprotein.MG - diet_infprotein.Control) - (diet_inflipid.MG - diet_inflipid.Control)",
+    # Diet Contrast
+    # Protein - lipid
+    "(diet_infprotein.MG + diet_infprotein.Control)/2-(diet_inflipid.MG + diet_inflipid.Control)/2",
+    # Infection contrast
+    # Infected - Uninfected
+    "(diet_infprotein.MG + diet_inflipid.MG)/2-(diet_infprotein.Control + diet_inflipid.Control)/2",
+    # Infection in Protein Birds
+    # infected protein - uninfected protein
+    "diet_infprotein.MG - diet_infprotein.Control",
+    # Infection in Lipid Birds
+    # infected lipid - uninfected lipid
+    "diet_inflipid.MG - diet_inflipid.Control"
+  ),
+  levels = design_ixn
+)
+
+fit <- glmQLFit(y_ixn, design_ixn,)#, robust=TRUE)
+
+# res1 <-  glmQLFTest(fit, contrast=contrast_ixn[,1])
+
+res_ixn_edgeR <- glmQLFTest(fit, contrast=contrast_ixn[,1])
+# res1 <-  glmQLFTest(fit, coef = "Diet_ixnprotein:tolerance_1")
+#res2 <-  glmQLFTest(fit, coef = "Diet_ixnlipid:tolerance_1")
+# 
+topTags_ixn_edgeR <- topTags(res_ixn_edgeR, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  #mutate(logFC=round(logFC,2)) %>%
+  # mutate(across(where(is.numeric), signif, 3)) %>%
+  # mutate_if(is.numeric, signif, 3) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+    #gene_GO_tbl |>
+              #mutate(gene = as.character(entrezgene_id)),
+            by = "gene") %>%
+  dplyr::select(
+    c(
+      "gene",
+      "gene_name",
+      "logFC",
+      "logCPM",
+      "F",
+      "PValue",
+      "FDR",
+      "description",
+      "entrezgene_id"
+    )
+  ) %>%
+  distinct(gene, .keep_all = TRUE)
+```
+
+
+# Functional enrichments of genes Differentally Expressed in Interaction
+
+## KEGG 
+```{r}
+gseKEGG_ixn <- topTags_ixn_edgeR %>%
+  arrange(desc(logFC)) %>%
+  pull(logFC, gene) %>%
+  gseKEGG(geneList     = .,
+               organism = 'scan',
+               #universe = topTags_ixn$gene,
+               #minGSSize    = 120,
+               pvalueCutoff = 0.1,
+               verbose      = FALSE)
+
+# enrichplot::upsetplot(gseKEGG_ixn)
+
+enrichKEGG_ixn_lipid_DE <- clusterProfiler::enrichKEGG(gene = filter(topTags_ixn_edgeR, logFC < 0 & FDR < 0.1) |> pull(gene), organism = 'scan', pvalueCutoff = 1)
+
+enrichKEGG_ixn_prot_DE <- clusterProfiler::enrichKEGG(gene = filter(topTags_ixn_edgeR, logFC > 0 & FDR < 0.1) |> pull(gene), organism = 'scan', pvalueCutoff = 1)
+
+# enrichplot::upsetplot(enrichKEGG_ixn_lipid_DE)
+# enrichplot::upsetplot(enrichKEGG_ixn_prot_DE)
+```
+
+
+```{r}
+enrichGO(gene         = 
+  topTags_ixn_edgeR  %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  filter(FDR < 0.05) %>%
+  # filter(logFC > 0) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene)
+                                  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 1,
+                qvalueCutoff  = 1) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() #%>%
+  #View()
+```
+
+
+
+
+# lipid vs protein
+```{r}
+
+res_diet_edgeR <- glmQLFTest(fit, contrast=contrast_ixn[,2])
+
+
+topTags_diet_edgeR <- topTags(res_diet_edgeR, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  #mutate(logFC=round(logFC,2)) %>%
+  # mutate(across(where(is.numeric), signif, 3)) %>%
+  # mutate_if(is.numeric, signif, 3) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+    #gene_info |>
+              #mutate(gene = str_replace(gene, "^LOC", "")),
+            by = "gene") %>%
+  dplyr::select(
+    c(
+      "gene",
+      "gene_name",
+      "logFC",
+      "logCPM",
+      "F",
+      "PValue",
+      "FDR",
+      "description",
+      "entrezgene_id"
+    )
+  ) %>%
+  distinct(gene, .keep_all = TRUE)
+```
+
+
+
+# infection
+```{r}
+res_inf_edgeR <- glmQLFTest(fit, contrast=contrast_ixn[,3])
+
+
+topTags_inf_edgeR <- topTags(res_inf_edgeR, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  #mutate(logFC=round(logFC,2)) %>%
+  # mutate(across(where(is.numeric), signif, 3)) %>%
+  # mutate_if(is.numeric, signif, 3) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+    #gene_info |>
+              #mutate(gene = str_replace(gene, "^LOC", "")),
+            by = "gene") %>%
+  dplyr::select(
+    c(
+      "gene",
+      "gene_name",
+      "logFC",
+      "logCPM",
+      "F",
+      "PValue",
+      "FDR",
+      "description"
+    )
+  ) %>%
+  distinct(gene, .keep_all = TRUE)
+```
+
+
+
+
+See infection response, one contrast per diet.
+```{r}
+# protein bird response to infection
+res_protein_inf_edgeR <- glmQLFTest(fit, contrast=contrast_ixn[,4])
+
+
+topTags_protein_inf_edgeR <- topTags(res_protein_inf_edgeR, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  #mutate(logFC=round(logFC,2)) %>%
+  # mutate(across(where(is.numeric), signif, 3)) %>%
+  # mutate_if(is.numeric, signif, 3) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+    #gene_info |>
+              #mutate(gene = str_replace(gene, "^LOC", "")),
+            by = "gene") %>%
+  dplyr::select(
+    c(
+      "gene",
+      "gene_name",
+      "logFC",
+      "logCPM",
+      "F",
+      "PValue",
+      "FDR",
+      "description"
+    )
+  ) %>%
+  distinct(gene, .keep_all = TRUE)
+
+
+# Lipid bird infection response
+# protein bird response to infection
+res_lipid_inf_edgeR <- glmQLFTest(fit, contrast=contrast_ixn[,5])
+
+
+topTags_lipid_inf_edgeR <- topTags(res_lipid_inf_edgeR, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  #mutate(logFC=round(logFC,2)) %>%
+  # mutate(across(where(is.numeric), signif, 3)) %>%
+  # mutate_if(is.numeric, signif, 3) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+    #gene_info |>
+              #mutate(gene = str_replace(gene, "^LOC", "")),
+            by = "gene") %>%
+  dplyr::select(
+    c(
+      "gene",
+      "gene_name",
+      "logFC",
+      "logCPM",
+      "F",
+      "PValue",
+      "FDR",
+      "description"
+    )
+  ) %>%
+  distinct(gene, .keep_all = TRUE)
+```
+
+
+
+## Supplement: Correlation of logFC between protein and lipid
+```{r}
+left_join(topTags_protein_inf_edgeR,topTags_lipid_inf_edgeR, by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join( topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  mutate(logFC_diff = logFC.protein - logFC.lipid) %>%
+  #arrange(desc(logFC_diff)) %>%  #View()
+  filter(FDR.protein < 0.05 | FDR.lipid < 0.05) %>%
+  dplyr::select(#gene_name, description, gene,
+                logFC.protein, logFC.lipid, #logFC_diff, 
+                logFC) %>%
+  cor() %>%
+  # corrr::correlate() %>%
+  corrplot::corrplot()
+  
+
+protvslipid_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR, topTags_lipid_inf_edgeR, topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  filter(FDR.protein < 0.05 | FDR.lipid < 0.05) %>%
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC.protein, y=logFC.lipid)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  theme_classic() +
+  ggtitle("Cor(logFC) protein vs lipid infection")
+
+protvsall_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR, topTags_lipid_inf_edgeR, topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  filter(FDR.protein < 0.05 | FDR.lipid < 0.05) %>%
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC.protein, y=logFC)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  theme_classic() +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  ggtitle("Cor(logFC) protein vs combined infection")
+
+lipidvsall_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR, topTags_lipid_inf_edgeR, topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  filter(FDR.protein < 0.05 | FDR.lipid < 0.05) %>%
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC.lipid, y=logFC)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm") +
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2) +
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  theme_classic() +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  ggtitle("Cor(logFC) lipid vs combined infection")
+
+
+ggpubr::ggarrange(protvslipid_inf_logfc_gg, protvsall_inf_logfc_gg, 
+          lipidvsall_inf_logfc_gg, ncol = 2, nrow = 2)
+
+ggsave("figures/inf_logfc_correlation.png", width = 10, height = 10, dpi = 600)
+```
+
+
+
+
+# Phenotype Correlation
+
+Here, we will look at the correlation between the logFC of the genes in the infection and diet comparisons and the tolerance score we have calculated based on eyescores and log loads of pathogens detected.
+
+
+
+
+## Tolerance
+```{r}
+# get just the infected birds
+# tolerance_inf <- metadata_phenotypes_ixn %>%
+#   filter(MG.active == "YES") %>%
+#   pull(tolerance)
+# 
+# diet.tolerance.inf_ <- metadata_phenotypes_ixn %>%
+#   filter(MG.active == "YES") %>%
+#   pull(diet.tolerance) %>%
+#   as.factor()
+# # design_tolerance <- model.matrix(~ 0 + Diet_ixn + tolerance)
+# design_tolerance_inf <- model.matrix(~ 0 + diet.tolerance.inf_)
+# 
+# gene_expression_matrix_inf <- gene_expression_matrix_ixn[, metadata_phenotypes_ixn$MG.active == "YES"]
+
+```
+
+```{r}
+# diet_inf <- interaction(Diet_ixn, MG.Active) #%>% as.factor()
+# design_ixn <- model.matrix(~ 0 + diet_inf) #+ Day_tolerance)
+# design matrix
+# Diet_1 <- as.factor(metadata_phenotypes_day0$Diet)
+# Day_tolerance <- (metadata_phenotypes_day0$Day)
+
+# above design works well, but hard to make contrasts. use pseudogroupings instead
+# generate groupings
+tolerance <- metadata_phenotypes_ixn$tolerance_median #%>% as.factor()
+# tolerance_cat <- metadata_phenotypes_ixn$tolerance_cat
+# diet.tolerance_ <- as.factor(metadata_phenotypes_ixn$diet.tolerance)
+# # design_tolerance <- model.matrix(~ 0 + Diet_ixn + tolerance)
+# # diet.tolerance_ <- diet.tolerance.inf_
+# 
+# design_tolerance <- model.matrix(~ 0 + diet.tolerance_)
+# 
+# # replace with the one above
+# # design_tolerance <- design_tolerance_inf
+# 
+# #rownames(gene_expression_matrix_day0) <- entrez_names_gene_expression_matrix_day0
+# 
+# y_tolerance <- DGEList(
+#   counts = gene_expression_matrix_ixn,
+#             # gene_expression_matrix_inf, # to remove control birds
+#   # names= entrez_names_gene_expression_matrix_day0,
+#   # group=Active_1,
+#   remove.zeros = TRUE
+# )
+# 
+# #determine cpm cutoff
+# cpm_cutoff_tolerance <- as.numeric(round(cpm(10, mean(y_tolerance$samples$lib.size)),1))
+# # cpm_cutoff <- 1
+# # apply cutoff
+# keep_tolerance <- rowSums(cpm(y_tolerance) > cpm_cutoff_tolerance) >= 2#4
+# y_tolerance <- y_tolerance[keep_tolerance,]
+# summary(keep_tolerance)
+# 
+# y_tolerance <- calcNormFactors(y_tolerance)
+# y_tolerance <- estimateDisp(y_tolerance, design_tolerance)#, robust=TRUE)
+# 
+# # if using all birds
+# y_tolerance$samples$group <- diet.tolerance_#grouping_var
+#   # interaction(Diet_1, metadata_phenotypes_day0$tolerance_5_cat) %>% as.factor()
+# 
+# # y_tolerance$samples$group <- #grouping_var
+# #   interaction(Diet_1, metadata_phenotypes_day0$tolerance_cat) %>% as.factor()
+# 
+# contrast_ixn_tolerance <- makeContrasts(#design, #metadata,
+#   contrasts = c(
+#     # protein's resistant vs susceptible / lipids's resistant vs susceptible
+#     "(diet.tolerance_protein.tolerant - diet.tolerance_protein.susceptible) - (diet.tolerance_lipid.tolerant - diet.tolerance_lipid.susceptible)",
+#     # protein vs lipid (diet contrast)
+#     "(diet.tolerance_protein.tolerant + diet.tolerance_protein.intermediate +  diet.tolerance_protein.susceptible)/3-(diet.tolerance_lipid.tolerant + diet.tolerance_lipid.intermediate + diet.tolerance_lipid.susceptible)/3",
+#     #  tolerant vs susceptible (infection contrast)
+#     "(diet.tolerance_protein.tolerant + diet.tolerance_lipid.tolerant)/2 - (diet.tolerance_protein.susceptible + diet.tolerance_lipid.susceptible)/2"
+#                 #"diet_tolerancelipid.3 - diet_tolerancelipid.1",
+#                 #"diet_toleranceprotein.3 - diet_tolerancelipid.3"
+#                 ), levels=design_tolerance)
+# 
+# # contrast_ixn_tolerance <- makeContrasts(#design, #metadata,
+# #   contrasts = c(
+# #     # protein's resistant vs susceptible / lipids's resistant vs susceptible
+# #     "(diet.tolerance.inf_protein.tolerant - diet.tolerance.inf_protein.susceptible) - (diet.tolerance.inf_lipid.tolerant - diet.tolerance.inf_lipid.susceptible)",
+# #     # protein vs lipid (diet contrast)
+# #     "(diet.tolerance.inf_protein.tolerant + diet.tolerance.inf_protein.intermediate +  diet.tolerance.inf_protein.susceptible)/3-(diet.tolerance.inf_lipid.tolerant + diet.tolerance.inf_lipid.intermediate + diet.tolerance.inf_lipid.susceptible)/3",
+# #     #  tolerant vs susceptible (infection contrast)
+# #     "(diet.tolerance.inf_protein.tolerant + diet.tolerance.inf_lipid.tolerant)/2 - (diet.tolerance.inf_protein.susceptible + diet.tolerance.inf_lipid.susceptible)/2"
+# #                 #"diet_tolerancelipid.3 - diet_tolerancelipid.1",
+# #                 #"diet_toleranceprotein.3 - diet_tolerancelipid.3"
+# #                 ), levels=design_tolerance)
+# 
+# fit_tolerance <- glmQLFit(y_tolerance, design_tolerance)#, robust=TRUE)
+# 
+# # res_tolerance <-  glmQLFTest(fit_tolerance,coef = "tolerance")#, contrast=contrast_ixn_tolerance[,1])
+# 
+# res_tolerance_ixn <-  glmQLFTest(fit_tolerance, contrast=contrast_ixn_tolerance[,1])
+# res_tolerance_diet <-  glmQLFTest(fit_tolerance, contrast=contrast_ixn_tolerance[,2])
+# res_tolerance_inf <-  glmQLFTest(fit_tolerance, contrast=contrast_ixn_tolerance[,3])
+# 
+# 
+# # tolerance ixn contrast
+# topTags_tolerance_ixn <- topTags(res_tolerance_ixn, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+# 
+# # tolerance diet contrast
+# topTags_tolerance_diet <- topTags(res_tolerance_diet, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+# 
+# # tolerance inf contrast
+# topTags_tolerance_inf <- topTags(res_tolerance_inf, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+```
+
+TESTING: This worked out really well.
+```{r}
+# tolerance <- metadata_phenotypes_ixn$tolerance #%>% as.factor()
+tolerance_01 <- scale(tolerance,center=min(tolerance),scale=diff(range(tolerance)))
+############################
+## TRY WITHOUT CATEGORIES
+# design_tolerance_continuous <- model.matrix(~ 0 + Diet + tolerance_01)
+design_tolerance_continuous <- model.matrix(~ 0 + Diet + tolerance)
+
+y_tolerance <- DGEList(
+  counts = gene_expression_matrix_ixn,
+            # gene_expression_matrix_inf, # to remove control birds
+  # names= entrez_names_gene_expression_matrix_day0,
+  # group=Active_1,
+  remove.zeros = TRUE
+)
+
+#determine cpm cutoff
+cpm_cutoff_tolerance <- as.numeric(round(cpm(10, mean(y_tolerance$samples$lib.size)),1))
+# cpm_cutoff <- 1
+# apply cutoff
+keep_tolerance <- rowSums(cpm(y_tolerance) > cpm_cutoff_tolerance) >= 8
+y_tolerance <- y_tolerance[keep_tolerance,]
+summary(keep_tolerance)
+
+y_tolerance <- calcNormFactors(y_tolerance)
+y_tolerance <- estimateDisp(y_tolerance, design_tolerance_continuous)#, robust=TRUE)
+
+# if using all birds
+# y_tolerance$samples$group <- Diet#grouping_var
+  # interaction(Diet_1, metadata_phenotypes_day0$tolerance_5_cat) %>% as.factor()
+
+# y_tolerance$samples$group <- #grouping_var
+#   interaction(Diet_1, metadata_phenotypes_day0$tolerance_cat) %>% as.factor()
+
+# contrast_ixn_tolerance <- makeContrasts(#design, #metadata,
+#   contrasts = c(
+#     # protein's resistant vs susceptible / lipids's resistant vs susceptible
+#     "(diet.tolerance_protein.tolerant - diet.tolerance_protein.susceptible) - (diet.tolerance_lipid.tolerant - diet.tolerance_lipid.susceptible)",
+#     # protein vs lipid (diet contrast)
+#     "(diet.tolerance_protein.tolerant + diet.tolerance_protein.intermediate +  diet.tolerance_protein.susceptible)/3-(diet.tolerance_lipid.tolerant + diet.tolerance_lipid.intermediate + diet.tolerance_lipid.susceptible)/3",
+#     #  tolerant vs susceptible (infection contrast)
+#     "(diet.tolerance_protein.tolerant + diet.tolerance_lipid.tolerant)/2 - (diet.tolerance_protein.susceptible + diet.tolerance_lipid.susceptible)/2"
+#                 #"diet_tolerancelipid.3 - diet_tolerancelipid.1",
+#                 #"diet_toleranceprotein.3 - diet_tolerancelipid.3"
+#                 ), levels=design_tolerance)
+
+# contrast_ixn_tolerance <- makeContrasts(#design, #metadata,
+#   contrasts = c(
+#     # protein's resistant vs susceptible / lipids's resistant vs susceptible
+#     "(diet.tolerance.inf_protein.tolerant - diet.tolerance.inf_protein.susceptible) - (diet.tolerance.inf_lipid.tolerant - diet.tolerance.inf_lipid.susceptible)",
+#     # protein vs lipid (diet contrast)
+#     "(diet.tolerance.inf_protein.tolerant + diet.tolerance.inf_protein.intermediate +  diet.tolerance.inf_protein.susceptible)/3-(diet.tolerance.inf_lipid.tolerant + diet.tolerance.inf_lipid.intermediate + diet.tolerance.inf_lipid.susceptible)/3",
+#     #  tolerant vs susceptible (infection contrast)
+#     "(diet.tolerance.inf_protein.tolerant + diet.tolerance.inf_lipid.tolerant)/2 - (diet.tolerance.inf_protein.susceptible + diet.tolerance.inf_lipid.susceptible)/2"
+#                 #"diet_tolerancelipid.3 - diet_tolerancelipid.1",
+#                 #"diet_toleranceprotein.3 - diet_tolerancelipid.3"
+#                 ), levels=design_tolerance)
+
+fit_tolerance <- glmQLFit(y_tolerance, design_tolerance_continuous)#, robust=TRUE)
+
+res_tolerance <-  glmQLFTest(fit_tolerance, coef = "tolerance")#, contrast=contrast_ixn_tolerance[,1])
+
+# res_tolerance_ixn <-  glmQLFTest(fit_tolerance, contrast=contrast_ixn_tolerance[,1])
+# res_tolerance_diet <-  glmQLFTest(fit_tolerance, contrast=contrast_ixn_tolerance[,2])
+# res_tolerance_inf <-  glmQLFTest(fit_tolerance, contrast=contrast_ixn_tolerance[,3])
+
+
+# # tolerance ixn contrast
+# topTags_tolerance_ixn <- topTags(res_tolerance_ixn, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+# 
+# # tolerance diet contrast
+# topTags_tolerance_diet <- topTags(res_tolerance_diet, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+
+# tolerance inf contrast
+topTags_tolerance <- topTags(res_tolerance, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+            by = "gene") %>%
+  dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+      "PValue", "FDR", "description", "entrezgene_id") ) %>%
+  distinct(gene,.keep_all = TRUE)
+```
+
+check correlation of logFC estimates between two analyses
+```{r}
+left_join(topTags_inf_edgeR, topTags_tolerance, by = c("gene", "gene_name", "description"),suffix = c("_edgeR", "_tolerance")) %>% #View()
+  filter(FDR_edgeR < 0.05 & FDR_tolerance < 0.05) %>% #View()
+  ggplot(aes(x = logFC_edgeR, y = logFC_tolerance)) +
+  geom_point() +
+  ggrepel::geom_label_repel(aes(label = gene_name), max.overlaps = 20) +
+  ggpubr::stat_cor(method = "pearson",) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  # xlim(-8,8) +
+  # ylim(-8,8) +
+  #geom_label() +
+  theme_minimal()
+
+left_join(topTags_ixn_edgeR, topTags_tolerance_ixn, by = c("gene", "gene_name", "description"),suffix = c("_edgeR_ixn", "_tolerance_ixn")) %>% #View()
+  filter(FDR_edgeR_ixn < 0.05 & FDR_tolerance_ixn < 0.05) %>%
+  ggplot(aes(x = logFC_edgeR_ixn, y = logFC_tolerance_ixn)) +
+  geom_point() +
+  ggrepel::geom_label_repel(aes(label = gene_name), max.overlaps = 20) +
+  ggpubr::stat_regline_equation(label.x = -5, label.y = 2)+
+  ggpubr::stat_cor(method = "pearson") +
+  #geom_label() +
+  theme_minimal()
+
+
+# left_join(topTags_inf_edgeR, topTags_ES_inf, by = c("gene", "gene_name", "description"),suffix = c("_edgeR_inf", "_ES_inf")) %>% #View()
+#   filter(FDR_edgeR_inf < 0.05 | FDR_ES_inf < 0.05) %>%
+#   ggplot(aes(x = logFC_edgeR_inf, y = logFC_ES_inf)) +
+#   geom_point() +
+#   ggrepel::geom_label_repel(aes(label = gene_name), max.overlaps = 20) +
+#   ggpubr::stat_regline_equation(label.x = -5, label.y = 2)+
+#   ggpubr::stat_cor(method = "pearson") +
+#   #geom_label() +
+#   theme_minimal()
+# 
+# 
+# 
+# left_join(topTags_inf_edgeR, topTags_ES0_inf, by = c("gene", "gene_name", "description"),suffix = c("_edgeR_inf", "_ES0_inf")) %>% #View()
+#   filter(FDR_edgeR_inf < 0.05 | FDR_ES0_inf < 0.05) %>%
+#   ggplot(aes(x = logFC_edgeR_inf, y = logFC_ES0_inf)) +
+#   geom_point() +
+#   ggrepel::geom_label_repel(aes(label = gene_name), max.overlaps = 20) +
+#   ggpubr::stat_regline_equation(label.x = -5, label.y = 2)+
+#   ggpubr::stat_cor(method = "pearson") +
+#   #geom_label() +
+#   theme_minimal()\
+```
+## Eye Score
+```{r}
+# ES_mm <- metadata_phenotypes_ixn$ES_minMax #%>% as.factor()
+# tolerance_cat <- metadata_phenotypes_ixn$tolerance_cat
+# diet.tolerance_ <- as.factor(metadata_phenotypes_ixn$diet.tolerance)
+# design_tolerance <- model.matrix(~ 0 + Diet_ixn + tolerance)
+ES_minMax <- metadata_phenotypes_ixn$ES_day0_analysis
+ES_minMax <- metadata_phenotypes_ixn$r_ES_AUC_21
+Diet <- metadata_phenotypes_ixn$Diet
+
+design_ES <- model.matrix(~ 0 + ES_minMax + Diet)
+
+
+
+#rownames(gene_expression_matrix_day0) <- entrez_names_gene_expression_matrix_day0
+
+y_ES <- DGEList(
+  counts = gene_expression_matrix_ixn,
+  # names= entrez_names_gene_expression_matrix_day0,
+  # group=Active_1,
+  remove.zeros = TRUE
+)
+
+#determine cpm cutoff
+cpm_cutoff_ES <- as.numeric(round(cpm(10, mean(y_ES$samples$lib.size)),1))
+# cpm_cutoff <- 1
+# apply cutoff
+keep_ES <- rowSums(cpm(y_ES) > cpm_cutoff_ES) >= 8
+y_ES <- y_ES[keep_ES,]
+summary(keep_ES)
+
+y_ES <- calcNormFactors(y_ES)
+y_ES <- estimateDisp(y_ES, design_ES)#, robust=TRUE)
+
+# y_ES$samples$group <- diet.tolerance_#grouping_var
+  # interaction(Diet_1, metadata_phenotypes_day0$tolerance_5_cat) %>% as.factor()
+
+# y_ES$samples$group <- #grouping_var
+#   interaction(Diet_1, metadata_phenotypes_day0$tolerance_cat) %>% as.factor()
+
+# contrast_ixn_ES <- makeContrasts(#design, #metadata, 
+#   contrasts = c(
+#     # protein's resistant vs susceptible / lipids's resistant vs susceptible
+#     "(diet.ES_protein.tolerant - diet.ES_protein.susceptible) - (diet.ES_lipid.tolerant - diet.ES_lipid.susceptible)", 
+#     # protein vs lipid (diet contrast)
+#     "(diet.ES_protein.tolerant + diet.ES_protein.intermediate +  diet.ES_protein.susceptible)/3-(diet.ES_lipid.tolerant + diet.ES_lipid.intermediate + diet.ES_lipid.susceptible)/3",
+#     #  tolerant vs susceptible (infection contrast)
+#     "(diet.ES_protein.tolerant + diet.ES_lipid.tolerant)/2 - (diet.ES_protein.susceptible + diet.ES_lipid.susceptible)/2"
+#                 #"diet_ESlipid.3 - diet_ESlipid.1",
+#                 #"diet_ESprotein.3 - diet_ESlipid.3"
+#                 ), levels=design_ES)
+
+fit_ES <- glmQLFit(y_ES, design_ES)#, robust=TRUE)
+
+# res_ES <-  glmQLFTest(fit_ES,coef = "ES")#, contrast=contrast_ixn_ES[,1])
+
+# res_ES_ixn <-  glmQLFTest(fit_ES, contrast=contrast_ixn_ES[,1])
+# res_ES_diet <-  glmQLFTest(fit_ES, contrast=contrast_ixn_ES[,2])
+res_ES_inf <-  glmQLFTest(fit_ES, coef="ES_minMax")
+
+
+# ES ixn contrast
+# topTags_ES_ixn <- topTags(res_ES_ixn, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+# 
+# # ES diet contrast
+# topTags_ES_diet <- topTags(res_ES_diet, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+
+# ES inf contrast
+topTags_ES_inf <- topTags(res_ES_inf, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+            by = "gene") %>%
+  dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+      "PValue", "FDR", "description", "entrezgene_id") ) %>%
+  distinct(gene,.keep_all = TRUE)
+```
+
+## logLoad
+```{r}
+logLoad <- metadata_phenotypes_ixn$logLoad
+logLoad <- metadata_phenotypes_ixn$logLoad_AUC_21/max(metadata_phenotypes_ixn$logLoad_AUC_21)
+Diet <- metadata_phenotypes_ixn$Diet
+
+design_logLoad <- model.matrix(~ 0 + logLoad + Diet)
+
+#rownames(gene_expression_matrix_day0) <- entrez_names_gene_expression_matrix_day0
+
+y_logLoad <- DGEList(
+  counts = gene_expression_matrix_ixn,
+  # names= entrez_names_gene_expression_matrix_day0,
+  # group=Active_1,
+  remove.zeros = TRUE
+)
+
+#determine cpm cutoff
+cpm_cutoff_logLoad <- as.numeric(round(cpm(10, mean(y_logLoad$samples$lib.size)),1))
+# cpm_cutoff <- 1
+# apply cutoff
+keep_logLoad <- rowSums(cpm(y_logLoad) > cpm_cutoff_logLoad) >= 8
+y_logLoad <- y_logLoad[keep_logLoad,]
+summary(keep_logLoad)
+
+y_logLoad <- calcNormFactors(y_logLoad)
+y_logLoad <- estimateDisp(y_logLoad, design_logLoad)#, robust=TRUE)
+
+# y_logLoad$samples$group <- diet.tolerance_#grouping_var
+  # interaction(Diet_1, metadata_phenotypes_day0$tolerance_5_cat) %>% as.factor()
+
+# y_logLoad$samples$group <- #grouping_var
+#   interaction(Diet_1, metadata_phenotypes_day0$tolerance_cat) %>% as.factor()
+
+# contrast_ixn_logLoad <- makeContrasts(#design, #metadata, 
+#   contrasts = c(
+#     # protein's resistant vs susceptible / lipids's resistant vs susceptible
+#     "(diet.logLoad_protein.tolerant - diet.logLoad_protein.susceptible) - (diet.logLoad_lipid.tolerant - diet.logLoad_lipid.susceptible)", 
+#     # protein vs lipid (diet contrast)
+#     "(diet.logLoad_protein.tolerant + diet.logLoad_protein.intermediate +  diet.logLoad_protein.susceptible)/3-(diet.logLoad_lipid.tolerant + diet.logLoad_lipid.intermediate + diet.logLoad_lipid.susceptible)/3",
+#     #  tolerant vs susceptible (infection contrast)
+#     "(diet.logLoad_protein.tolerant + diet.logLoad_lipid.tolerant)/2 - (diet.logLoad_protein.susceptible + diet.logLoad_lipid.susceptible)/2"
+#                 #"diet_logLoadlipid.3 - diet_logLoadlipid.1",
+#                 #"diet_logLoadprotein.3 - diet_logLoadlipid.3"
+#                 ), levels=design_logLoad)
+
+fit_logLoad <- glmQLFit(y_logLoad, design_logLoad)#, robust=TRUE)
+
+# res_logLoad <-  glmQLFTest(fit_logLoad,coef = "logLoad")#, contrast=contrast_ixn_logLoad[,1])
+
+# res_logLoad_ixn <-  glmQLFTest(fit_logLoad, contrast=contrast_ixn_logLoad[,1])
+# res_logLoad_diet <-  glmQLFTest(fit_logLoad, contrast=contrast_ixn_logLoad[,2])
+res_logLoad_inf <-  glmQLFTest(fit_logLoad, coef="logLoad")
+
+
+# logLoad ixn contrast
+# topTags_logLoad_ixn <- topTags(res_logLoad_ixn, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+# 
+# # logLoad diet contrast
+# topTags_logLoad_diet <- topTags(res_logLoad_diet, n=Inf) %>% data.frame() %>%
+#   arrange(FDR) %>%
+#   rownames_to_column("gene") %>%
+#   left_join(result_BM_merged,
+#             by = "gene") %>%
+#   dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+#       "PValue", "FDR", "description", "entrezgene_id") ) %>%
+#   distinct()
+
+# logLoad inf contrast
+topTags_logLoad_inf <- topTags(res_logLoad_inf, n=Inf) %>% data.frame() %>%
+  arrange(FDR) %>%
+  rownames_to_column("gene") %>%
+  left_join(result_BM_merged,
+            by = "gene") %>%
+  dplyr::select( c("gene", "gene_name", "logFC", "logCPM", "F",
+      "PValue", "FDR", "description", "entrezgene_id") ) %>%
+  distinct(gene,.keep_all = TRUE)
+```
+
+
+# Save DE text files
+```{r}
+### CONTINUE HERE>
+write_tsv(topTags)
+```
+
+
+# Figure 0
+An Upset plot comparing DE genes across all of the different comparisons we are looking at.
+```{r}
+genes_higher_in_infection <- topTags_inf_edgeR %>%
+  filter(FDR < 0.05 & logFC > 0) %>%
+  dplyr::select(gene, logFC) %>%
+  deframe() 
+
+genes_lower_in_infection <- topTags_inf_edgeR %>%
+  filter(FDR < 0.05 & logFC < 0) %>%
+  dplyr::select(gene, logFC) %>%
+  deframe() 
+
+genes_higher_protein_diet <- topTags_diet_edgeR %>%
+  filter(FDR < 0.05 & logFC > 0) %>%
+  dplyr::select(gene, logFC) %>%
+  deframe() 
+
+genes_higher_lipid_diet <- topTags_diet_edgeR %>%
+  filter(FDR < 0.05 & logFC < 0) %>%
+  dplyr::select(gene, logFC) %>% 
+  deframe() 
+
+genes_bigger_protein_infection_difference <- topTags_ixn_edgeR %>%
+  filter(FDR < 0.05 & logFC > 0) %>%
+  dplyr::select(gene, logFC) %>% #View()
+  deframe() 
+
+genes_bigger_lipid_infection_difference <- topTags_ixn_edgeR %>%
+  filter(FDR < 0.05 & logFC < 0) %>% #View()
+  dplyr::select(gene, logFC) %>%# View()
+  deframe() 
+
+fdr_genes_infection <- topTags_inf_edgeR %>%
+  filter(FDR < 0.05) %>%
+  dplyr::select(gene, FDR) %>%
+  deframe()
+
+fdr_genes_diet <- topTags_diet_edgeR %>%
+  filter(FDR < 0.05) %>%
+  dplyr::select(gene, FDR) %>%
+  deframe()
+
+fdr_genes_ixn <- topTags_ixn_edgeR %>% 
+  filter(FDR < 0.05) %>%
+  dplyr::select(gene, FDR) %>%
+  deframe()
+```
+
+```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
+DE_genes_edgeR_upset <- topTags_inf_edgeR %>%
+  #filter(FDR< 0.05) %>%
+  #dplyr::select(gene) %>%
+  mutate(repressed_in_infection = gene %in% names(genes_lower_in_infection),
+         induced_in_infection = gene %in% names(genes_higher_in_infection),
+         higher_in_Protein = gene %in% names(genes_higher_protein_diet),
+         higher_in_Lipid = gene %in% names(genes_higher_lipid_diet),
+         Protein_ixn_bigger_Inf = gene %in% names(genes_bigger_protein_infection_difference),
+         Lipid_ixn_bigger_Inf = gene %in% names(genes_bigger_lipid_infection_difference),
+         # Here we use ifelse to assign logFC values from the named vector based on the gene presence.
+        # logFC_repressed_in_infection = 
+        #   ifelse(gene %in% names(genes_lower_in_infection), genes_lower_in_infection[gene], NA),
+        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
+        # 
+        # logFC_higher_in_Protein = ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
+        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
+        # logFC_Protein_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
+        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
+        logFC_infection = 
+          case_when(
+            gene %in% names(genes_lower_in_infection) ~ genes_lower_in_infection[gene],
+            gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
+            TRUE ~ NA_real_
+          ),
+          # )
+        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
+        
+        logFC_diet = case_when(
+          gene %in% names(genes_higher_protein_diet) ~ genes_higher_protein_diet[gene],
+          gene %in% names(genes_higher_lipid_diet) ~ genes_higher_lipid_diet[gene],
+          TRUE ~ NA_real_
+        ),
+        # )
+          # ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
+        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
+        logFC_interaction = case_when(
+          gene %in% names(genes_bigger_protein_infection_difference) ~ genes_bigger_protein_infection_difference[gene],
+          gene %in% names(genes_bigger_lipid_infection_difference) ~ genes_bigger_lipid_infection_difference[gene],
+          TRUE ~ NA_real_
+        ),
+        FDR_infection = case_when(
+          gene %in% names(fdr_genes_infection) ~ fdr_genes_infection[gene],
+          #gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
+          TRUE ~ NA_real_
+        ),
+        FDR_diet = case_when(
+          gene %in% names(fdr_genes_diet) ~ fdr_genes_diet[gene],
+          # gene %in% names(genes_higher_protein_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
+          # gene %in% names(genes_higher_lipid_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
+          TRUE ~ NA_real_
+        ),
+        FDR_interaction = case_when(
+          # gene %in% ((topTags_ixn_edgeR |>
+  # filter(FDR < 0.05) |> pull(gene))) ~ (filter(topTags_ixn_edgeR, paste0(gene) == paste0(gene))$FDR),
+          gene %in% names(fdr_genes_ixn) ~ fdr_genes_ixn[gene],
+          # gene %in% names(genes_bigger_protein_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
+          # gene %in% names(genes_bigger_lipid_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
+          TRUE ~ NA_real_
+        )
+        # )
+          # ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
+        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
+   ) %>%
+  mutate(DE_in_infection = repressed_in_infection | induced_in_infection,
+         DE_in_diet = higher_in_Protein | higher_in_Lipid,
+         DE_in_ixn = Protein_ixn_bigger_Inf | Lipid_ixn_bigger_Inf) %>%
+  mutate(gene_label = case_when(
+    abs(logFC)>1 ~ gene_name,
+    TRUE ~ NA_character_
+  ))
+  #dplyr::select(-"gene")
+
+
+
+
+DE_genes_edgeR_upsetplot <- DE_genes_edgeR_upset %>%
+  upset(., colnames(DE_genes_edgeR_upset[,c(9:14)]), name= "Comparison", width_ratio = 0.2,
+        #mode="union",
+        #intersections="all",
+        annotations = list(
+        # 1st method - passing list:
+        # 'logFC'=list(
+        #     aes=aes(x=intersection, y=logFC),
+        #     # provide a list if you wish to add several geoms
+        #     geom=geom_boxplot(na.rm=TRUE)
+        # ),
+        # 2nd method - using ggplot
+        'Infection'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=logFC_infection))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + ggbeeswarm::geom_quasirandom(#aes(color=FDR),
+                                           na.rm=TRUE)
+            + geom_text(aes(label=gene_name, y = logFC_infection + 0.5 * sign(logFC_infection), 
+                            label = logFC_infection), size=2, na.rm=TRUE, check_overlap = TRUE)
+            # + geom_jitter(#aes(color=FDR),
+            #               na.rm=TRUE)
+            + geom_violin(alpha=0.5, na.rm=TRUE) #+
+    # ggplot2::theme_bw()
+            #+ geom_label(aes(label=gene_label),size=2, na.rm=TRUE)
+        ),
+        'Diet'=(
+            ggplot(mapping=aes(y=logFC_diet))
+            + ggbeeswarm::geom_quasirandom(#aes(color=FDR),
+                                           na.rm=TRUE)
+            + geom_text(aes(label=gene_name, y = logFC_diet + 0.5 * sign(logFC_diet), 
+                            label = logFC_diet), size=2, na.rm=TRUE, check_overlap = TRUE)
+            # + geom_jitter(#aes(color=FDR),
+            #               na.rm=TRUE)
+            + geom_violin(alpha=0.5, na.rm=TRUE) #+
+        ),
+        'Interaction'=(
+            ggplot(mapping=aes(y=logFC_interaction))
+            + ggbeeswarm::geom_quasirandom(#aes(color=FDR),
+                                           na.rm=TRUE)
+            + geom_text(aes(label=gene_name, y = logFC_interaction + 0.5 * sign(logFC_interaction), 
+                            label = logFC_interaction), size=2, na.rm=TRUE, check_overlap = TRUE)
+            # + geom_jitter(#aes(color=FDR),
+            #               na.rm=TRUE)
+            + geom_violin(alpha=0.5, na.rm=TRUE) #+
+        )
+    ),
+        keep_empty_groups=FALSE, min_degree=1,# drop=TRUE,
+    min_size=0#, #mode="inclusive_union"
+    )# +
+    # ggplot2::theme_bw()
+
+# DE_genes_edgeR_upsetplot$theme$legend.text.align <- "left"
+DE_genes_edgeR_upsetplot
+
+ggsave("figures/DE_genes_edgeR_upsetplot.png", DE_genes_edgeR_upsetplot, width = 8, height = 8, units = "in", dpi = 300)
+
+
+DE_genes_edgeR_upset %>%
+  upset(., colnames(DE_genes_edgeR_upset[,c(21:23)]), name= "Comparison", width_ratio = 0.2,
+        #mode="union",
+        #intersections="all",
+        annotations = list(
+        # 1st method - passing list:
+        # 'Length'=list(
+        #     aes=aes(x=intersection, y=logFC),
+        #     # provide a list if you wish to add several geoms
+        #     geom=geom_boxplot(na.rm=TRUE)
+        # ),
+        # 2nd method - using ggplot
+        # 'logFC'=(
+        #     # note that aes(x=intersection) is supplied by default and can be skipped
+        #     ggplot(mapping=aes(y=logFC))
+        #     # checkout ggbeeswarm::geom_quasirandom for better results!
+        #     + ggbeeswarm::geom_quasirandom(#aes(color=FDR),
+        #                                    na.rm=TRUE)
+        #     # + geom_jitter(aes(color=log10(FDR)), na.rm=TRUE)
+        #     #+ geom_line()
+        #     + geom_violin(alpha=0.5, na.rm=TRUE)# +
+    #ggplot2::theme_bw()()
+            #+ geom_text(aes(label=gene_label),size=3, na.rm=TRUE)
+        'Infection'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=logFC_infection))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=0.2,
+                na.rm=TRUE)
+            # + geom_text(aes(label=gene_name, y = logFC_infection + 0.5 * sign(logFC_infection), 
+            #                 label = logFC_infection), size=0.8, na.rm=TRUE, check_overlap = TRUE)
+            # + geom_jitter(#aes(color=FDR),
+            #               na.rm=TRUE)
+            # + geom_violin(alpha=0.5, na.rm=TRUE) #+
+    # ggplot2::theme_bw()
+            #+ geom_label(aes(label=gene_label),size=2, na.rm=TRUE)
+        ),
+        'Diet'=(
+            ggplot(mapping=aes(y=logFC_diet))
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=0.2,
+                na.rm=TRUE)
+            # + geom_text(aes(label=gene_name, y = logFC_diet + 0.5 * sign(logFC_diet), 
+            #                 label = logFC_diet), size=0.8, na.rm=TRUE, check_overlap = TRUE)
+            # + geom_jitter(#aes(color=FDR),
+            #               na.rm=TRUE)
+            # + geom_violin(alpha=0.5, na.rm=TRUE) #+
+        ),
+        'Interaction'=(
+            ggplot(mapping=aes(y=logFC_interaction))
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=0.5,
+                na.rm=TRUE)
+            # + geom_violin(alpha=0.5, na.rm=TRUE) #+
+            # + geom_text(aes(label=gene_name, y = logFC_interaction + 0.5 * sign(logFC_interaction), 
+            #                 label = logFC_interaction), size=0.8, na.rm=TRUE, check_overlap = TRUE)
+            # + geom_jitter(#aes(color=FDR),
+            #               na.rm=TRUE)
+            
+        )
+        
+    ),
+        keep_empty_groups=TRUE, min_degree=1)#+
+    # ggplot2::theme_bw()
+
+ggsave("figures/DE_genes_edgeR_combined_upsetplot.png", width = 8, height = 8, units = "in", dpi = 300)
+```
+Venn diagram
+```{r}
+
+# beautiful version made with eulerr.co
+ggVennDiagram::ggVennDiagram(
+  x = list(DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
+           DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet], 
+           DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixn]),
+  category.names = c("Infection", "Diet", "Interaction")#,
+  # category.col=c("red", "magenta", "blue"),
+  # cat.col=c("red", "magenta", "blue"),
+  # cat.fontface=2,
+  # margin=0.05,
+  # main="Venn Diagram of DE genes"
+)
+```
+
+Genes that are DE in all 3 contrasts
+```{r}
+genes_de_all_3 <- DE_genes_edgeR_upset %>%
+  filter(DE_in_infection & DE_in_diet & DE_in_ixn) %>%
+  pull(gene)
+
+DE_genes_edgeR_upset %>%
+  filter(repressed_in_infection & higher_in_Protein) #%>% View()
+```
+
+
+
+## Genes that are DE (table)
+```{r}
+DE_gene_table <- DE_genes_edgeR_upset %>%
+  filter(DE_in_infection | DE_in_diet | DE_in_ixn) %>%
+  dplyr::select(-c(PValue,F,FDR,gene_label,logFC)) %>%
+  # dplyr::select(c("gene","gene_name", "description", contains("logFC_"))) %>%
+  mutate(number_DE_contrasts = rowSums(!is.na(dplyr::select(., starts_with("logFC"))))) %>%
+  arrange(desc(number_DE_contrasts), desc(max(abs(logFC_infection), abs(logFC_diet), abs(logFC_interaction)))
+  # desc((abs(logFC_infection)+abs(logFC_diet)+abs(logFC_interaction))*logCPM/(mean(abs(logFC_infection),abs(logFC_diet),abs(logFC_interaction), na.rm=T,trim=0)))
+          ) %>%
+  dplyr::relocate(c("gene_name", "description", "logFC_infection", "logFC_diet", "logFC_interaction", "FDR_infection", "FDR_diet", "FDR_interaction","gene","number_DE_contrasts")) #%>%
+
+write_tsv(DE_gene_table, "DE_gene_table_all_contrasts.tsv")
+
+```
+
+
+
+# Figure 2 - Infection
+
+## 2A: Volcano Plot for Infection
+
+helper functions.
+```{r plot-DE-cleanerCode}
+sig.cutoff <- 0.05
+logFC.cutoff <- 0
+
+# Function to clean and mutate the data
+clean_and_mutate_data <- function(data, sig.cutoff=0.05, logFC.cutoff=0.575) {
+  data %>%
+    mutate(delabel = case_when(
+      !is.na(gene_name) ~ gene_name,
+      TRUE ~ paste0("LOC",gene)
+    )) %>%
+    mutate(delabel = case_when(
+      FDR < sig.cutoff ~ delabel,
+      abs(logFC) > logFC.cutoff ~ delabel,
+      TRUE ~ NA
+    )) %>%
+    mutate(diffexpressed = case_when(
+      FDR > sig.cutoff ~ "NO",
+      logFC < 0 ~ "DOWN",
+      logFC > 0 ~ "UP"
+    )) %>%
+    mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP")))
+}
+
+# Function to create the plot
+create_gene_plot <- function(data, title, sig.cutoff=0.05, logFC.cutoff=0.575, show.names=T) {
+  ggplot(data, aes(x = logFC, y = -log10(FDR), col = diffexpressed, 
+                   label = delabel#, size=AveExpr
+                   )) +
+    geom_point(size=0.5) +
+    theme_classic() +
+    scale_color_manual(values = c("black", "blue", "red")) +
+    #geom_vline(xintercept = c(-logFC.cutoff, logFC.cutoff), col = "red") +
+    #geom_hline(yintercept = -log10(sig.cutoff), col = "red") +
+    {if (show.names) ggrepel::geom_text_repel(size=2, na.rm=TRUE)} +
+      scale_size_area() +
+    # ggsci::scale_color_aaas() +
+      ggtitle(title) + 
+      theme(legend.position="none")
+
+      # scale_size_area() +
+      # # ggsci::scale_color_aaas() +
+      # ggtitle(title) + 
+      # theme(legend.position="none")
+    # }
+    #ggrepel::geom_label_repel(size = 2) +
+    # scale_size_area() +
+    # # ggsci::scale_color_aaas() +
+    # ggtitle(title) + 
+    # theme(legend.position="none")
+}
+```
+
+Create volcano plot
+```{r}
+## infection contrast
+topTags_inf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Genes DE following MG Infection",show.names = F, 
+                   logFC.cutoff = logFC.cutoff)
+
+ggsave(here("figures/volcano_topTags_inf_edgeR.png"), width = 10, height = 10, units = "cm", dpi=600)
+# 
+# # infected lipid birds
+# infected_lipid_topTags %>%
+#   clean_and_mutate_data() %>% 
+#   create_gene_plot("Genes Differentially Expressed in infected lipid birds")
+# 
+# # infected protein birds
+# infected_protein_topTags %>%
+#   clean_and_mutate_data() %>%
+#   create_gene_plot("Genes Differentially Expressed in infected protein birds")
+# 
+# ## dream diet contrast
+# uninfected_both_topTags %>%
+#   clean_and_mutate_data() %>%
+#   mutate(diffexpressed = factor(diffexpressed, levels = c("N.S.", "Higher in Lipid", "Higher in Protein"))) %>%
+#   create_gene_plot("Genes Differentially Expressed by Diet (in uninfected birds)")
+# 
+# ## phenotype (Eyescore)
+# # pheno_topTable_ES %>%
+# topTags_tolerance_ixn %>%
+#   mutate(delabel = case_when(
+#     stringr::str_length(external_gene_name) > 2 ~ external_gene_name,
+#     TRUE ~ gene
+#   )) %>%
+#   mutate(adj.P.Val=FDR) %>%
+#   mutate(delabel = case_when(
+#     adj.P.Val > 0.05 ~ NA,
+#     TRUE ~ delabel
+#   )) %>%
+#   mutate(diffexpressed = case_when(
+#     adj.P.Val > 0.05 ~ "NO",
+#     logFC < 0 ~ "DOWN",
+#     logFC > 0 ~ "UP"
+#   )) %>%
+#   mutate(diffexpressed = factor(diffexpressed, levels = c("NO", "DOWN", "UP"))) %>% #View()
+#   create_gene_plot("Genes Differentially Expressed According to Eyescore Tolerance Phenotype")
+```
+
+
+## 2B: Heatmap of INF DE genes.
+
+Heatmap of inf DE genes d14vd0 (by sample)
+
+```{r}
+genes_DE_infection <- topTags_inf_edgeR %>%
+  filter(FDR < 0.05) %>%
+  pull(gene) %>%
+  unique()
+
+tpm_df <- gene_expression_matrix %>%
+  as_tibble(rownames="external_gene_name") %>%
+  # head() %>%
+      pivot_longer(
+        !external_gene_name,
+        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+        names_sep = "_",
+        values_to = "tpm"
+      ) %>%
+      separate(col = MG.Diet, c("MG", "Diet"), remove=FALSE) %>%
+      left_join(#entrez_IDs |> dplyr::select(-go_id),
+            result_BM_merged,
+            by = "external_gene_name", multiple = "first") %>%
+  mutate(entrezID = case_when(
+    str_detect(external_gene_name, "^LOC") ~ str_replace(external_gene_name, "^LOC", ""),
+    !is.na(entrezgene_id) ~ as.character(entrezgene_id),
+    TRUE ~ external_gene_name
+  )) %>%
+      mutate(MG.Status = case_when(
+        Day == 0 ~ "Uninfected",
+        MG == "MG" ~ "Infected",
+        MG == "Control" ~ "Uninfected",
+        TRUE ~ "NA"
+      ))
+```
+
+
+
+
+```{r}
+df_heatmap_14_tpm <- tpm_df %>%
+  filter(entrezID %in% c(genes_DE_infection)) %>%
+  filter(Day %in% c(0,14)) %>%
+  mutate(nice_gene_name = case_when(
+    !is.na(gene_name) ~ gene_name,
+    !is.na(gene) ~ paste0("LOC",gene),
+    TRUE ~ external_gene_name)) %>%
+  dplyr::select(Bird, MG, Diet, Day, nice_gene_name,#external_gene_name, 
+                tpm) %>%
+  group_by(nice_gene_name, Bird) %>% #pull(entrezID) %>% unique() %>% length()
+  mutate(log_tpm = log2(tpm+1)) %>%
+  # mutate(log_tpm = (tpm)) %>%
+  filter(!is.na(tpm)) %>%
+  dplyr::select(-tpm) %>%
+  # pivot_wider(names_from = Day, values_from = tpm) %>% #View()
+  pivot_wider(names_from = Day, values_from = log_tpm) %>% #View()
+  group_by(nice_gene_name) %>%
+  # mutate(tpm_change = `14` - median(`14`,na.rm=T)) %>%
+  mutate(tpm_change = `14` - `0`) %>%
+  # mutate(tpm_change_14v0 = (`14` - `0`)/ (`14`+ `0`)) %>%
+  dplyr::select(-c(`0`,`14`, MG, Diet)) %>%
+  # dplyr::select(-c(`0`, MG, Diet)) %>%
+  # pivot_wider(., names_from = Bird, values_from = tpm_change_14v0) %>%
+  pivot_wider(., names_from = Bird, values_from = tpm_change) %>%
+  purrr::discard(~all(is.na(.))) %>%
+  # replace any 0/0 with 0
+  mutate(across(where(anyNA), ~ replace_na(., 0))) %>%
+  column_to_rownames("nice_gene_name")
+```
+
+
+```{r, fig.width=6, fig.height=10}
+cpm14_matrix <- as.matrix(df_heatmap_14_tpm)
+# add MG_group
+MG_group <- tpm_df %>%
+  dplyr::select(MG,Bird) %>%
+  unique() %>%
+  filter(Bird %in% colnames(cpm14_matrix)) %>%
+  arrange(factor(Bird,levels=colnames(cpm14_matrix))) %>%
+  pull(MG, Bird)
+
+pheno_tolerance <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  #filter(Day == 14) %>%
+  dplyr::select(tolerance,Bird.ID) %>%
+  group_by(Bird.ID) %>%
+  summarise(tolerance = median(tolerance,na.rm=T)) %>%
+  unique() %>%
+  dplyr::filter(Bird.ID %in% colnames(cpm14_matrix)) %>%
+  arrange(factor(Bird.ID,levels=colnames(cpm14_matrix))) %>%
+  pull(tolerance, Bird.ID)
+
+ES_pheno_heatmap_14 <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  filter(Day == 14) %>%
+  dplyr::select(ES_day14,Bird.ID) %>%
+  ungroup() %>%
+  unique() %>%
+  dplyr::filter(Bird.ID %in% colnames(cpm14_matrix)) %>%
+  arrange(factor(Bird.ID,levels=colnames(cpm14_matrix))) %>%
+  pull(ES_day14, Bird.ID)
+
+logLoad_pheno_heatmap_14 <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  filter(Day == 14) %>%
+  dplyr::select(logLoad_day14,Bird.ID) %>%
+  ungroup() %>%
+  unique() %>%
+  dplyr::filter(Bird.ID %in% colnames(cpm14_matrix)) %>%
+  arrange(factor(Bird.ID,levels=colnames(cpm14_matrix))) %>%
+  pull(logLoad_day14, Bird.ID)
+
+diet_heatmap_14 <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  filter(Day == 14) %>%
+  dplyr::select(Diet,Bird.ID) %>%
+  ungroup() %>%
+  unique() %>%
+  dplyr::filter(Bird.ID %in% colnames(cpm14_matrix)) %>%
+  arrange(factor(Bird.ID,levels=colnames(cpm14_matrix))) %>%
+  pull(Diet, Bird.ID)
+
+# add metadata to top
+column_ha = HeatmapAnnotation(Infection = MG_group, Diet = diet_heatmap_14, #tolerance = anno_barplot(pheno_tolerance),
+                              EyeScore = anno_barplot(ES_pheno_heatmap_14), logLoad = anno_barplot(logLoad_pheno_heatmap_14),col = list(Infection = c("Control" = "grey", "MG" = "red"), tolerance = c("Resistant" = "cyan", "Susceptible" = "yellow")), annotation_legend_param = list(
+        Infection = list(direction = "horizontal",nrow=1),
+        Diet = list(direction = "horizontal",nrow=1)#,
+        # EyeScore = list(direction = "horizontal",nrow=1),
+        # logLoad = list(direction = "horizontal",nrow=1)
+                              )
+)
+
+# Generate the heatmap with internal annotations
+heatmap_cpm14 <- Heatmap(cpm14_matrix, 
+                         name = "log2 change\nin cpm (day 14vs0)", 
+                   cluster_rows = TRUE,
+                   show_row_dend = TRUE,
+                   heatmap_legend_param = list(direction = "horizontal"),
+                   
+                   cluster_columns = TRUE,
+                   # column_split = MG_group,#
+                   column_split = interaction(MG_group,diet_heatmap_14),
+                   top_annotation = column_ha,
+                   split=3, 
+                   show_row_names = FALSE,
+                   show_column_names = TRUE, 
+                   # clustering_distance_rows = "pearson",
+                   clustering_distance_rows = "pearson",
+                   # clustering_distance_rows = "spearman",
+                   clustering_method_rows = "ward.D2",
+                   row_names_gp = gpar(fontsize = 6),
+                   column_gap = unit(0.8, "mm"),
+                   column_names_gp = gpar(fontsize = 6),
+                   # column_names_rot = 0,
+                   column_title_rot	=45
+                   # column_names_centered = TRUE
+                   )
+# )
+
+# Draw the heatmap
+ht_cpm14 <- draw(heatmap_cpm14, heatmap_legend_side = "bottom", annotation_legend_side = "bottom",merge_legend = TRUE
+                 )
+ht_cpm14
+
+#row_order(ht)
+```
+
+```{r}
+png(file="figures/day14_cpm_change_heatmap.png", width=6, height=10, res=1200,units = "in")
+ht_cpm14 <- draw(heatmap_cpm14, heatmap_legend_side = "bottom")
+dev.off()
+```
+
+enrichment on clusters of genes
+```{r}
+list_GO_heatmap_inf <- list()
+j=0
+for (i in row_order(ht_cpm14)) {
+  # print(i)
+  genes_i <- rownames(heatmap_cpm14@matrix)[i] %>%
+    word(., 1)
+  j = j+1
+  list_GO_heatmap_inf[[j]] <- enrichGO(gene = logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i | paste0("LOC",gene) %in% genes_i) %>%
+    pull(gene)  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = genes_DE_infection,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 1,
+                qvalueCutoff  = 1) %>%
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
+    data.frame()
+  
+  k <- j+length(row_order(ht_cpm14))
+  
+  list_GO_heatmap_inf[[k]] <- 
+    logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i | paste0("LOC",gene) %in% genes_i) %>%
+    pull(gene)  %>%
+    enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_inf_edgeR$gene,
+               pvalueCutoff = 0.5) %>% as.data.frame()
+}
+```
+
+
+
+## Ontology enrichment plot on Inf DE genes
+
+### GO enirchments
+
+#### DE genes only
+
+Only the genes higher in infection exhibited a significant enrichment in GO terms.
+```{r}
+# up in infection (DE GENES)
+enrichGO_higher_in_inf_DE <- enrichGO(gene         = 
+  topTags_inf_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # top_n(2000, logFC) %>%
+  filter(FDR < 0.05) %>%
+  filter(logFC > 0) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene) ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_inf_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "Infected vs Uninfected",
+         Direction = "Up",
+         Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")) %>% data.frame()
+
+enrichGO_higher_in_inf_DE
+
+# down in infection (DE GENES)
+enrichGO_lower_in_inf_DE <- enrichGO(gene         = 
+  topTags_inf_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # top_n(2000, logFC) %>%
+  filter(FDR < 0.05) %>%
+  filter(logFC < 0) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene) ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_inf_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 1,
+                qvalueCutoff  = 1) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "Infected vs Uninfected",
+         Direction = "Up",
+         Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")) %>% data.frame()
+
+enrichGO_lower_in_inf_DE
+```
+
+#### Top 2000 genes by logFC
+
+```{r}
+# up in infection
+enrichGO_higher_in_inf <- enrichGO(gene         = 
+  topTags_inf_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, logFC) %>% #View()
+  # top_n(2000, -FDR) %>%
+  # filter(FDR < 0.1) %>%
+  # filter(logFC > 0) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene) ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_inf_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "Infected vs Uninfected",
+         Direction = "Up",
+         Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")) %>% data.frame()
+
+# down in infection
+enrichGO_lower_in_inf <- enrichGO(gene         = 
+  topTags_inf_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, -logFC) %>%
+  # filter(FDR < 0.05) %>%
+  # filter(logFC < -0.1) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene)
+                                  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_inf_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # simplify(by="ID") |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "Infected vs Uninfected",
+         Direction = "Down",
+         Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")) %>% data.frame()
+  #View()
+```
+ 
+Create GO plots
+```{r}
+# up in infection
+enrichGO_higher_in_inf_fig <- ggplot(enrichGO_higher_in_inf,
+       showCategory = 15,
+       aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 50)) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Enriched for genes induced following infection") +
+  theme_classic()
+
+# down in infection
+enrichGO_lower_in_inf_fig <- ggplot(enrichGO_lower_in_inf,
+       showCategory = 15,
+       aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 50)) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Enriched for genes repressed following infection") +
+  theme_classic()
+
+ggpubr::ggarrange(enrichGO_higher_in_inf_fig, enrichGO_lower_in_inf_fig, ncol = 1, nrow = 2)
+
+
+bind_rows(enrichGO_lower_in_inf, enrichGO_higher_in_inf) %>%
+  arrange(desc(Description)) %>%
+  group_by(geneID) %>%
+  slice_head(n=1) %>%
+  ungroup() %>%
+  group_by(Direction) %>%
+  #arrange(desc(richFactor)) %>%
+  slice_max(richFactor, n=8) %>%
+  ggplot(.,
+       showCategory = 8,
+       aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 50)) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  # facet_grid(rows=vars(Direction), scales = "free") +
+  facet_wrap(~Direction, scales = "free", ncol=1) +
+  ggtitle("Processes enriched for genes with large Fold Change following infection") +
+  theme_classic() +
+  theme(text = element_text(size = 20))
+
+ggsave(here("figures/enrichGO_DE_in_inf_fig.png"), width = 20, height = 20, units = "cm", dpi=300)
+  
+```
+
+## find KEGG enrichments
+```{r}
+# up in infection
+enrichKEGG_higher_in_inf <- topTags_inf_edgeR  %>%
+  top_n(2000, logFC) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_inf_edgeR$gene)
+
+# down in infection
+enrichKEGG_lower_in_inf <- topTags_inf_edgeR  %>%
+  top_n(2000, -logFC) %>%
+    pull(gene) %>%
+    enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_inf_edgeR$gene)
+
+# either way
+enrichKEGG_in_inf <- topTags_inf_edgeR  %>%
+  top_n(4000, abs(logFC)) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_inf_edgeR$gene)
+
+# gse enrichment
+gseKEGG_infection <- topTags_inf_edgeR %>%
+  arrange(desc(logFC)) %>%
+  pull(logFC, gene) %>%
+  gseKEGG(
+    geneList     = .,
+    organism = 'scan',
+    by = "fgsea",
+    exponent = 1,
+    #minGSSize    = 120,
+    pvalueCutoff = 0.05,
+    verbose      = FALSE
+  )
+
+upsetplot_gseKEGG_infection <- enrichplot::upsetplot(gseKEGG_infection)
+
+upsetplot_gseKEGG_infection
+
+ggsave(plot = upsetplot_gseKEGG_infection, here("figures/upsetplot_gseKEGG_infection.png"), width = 30, height = 20, units = "cm", dpi=600)
+
+# gseaplot(
+#   gseKEGG_infection,
+#   geneSetID = 1,
+#   by = "preranked",
+#   title = gseKEGG_infection$Description[1]
+# )
+```
+
+
+## 2C: Functional Enrichments of DE INF genes
+```{r, fig.height=20, fig.width=20}
+## add KEGG terms to GO plot
+enrichGOKEGG_higher_in_inf_fig <-
+  enrichKEGG_higher_in_inf %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "Infected vs Uninfected",
+    Direction = "Up",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_higher_in_inf %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "Infected vs Uninfected",
+        Direction = "Up",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("red", "#FFD6D7"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50)
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched for genes upregulated in infection") +
+  theme_classic() +
+  theme(text = element_text(size = 18),
+        legend.position='right'#,
+        # legend.justification='top'#,
+        # legend.direction='horizontal'
+        )
+
+# lower in inf GO and KEGG
+enrichGOKEGG_lower_in_inf_fig <-
+  enrichKEGG_lower_in_inf %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "Infected vs Uninfected",
+    Direction = "Down",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_lower_in_inf %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "Infected vs Uninfected",
+        Direction = "Down",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    # colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    colors = c("blue", "lightblue"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50),
+    position = "right"
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched for genes downregulated in infection") +
+  scale_x_reverse() +
+  theme_classic() +
+  theme(text = element_text(size = 18),
+        legend.position='left'#, 
+        # legend.justification='top',
+        # legend.direction='horizontal'
+        )
+
+
+
+enrichGOKEGG_higher_in_inf_fig
+enrichGOKEGG_lower_in_inf_fig
+
+
+ggpubr::ggarrange(enrichGOKEGG_lower_in_inf_fig, enrichGOKEGG_higher_in_inf_fig, ncol = 2, nrow = 1)
+
+ggsave(here("figures/enrichGOKEGG_DE_in_inf_fig.png"), width = 40, height = 20, units = "cm", dpi=1200)
+
+
+```
+
+```{r}
+cnetplot(enrichKEGG_in_inf,  
+         showCategory=10,
+         node_label="category",
+         color.params=list(foldChange = #fold_change_geneList
+                           setNames(topTags_inf_edgeR$logFC, topTags_inf_edgeR$gene)),
+         cex.params=list(gene_label = 0.1,
+                         category_label=0.5), 
+         max.overlaps=100) +
+  # change the color scale
+  # scale_colour_gradientn(colours = rev(RColorBrewer::brewer.pal(n = 10, name = "RdYlBu"))#, limits=c(-6, 6)
+                         # ) +
+  labs(colour="logFC")
+```
+
+## optional volcano of immune genes
+
+I think I will opt not to include this figure, unless desired.
+```{r}
+go_id <- "GO:0006955" # Immune Response GO term ID for biological_process
+go_id <- "GO:0006629" # lipid metabolism
+
+go_ids <- c("GO:0006955",# immune response
+            "GO:0006952", # defense response
+            "GO:0002376", # immune system process
+            "GO:0006954" # inflammatory response
+            )
+
+immune_genes <- select(orgdb, keys = go_ids, columns = c("SYMBOL", "GENENAME"), keytype = "GO")
+
+# create volcano plot
+topTags_inf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  filter(gene_name %in% immune_genes$SYMBOL) %>%
+  create_gene_plot("Genes Differentially Expressed (infected / uninfected contrast)", 
+                   logFC.cutoff = logFC.cutoff)
+
+ggsave(here("figures/volcano_immunegenes_inf_edgeR.png"), width = 10, height = 10, units = "cm", dpi=600)
+```
+
+## ribosome genes
+```{r}
+ribo_genes <- AnnotationDbi::select(orgdb, keys = "GO:0005840", columns = c("SYMBOL", "GENENAME"), keytype = "GO")
+```
+
+
+# Figure 3: Diet
+
+## 3A: Volcano plot of diet DE genes
+
+```{r}
+topTags_diet_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Effect of Diet on Gene Expression (P/L)", show.names = FALSE,
+                   logFC.cutoff = logFC.cutoff)
+
+ggsave(here("figures/volcano_topTags_diet_edgeR.png"), width = 10, height = 10, units = "cm", dpi=600)
+```
+
+
+## 3B: Heatmap of DIET DE genes.
+
+Heatmap of Diet DE genes (by sample)
+
+```{r}
+genes_DE_diet <- topTags_diet_edgeR %>%
+  filter(FDR < 0.05) %>%
+  pull(gene) %>%
+  unique()
+
+# tpm_df <- gene_expression_matrix %>%
+#   as_tibble(rownames="external_gene_name") %>%
+#   # head() %>%
+#       pivot_longer(
+#         !external_gene_name,
+#         names_to = c("Lane", "Bird", "MG.Diet", "Day"),
+#         names_sep = "_",
+#         values_to = "tpm"
+#       ) %>%
+#       separate(col = MG.Diet, c("MG", "Diet"), remove=FALSE) %>%
+#       left_join(#entrez_IDs |> dplyr::select(-go_id),
+#             result_BM_merged,
+#             by = "external_gene_name", multiple = "first") %>%
+#   mutate(entrezID = case_when(
+#     str_detect(external_gene_name, "^LOC") ~ str_replace(external_gene_name, "^LOC", ""),
+#     !is.na(entrezgene_id) ~ as.character(entrezgene_id),
+#     TRUE ~ external_gene_name
+#   )) %>%
+#       mutate(MG.Status = case_when(
+#         Day == 0 ~ "Uninfected",
+#         MG == "MG" ~ "Infected",
+#         MG == "Control" ~ "Uninfected",
+#         TRUE ~ "NA"
+#       ))
+```
+
+
+
+
+```{r}
+df_heatmap_diet_tpm <- tpm_df %>%
+  filter(entrezID %in% c(genes_DE_diet)) %>%
+  # filter(Day %in% c(0,14)) %>%
+  mutate(nice_gene_name = case_when(
+    !is.na(gene_name) ~ gene_name,
+    !is.na(gene) ~ paste0("LOC",gene),
+    TRUE ~ external_gene_name)) %>%
+  dplyr::select(Bird, MG, Diet, Day, nice_gene_name,#external_gene_name, 
+                tpm) %>%
+  group_by(nice_gene_name, Bird, Day) %>% #pull(entrezID) %>% unique() %>% length()
+  mutate(log_tpm = log2(tpm+1)) %>%
+  # mutate(log_tpm = (tpm)) %>%
+  filter(!is.na(tpm)) %>%
+  dplyr::select(-tpm) %>%
+  # pivot_wider(names_from = Day, values_from = tpm) %>% #View()
+  # pivot_wider(names_from = Day, values_from = log_tpm) %>% #View()
+  group_by(nice_gene_name) %>%
+  mutate(tpm_change = log_tpm - median(log_tpm,na.rm=T)) %>%
+  # mutate(tpm_change = `14` - `0`) %>%
+  # mutate(tpm_change_14v0 = (`14` - `0`)/ (`14`+ `0`)) %>%
+  dplyr::select(-c(log_tpm,
+                   MG, Diet)) %>%
+  # dplyr::select(-c(`0`, MG, Diet)) %>%
+  # pivot_wider(., names_from = Bird, values_from = tpm_change_14v0) %>%
+  pivot_wider(., names_from = c(Bird,Day), values_from = tpm_change) %>%
+  purrr::discard(~all(is.na(.))) %>%
+  # replace any 0/0 with 0
+  mutate(across(where(anyNA), ~ replace_na(., 0))) %>%
+  column_to_rownames("nice_gene_name")
+```
+
+
+```{r, fig.width=6, fig.height=10}
+diet_heatmap_matrix <- as.matrix(df_heatmap_diet_tpm)
+
+# add MG_group
+MG_group_diet <- #tpm_df %>%
+  # dplyr::select(MG,Bird) %>%
+  metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(MG.Status,Bird.ID,Day) %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(diet_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(diet_heatmap_matrix))) %>%
+  pull(MG.Status, Bird.ID)
+
+pheno_tolerance_diet <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  #filter(Day == 14) %>%
+  dplyr::select(tolerance,Bird.ID,Day) %>%
+  group_by(Bird.ID, Day) %>%
+  summarise(tolerance = median(tolerance,na.rm=T)) %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(diet_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(diet_heatmap_matrix))) %>%
+  pull(tolerance, Bird.ID)
+
+ES_pheno_heatmap_diet <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(ES_day14,Bird.ID,Day) %>%
+  ungroup() %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(diet_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(diet_heatmap_matrix))) %>%
+  pull(ES_day14, Bird.ID)
+
+logLoad_pheno_heatmap_diet <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(logLoad_day14,Bird.ID,Day) %>%
+  ungroup() %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(diet_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(diet_heatmap_matrix))) %>%
+  pull(logLoad_day14, Bird.ID)
+
+diet_heatmap_anno_diet <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(Diet,Bird.ID,Day) %>%
+  ungroup() %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(diet_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(diet_heatmap_matrix))) %>%
+  pull(Diet, Bird.ID)
+
+# add metadata to top
+column_ha = HeatmapAnnotation(Infection = MG_group_diet, Diet = diet_heatmap_anno_diet, #tolerance = anno_barplot(pheno_tolerance),
+                              EyeScore = anno_barplot(ES_pheno_heatmap_diet), logLoad = anno_barplot(logLoad_pheno_heatmap_diet),col = list(Infection = c("Control" = "grey", "MG" = "red"), tolerance = c("Resistant" = "cyan", "Susceptible" = "yellow")), annotation_legend_param = list(
+        Infection = list(direction = "horizontal",nrow=1),
+        Diet = list(direction = "horizontal",nrow=1)#,
+        # EyeScore = list(direction = "horizontal",nrow=1),
+        # logLoad = list(direction = "horizontal",nrow=1)
+                              )
+)
+
+# Generate the heatmap with internal annotations
+heatmap_diet <- Heatmap(diet_heatmap_matrix, 
+                         name = "gene expression of DE genes in diet)", 
+                   cluster_rows = TRUE,
+                   show_row_dend = TRUE,
+                   heatmap_legend_param = list(direction = "horizontal"),
+                   cluster_columns = TRUE,
+                   # column_split = MG_group,#
+                   column_split = interaction(MG_group_diet,diet_heatmap_anno_diet),
+                   top_annotation = column_ha,
+                   split=3, 
+                   show_row_names = FALSE,
+                   show_column_names = TRUE, 
+                   # clustering_distance_rows = "pearson",
+                   clustering_distance_rows = "pearson",
+                   # clustering_distance_rows = "spearman",
+                   clustering_method_rows = "ward.D2",
+                   row_names_gp = gpar(fontsize = 6),
+                   column_gap = unit(0.8, "mm"),
+                   column_names_gp = gpar(fontsize = 6),
+                   # column_names_rot = 0,
+                   column_title_rot	=45
+                   # column_names_centered = TRUE
+                   )
+# )
+
+# Draw the heatmap
+ht_diet <- draw(heatmap_diet, heatmap_legend_side = "bottom", annotation_legend_side = "bottom",merge_legend = TRUE
+                 )
+ht_diet
+
+#row_order(ht)
+```
+
+```{r}
+png(file="figures/diet_heatmap.png", width=6, height=10, res=1200,units = "in")
+ht_diet <- draw(heatmap_diet, heatmap_legend_side = "bottom")
+dev.off()
+```
+
+enrichment on clusters of genes
+```{r}
+list_GO_heatmap_diet <- list()
+j=0
+for (i in row_order(ht_diet)) {
+  # print(i)
+  genes_i <- rownames(heatmap_diet@matrix)[i] %>%
+    word(., 1)
+  j = j+1
+  list_GO_heatmap_diet[[j]] <- enrichGO(gene = logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i | paste0("LOC",gene) %in% genes_i) %>%
+    pull(gene)  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = genes_DE_infection,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 1,
+                qvalueCutoff  = 1) %>%
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
+    data.frame()
+  
+  k <- j+length(row_order(ht_diet))
+  
+  list_GO_heatmap_diet[[k]] <- 
+    logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i | paste0("LOC",gene) %in% genes_i) %>%
+    pull(gene)  %>%
+    enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_diet_edgeR$gene,
+               pvalueCutoff = 0.5) %>% as.data.frame()
+  
+}
+```
+
+
+
+
+
+
+## Ontology enrichment plot on diet DE genes
+
+### GO enirchments
+```{r}
+# up in protein
+enrichGO_higher_in_prot <- enrichGO(gene         = 
+  topTags_diet_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, logFC) %>%
+  # filter(FDR < 0.5) %>%
+  # filter(logFC < -0.1) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene) ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_diet_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "Protein vs Lipid",
+         Direction = "Up",
+         Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")) %>% data.frame()
+
+# up in lipid
+enrichGO_higher_in_lipid <- enrichGO(gene         = 
+  topTags_diet_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, -logFC) %>%
+  # filter(FDR < 0.5) %>%
+  # filter(logFC < -0.1) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene)
+                                  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_diet_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # simplify(by="ID") |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "Protein vs lipid",
+         Direction = "Down") %>% data.frame() #%>%
+  #View()
+```
+ 
+Create GO plots
+```{r}
+# up in protein
+enrichGO_higher_in_prot_fig <- ggplot(enrichGO_higher_in_prot,
+       showCategory = 15,
+       aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 50)) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Enriched for genes higher in Protein Diet") +
+  theme_classic()
+
+# up in lipid
+enrichGO_higher_in_lipid_fig <- ggplot(enrichGO_higher_in_lipid,
+       showCategory = 15,
+       aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 50)) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Enriched for genes higher in Lipid Diet") +
+  theme_classic()
+
+ggpubr::ggarrange(enrichGO_higher_in_prot_fig, enrichGO_higher_in_lipid_fig, ncol = 1, nrow = 2)
+
+
+bind_rows(enrichGO_higher_in_prot, enrichGO_higher_in_lipid) %>%
+  arrange(desc(Description)) %>%
+  group_by(geneID) %>%
+  slice_head(n=1) %>%
+  ungroup() %>%
+  group_by(Direction) %>%
+  #arrange(desc(richFactor)) %>%
+  slice_max(richFactor, n=8) %>%
+  ggplot(.,
+       showCategory = 8,
+       aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 50)) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  # facet_grid(rows=vars(Direction), scales = "free") +
+  facet_wrap(~Direction, scales = "free", ncol=1) +
+  ggtitle("Processes enriched for genes DE by Diet") +
+  theme_classic()
+
+ggsave(here("figures/enrichGO_DE_in_diet_fig.png"), width = 20, height = 20, units = "cm", dpi=300)
+  
+```
+
+### KEGG enrichments
+```{r}
+# up in high protein diet
+enrichKEGG_higher_in_prot <- topTags_diet_edgeR  %>%
+  top_n(2000, logFC) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_diet_edgeR$gene)
+
+# up in high fat diet
+enrichKEGG_higher_in_lipid <- topTags_diet_edgeR  %>%
+  top_n(2000, -logFC) %>%
+    pull(gene) %>%
+    enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_diet_edgeR$gene)
+
+# either way
+enrichKEGG_in_diet <- topTags_diet_edgeR  %>%
+  top_n(4000, abs(logFC)) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_diet_edgeR$gene)
+
+# gse enrichment
+gseKEGG_diet <- topTags_diet_edgeR %>%
+  arrange(desc(logFC)) %>%
+  pull(logFC, gene) %>%
+  gseKEGG(
+    geneList     = .,
+    organism = 'scan',
+    by = "fgsea",
+    exponent = 1,
+    #minGSSize    = 120,
+    pvalueCutoff = 0.05,
+    verbose      = FALSE
+  )
+
+upsetplot_gseKEGG_diet <- enrichplot::upsetplot(gseKEGG_diet)
+
+upsetplot_gseKEGG_diet
+
+ggsave(plot = upsetplot_gseKEGG_diet, here("figures/upsetplot_gseKEGG_diet.png"), width = 30, height = 20, units = "cm", dpi=600)
+
+# 
+# 
+# gseaplot(
+#   gseKEGG_infection,
+#   geneSetID = 1,
+#   by = "preranked",
+#   title = gseKEGG_infection$Description[1]
+# )
+
+```
+
+
+##3C: Functional Enrichments
+```{r}
+## add KEGG terms to GO plot
+enrichGOKEGG_higher_in_prot_fig <-
+  enrichKEGG_higher_in_prot %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "Protein vs Lipid",
+    Direction = "Protein",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_higher_in_prot %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "Protein vs Lipid",
+        Direction = "Protein",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("red", "#FFD6D7"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50)
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched for genes higher protein") +
+  theme_classic()
+
+# higher in lipid GO and KEGG
+enrichGOKEGG_higher_in_lipid_fig <-
+  enrichKEGG_higher_in_lipid %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "Protein vs Lipid",
+    Direction = "Lipid",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_higher_in_lipid %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "Protein vs Lipid",
+        Direction = "Lipid",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    # colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    colors = c("blue", "lightblue"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50),
+    position = "right"
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched for genes up in lipid") +
+  scale_x_reverse() +
+  theme_classic()
+
+
+
+enrichGOKEGG_higher_in_prot_fig
+enrichGOKEGG_higher_in_lipid_fig
+
+
+ggpubr::ggarrange(enrichGOKEGG_higher_in_lipid_fig, enrichGOKEGG_higher_in_prot_fig, ncol = 2, nrow = 1)
+
+ggsave(here("figures/enrichGOKEGG_DE_in_diet_fig.png"), width = 30, height = 15, units = "cm", dpi=1200)
+```
+
+
+
+## Supplemental figure: Difference in count_diffs by Diet
+```{r}
+# curios how densities are in y, in y$tolerance very different between diets.
+y_ixn$counts %>%
+  as.data.frame() %>%
+  rownames_to_column("gene") %>%
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>%
+  separate_wider_delim(sample, names = c("sampleID","BirdID", "condition-diet", "day"), delim = "_", too_many = "merge") %>%
+  separate_wider_delim(`condition-diet`, names = c("condition","diet"), delim = ".", too_many = "merge") %>%
+  # filter(gene == "103826733") %>% #CPT1A, top DE gene for diet
+  # filter(gene == "103822409") %>% #FGD2, gene that is expressed in macrophages
+  # filter(gene == "103823426") %>%
+  # filter(gene == "103813189") %>% # ALDH1L2, biggest FC in DE genes for lipid infection
+  #filter(gene == "103823426") %>% #JCHAIN
+  # filter(gene == "103827129") %>% #TENT5C
+  # filter(gene == "127061207") %>% #Evi5-like (oncogene)
+  # filter(gene=="103824071") %>% #BCAN, biggest expression FC for diet, higher in lipid
+  # filter(gene == "103817526") %>%  # Ablim3
+  left_join(metadata, by = c("sampleID" = "Sample.ID")) %>%
+  dplyr::select(-c(sampleID,SampID,Day,MG.Diet.Day, MG.Day,Diet.Day, Exposure.Diet.Day,MG.active,Exposure.MG,Exposure.Diet.Day, Exposure.Diet)) %>%
+  group_by(BirdID) %>%
+  pivot_wider(names_from = "day", values_from = "counts") %>%
+  # mutate(day0 = replace_na(`0`, 0),
+  #               day14 = replace_na(`14`, 0),
+  #               day21 = replace_na(`21`, 0)) %>%
+  mutate(day0 = replace_na(`0`, NA),
+                day14 = replace_na(`14`, NA),
+                day21 = replace_na(`21`, NA)) %>%
+  mutate(diff_21 = (day21) - (day0),
+          diff_14 = (day14) - (day0)) %>%
+  #pivot_longer(c("day14", "day21", "day0"), names_to = "day", values_to = "counts") %>% #View()
+  pivot_longer(c("diff_14", diff_21), names_to = "diff_day", values_to = "counts_diff") %>% #View()
+  mutate(counts_diff_norm = counts_diff/max(c(day0,day14,day21), na.rm=T)) %>%
+  dplyr::select(gene,counts_diff,counts_diff_norm,diff_day, condition, diet) %>% 
+  filter(diff_day == "diff_14") %>%
+  distinct() %>%# View()
+  ggplot(aes(x=counts_diff, color = condition, fill = condition
+             )) +
+  geom_density(alpha=0.5#,outline.type = "upper"
+               ) +
+  xlim(-250,250) +
+  facet_grid(rows=vars(diff_day), cols=vars(diet)) +
+  # scale_y_sqrt() +
+  theme_classic()
+```
+
+Functional enrichment of the fat tails on MG diff day 14 (from density plots)
+```{r}
+gene_count_diff_df <- y_ixn$counts %>%
+  as.data.frame() %>%
+  rownames_to_column("gene") %>%
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>%
+  separate_wider_delim(sample, names = c("sampleID","BirdID", "condition-diet", "day"), delim = "_", too_many = "merge") %>%
+  separate_wider_delim(`condition-diet`, names = c("condition","diet"), delim = ".", too_many = "merge") %>%
+
+  left_join(metadata, by = c("sampleID" = "Sample.ID")) %>%
+  dplyr::select(-c(sampleID,SampID,Day,MG.Diet.Day, MG.Day,Diet.Day, Exposure.Diet.Day,MG.active,Exposure.MG,Exposure.Diet.Day, Exposure.Diet)) %>%
+  group_by(BirdID) %>%
+  pivot_wider(names_from = "day", values_from = "counts") %>%
+  mutate(day0 = replace_na(`0`, NA),
+                day14 = replace_na(`14`, NA),
+                day21 = replace_na(`21`, NA)) %>%
+  mutate(diff_21 = (day21) - (day0),
+          diff_14 = (day14) - (day0)) %>%
+  pivot_longer(c("diff_14", diff_21), names_to = "diff_day", values_to = "counts_diff") %>% #View()
+  mutate(counts_diff_norm = counts_diff/max(c(day0,day14,day21), na.rm=T)) %>%
+  ungroup() %>%
+  dplyr::select(gene,counts_diff,counts_diff_norm,diff_day, condition, diet) %>% 
+  filter(diff_day == "diff_14") %>%
+  distinct()
+  
+# enrichments for genes higher in lipid control in left side of tail
+gene_count_diff_df %>% #View()
+  filter(diet == "lipid") %>%
+  filter(counts_diff < -100 & counts_diff > -250) %>%
+  group_by(gene) %>%
+  # summarise number of samples that a gene is found in MG vs control
+  summarise(MG = sum(condition == "MG"),
+            Control = sum(condition == "Control")) %>% #View()
+  filter(Control - MG > 0) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+
+# enrichments for genes higher in lipid MG in right side of tail
+gene_count_diff_df %>% #View()
+  filter(diet == "lipid") %>%
+  filter(counts_diff < -100 & counts_diff > -250) %>%
+  group_by(gene) %>%
+  # summarise number of samples that a gene is found in MG vs control
+  summarise(MG = sum(condition == "MG"),
+            Control = sum(condition == "Control")) %>% #View()
+  filter(Control - MG < 0) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+
+# gene_count_diff_df %>%
+#   filter(diet == "lipid" & condition == "MG") %>%
+#   filter(as.numeric(counts_diff) > 100 & as.numeric(counts_diff) < 250) %>%
+#   ungroup() %>% #View()
+#   dplyr::select(gene) %>% 
+#   distinct() %>%
+#   pull(gene) %>%
+#   enrichGO(gene = .,
+#                 OrgDb         = orgdb,
+#                 keyType       = 'ENTREZID',
+#                 #universe      = unfiltered_genes_with_GO,
+#                 ont           = "BP",
+#                 pAdjustMethod = "BH",
+#                 pvalueCutoff  = 0.01,
+#                 qvalueCutoff  = 0.01) |>
+#   # filter(ONTOLOGY %in% c("MF","BP")) |>
+#   mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+
+
+## Does this same pattern appear for protein birds?
+
+# enrichments for genes higher in protein control in left side of tail
+gene_count_diff_df %>%
+  filter(diet == "protein" & condition == "Control") %>%
+  filter(as.numeric(counts_diff) < -100 & as.numeric(counts_diff) > -250) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+  
+# enrichments for genes higher in protein MG in right side of tail
+gene_count_diff_df %>%
+  filter(diet == "protein" & condition == "MG") %>%
+  filter(as.numeric(counts_diff) > 100 & as.numeric(counts_diff) < 250) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+```
+
+The pattern of enrichments appears to be conserved between protein and lipid infection responses, what if we look at the opposite?
+```{r}
+
+# enrichments for genes higher in lipid MG in left side of tail
+gene_count_diff_df %>%
+  filter(diet == "lipid" & condition == "MG") %>%
+  filter(as.numeric(counts_diff) < -100 & as.numeric(counts_diff) > -250) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+  
+# enrichments for genes higher in lipid Control in right side of tail
+gene_count_diff_df %>%
+  filter(diet == "lipid" & condition == "Control") %>%
+  filter(as.numeric(counts_diff) > 100 & as.numeric(counts_diff) < 250) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+
+
+## Does this same pattern appear for protein birds?
+
+# enrichments for genes higher in protein MG in left side of tail
+gene_count_diff_df %>%
+  filter(diet == "protein" & condition == "MG") %>%
+  filter(as.numeric(counts_diff) < -100 & as.numeric(counts_diff) > -250) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+  
+# enrichments for genes higher in protein control in right side of tail
+gene_count_diff_df %>%
+  filter(diet == "protein" & condition == "Control") %>%
+  filter(as.numeric(counts_diff) > 100 & as.numeric(counts_diff) < 250) %>%
+  ungroup() %>% #View()
+  dplyr::select(gene) %>% 
+  distinct() %>%
+  pull(gene) %>%
+  enrichGO(gene = .,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame() 
+```
+
+
+
+
+# Figure 4: Interaction
+
+## 4A: volcano ixn
+```{r}
+topTags_ixn_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Genes Differentially Expressed (protein inf response / lipid inf response)", show.names=FALSE, 
+                   logFC.cutoff = logFC.cutoff
+                   )
+
+
+ggsave(here("figures/volcano_topTags_interaction_edgeR.png"), width = 10, height = 10, units = "cm", dpi=600)
+```
+
+
+
+## 4B: Heatmap of Interaction DE genes.
+
+Heatmap of Interaction DE genes (by sample)
+
+```{r}
+genes_DE_ixn <- topTags_ixn_edgeR %>%
+  filter(FDR < 0.05) %>%
+  pull(gene) %>%
+  unique()
+```
+
+
+
+
+```{r}
+df_heatmap_ixn_tpm <- tpm_df %>%
+  filter(entrezID %in% c(genes_DE_ixn)) %>%
+  # filter(Day %in% c(0,14)) %>%
+  mutate(nice_gene_name = case_when(
+    !is.na(gene_name) ~ gene_name,
+    !is.na(gene) ~ paste0("LOC",gene),
+    TRUE ~ external_gene_name)) %>%
+  dplyr::select(Bird, MG, Diet, Day, nice_gene_name,#external_gene_name, 
+                tpm) %>%
+  group_by(nice_gene_name, Bird, Day) %>% #pull(entrezID) %>% unique() %>% length()
+  mutate(log_tpm = log2(tpm+1)) %>%
+  # mutate(log_tpm = (tpm)) %>%
+  filter(!is.na(tpm)) %>%
+  dplyr::select(-tpm) %>%
+  # pivot_wider(names_from = Day, values_from = tpm) %>% #View()
+  # pivot_wider(names_from = Day, values_from = log_tpm) %>% #View()
+  group_by(nice_gene_name) %>%
+  mutate(tpm_change = log_tpm - median(log_tpm,na.rm=T)) %>%
+  # mutate(tpm_change = `14` - `0`) %>%
+  # mutate(tpm_change_14v0 = (`14` - `0`)/ (`14`+ `0`)) %>%
+  dplyr::select(-c(log_tpm,
+                   MG, Diet)) %>%
+  # dplyr::select(-c(`0`, MG, Diet)) %>%
+  # pivot_wider(., names_from = Bird, values_from = tpm_change_14v0) %>%
+  pivot_wider(., names_from = c(Bird,Day), values_from = tpm_change) %>%
+  purrr::discard(~all(is.na(.))) %>%
+  # replace any 0/0 with 0
+  mutate(across(where(anyNA), ~ replace_na(., 0))) %>%
+  column_to_rownames("nice_gene_name")
+```
+
+
+```{r, fig.width=6, fig.height=10}
+ixn_heatmap_matrix <- as.matrix(df_heatmap_ixn_tpm)
+
+# add MG_group
+MG_group_ixn <- #tpm_df %>%
+  # dplyr::select(MG,Bird) %>%
+  metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(MG.Status,Bird.ID,Day) %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(ixn_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(ixn_heatmap_matrix))) %>%
+  pull(MG.Status, Bird.ID)
+
+pheno_tolerance_ixn <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  #filter(Day == 14) %>%
+  dplyr::select(tolerance,Bird.ID,Day) %>%
+  group_by(Bird.ID, Day) %>%
+  # summarise(tolerance = mean(tolerance_median,na.rm=T)) %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(ixn_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(ixn_heatmap_matrix))) %>%
+  pull(tolerance, Bird.ID)
+
+ES_pheno_heatmap_ixn <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(ES,Bird.ID,Day) %>%
+  ungroup() %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(ixn_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(ixn_heatmap_matrix))) %>%
+  pull(ES, Bird.ID)
+
+logLoad_pheno_heatmap_ixn <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(logLoad,Bird.ID,Day) %>%
+  ungroup() %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(ixn_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(ixn_heatmap_matrix))) %>%
+  pull(logLoad, Bird.ID)
+
+diet_heatmap_anno_ixn <- metadata_phenotypes_ixn %>%
+  rownames_to_column("sample") %>%
+  # filter(Day == 14) %>%
+  dplyr::select(Diet,Bird.ID,Day) %>%
+  ungroup() %>%
+  unique() %>%
+  mutate(Bird.ID_Day = paste0(Bird.ID,"_",Day)) %>%
+  dplyr::filter(Bird.ID_Day %in% colnames(ixn_heatmap_matrix)) %>%
+  arrange(factor(Bird.ID_Day,levels=colnames(ixn_heatmap_matrix))) %>%
+  pull(Diet, Bird.ID)
+
+# add metadata to top
+column_ha_ixn = HeatmapAnnotation(Infection = MG_group_ixn, Diet = diet_heatmap_anno_ixn, #tolerance = anno_barplot(pheno_tolerance_ixn),
+                              EyeScore = anno_barplot(ES_pheno_heatmap_ixn), logLoad = anno_barplot(logLoad_pheno_heatmap_ixn),col = list(Infection = c("Control" = "grey", "MG" = "red"), tolerance = c("Resistant" = "cyan", "Susceptible" = "yellow")), annotation_legend_param = list(
+        Infection = list(direction = "horizontal",nrow=1),
+        Diet = list(direction = "horizontal",nrow=1)#,
+        # EyeScore = list(direction = "horizontal",nrow=1),
+        # logLoad = list(direction = "horizontal",nrow=1)
+                              )
+)
+
+# Generate the heatmap with internal annotations
+heatmap_ixn <- Heatmap(ixn_heatmap_matrix, 
+                         name = "gene expression of DE genes in interaction)", 
+                   cluster_rows = TRUE,
+                   show_row_dend = TRUE,
+                   heatmap_legend_param = list(direction = "horizontal"),
+                   cluster_columns = TRUE,
+                   # column_split = MG_group,#
+                   column_split = interaction(MG_group_ixn,diet_heatmap_anno_ixn),
+                   top_annotation = column_ha_ixn,
+                   split=3, 
+                   show_row_names = FALSE,
+                   show_column_names = TRUE, 
+                   # clustering_distance_rows = "pearson",
+                   clustering_distance_rows = "pearson",
+                   # clustering_distance_rows = "spearman",
+                   clustering_method_rows = "ward.D2",
+                   row_names_gp = gpar(fontsize = 6),
+                   column_gap = unit(0.8, "mm"),
+                   column_names_gp = gpar(fontsize = 6),
+                   # column_names_rot = 0,
+                   column_title_rot	=45
+                   # column_names_centered = TRUE
+                   )
+# )
+
+# Draw the heatmap
+ht_ixn <- draw(heatmap_ixn, heatmap_legend_side = "bottom", annotation_legend_side = "bottom", merge_legend = TRUE
+                 )
+ht_ixn
+
+#row_order(ht)
+```
+
+
+```{r}
+png(file="figures/interaction_heatmap.png", width=6, height=10, res=1200,units = "in")
+ht_diet <- draw(heatmap_ixn, heatmap_legend_side = "bottom", annotation_legend_side = "bottom",)
+dev.off()
+```
+
+enrichment on clusters of genes
+```{r}
+list_GO_heatmap_ixn <- list()
+j=0
+for (i in row_order(ht_ixn)) {
+  # print(i)
+  genes_i <- rownames(heatmap_ixn@matrix)[i] %>%
+    word(., 1)
+  j = j+1
+  list_GO_heatmap_ixn[[j]] <- enrichGO(gene = logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i | paste0("LOC",gene) %in% genes_i) %>%
+    pull(gene)  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = genes_DE_infection,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 1,
+                qvalueCutoff  = 1) %>%
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
+    data.frame()
+  
+  k <- j+length(row_order(ht_ixn))
+  
+  list_GO_heatmap_ixn[[k]] <- 
+    logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i | paste0("LOC",gene) %in% genes_i) %>%
+    pull(gene)  %>%
+    enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_ixn_edgeR$gene,
+               pvalueCutoff = 0.5) %>% as.data.frame()
+  
+}
+```
+
+
+## 4C: Functional Enrichments
+
+Run enrichments:
+```{r}
+# GO enrichment
+enrichGO_bigger_delta_in_prot <- enrichGO(gene         = 
+  topTags_ixn_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, logFC) %>%
+  # filter(FDR < 0.5) %>%
+  # filter(logFC < -0.1) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene) ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_ixn_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "ixn",
+         Direction = "Prot",
+         Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")) %>% data.frame()
+
+# up in lipid
+enrichGO_bigger_delta_in_lipid <- enrichGO(gene         = 
+  topTags_ixn_edgeR  %>%
+  # arrange(desc(logFC)) %>%
+  
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, -logFC) %>%
+  # filter(FDR < 0.5) %>%
+  # filter(logFC < -0.1) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene)
+                                  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_ixn_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # simplify(by="ID") |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "ixn",
+         Direction = "Lipid") %>% data.frame()
+
+
+
+##################
+# KEGG enrichments
+##################
+
+
+# up in high protein ixn
+enrichKEGG_bigger_delta_in_prot <- topTags_ixn_edgeR  %>%
+  top_n(2000, logFC) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_ixn_edgeR$gene)
+
+# up in high fat ixn
+enrichKEGG_bigger_delta_in_lipid <- topTags_ixn_edgeR  %>%
+  top_n(2000, -logFC) %>%
+    pull(gene) %>%
+    enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_ixn_edgeR$gene)
+
+# either way
+# enrichKEGG_in_diet <- topTags_diet_edgeR  %>%
+#   top_n(4000, abs(logFC)) %>%
+#   pull(gene) %>%
+#   enrichKEGG(gene = .,
+#                organism = 'scan',
+#                universe = topTags_diet_edgeR$gene)
+
+# gse enrichment
+gseKEGG_ixn <- topTags_ixn_edgeR %>%
+  arrange(desc(logFC)) %>%
+  pull(logFC, gene) %>%
+  gseKEGG(
+    geneList     = .,
+    organism = 'scan',
+    by = "fgsea",
+    exponent = 1,
+    #minGSSize    = 120,
+    pvalueCutoff = 0.05,
+    verbose      = FALSE
+  )
+```
+
+
+```{r}
+## add KEGG terms to GO plot
+enrichGOKEGG_bigger_delta_in_prot_fig <-
+  enrichKEGG_bigger_delta_in_prot %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "Interaction",
+    Direction = "bigger_delta_protein",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_bigger_delta_in_prot %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "Interaction",
+        Direction = "bigger_delta_protein",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("red", "#FFD6D7"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50)
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched for genes bigger change protein") +
+  theme_classic()
+
+# higher in lipid GO and KEGG
+enrichGOKEGG_bigger_delta_in_lipid_fig <-
+  enrichKEGG_bigger_delta_in_lipid %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "Interaction",
+    Direction = "bigger_delta_lipid",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_bigger_delta_in_lipid %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "Interaction",
+        Direction = "bigger_delta_lipid",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    # colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    colors = c("blue", "lightblue"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50),
+    position = "right"
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched for genes bigger change in lipid") +
+  scale_x_reverse() +
+  theme_classic()
+
+
+
+enrichGOKEGG_bigger_delta_in_prot_fig
+enrichGOKEGG_bigger_delta_in_lipid_fig
+
+
+ggpubr::ggarrange(enrichGOKEGG_bigger_delta_in_lipid_fig, enrichGOKEGG_bigger_delta_in_prot_fig, ncol = 2, nrow = 1)
+
+ggsave(here("figures/enrichGOKEGG_DE_in_ixn_fig.png"), width = 30, height = 15, units = "cm", dpi=1200)
+```
+
+ Table of Genes DE in all Contrasts
+```{r}
+# set_flextable_defaults(digits = 2)
+
+# make pretty table of genes that are DE in all 3 contrasts
+DE_all3_table <- DE_genes_edgeR_upset %>%
+  filter(gene %in% genes_de_all_3) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  dplyr::select(
+    gene_name,
+    description,
+    logFC_infection,
+    logFC_diet,
+    logFC_interaction,
+    FDR_infection,
+    FDR_diet,
+    FDR_interaction
+  ) %>%
+  flextable(
+    col_keys = c(
+      "gene_name",
+      "description",
+      "logFC_infection",
+      "logFC_diet",
+      "logFC_interaction"
+    )
+  ) %>%
+  add_header_row(
+    x = .,
+    colwidths = c(2, 3),
+    values = c(" ", "log2 fold change")
+  ) %>%
+  theme_vanilla(.) %>%
+  align(.,
+        i = 1,
+        part = "header",
+        align = "center") %>%
+  add_footer_lines(
+    .,
+    "Positive values indicate higher expression in protein birds. Negative values indicate higher expression in lipid birds. FDR < 0.01 is bolded."
+  ) %>%
+  set_table_properties(align = "left", layout = "autofit") %>%
+  italic(., j = 1) %>%
+  bold(., ~ FDR_infection < 0.01, ~ logFC_infection, bold = TRUE) %>%
+  labelizor(
+    x = .,
+    part = "header",
+    labels = c(
+      "gene_name" = "gene name",
+      "logFC_infection" = "Infection",
+      "logFC_diet" = "Diet",
+      "logFC_interaction" = "Interaction"
+    )
+  ) %>%
+  labelizor(x = .,
+            part = "header",
+            labels = stringr::str_to_title)
+
+
+DE_all3_table
+
+save_as_pptx(
+  "DE_all3_table" = DE_all3_table,
+  path = "tables/Genes_DE_all3_contrasts.pptx")
+```
+
+
+
+
+
+
+
+
+
+# Figure 5: Heatmap of DE genes in all contrasts
+```{r, fig.height=10, fig.width=8}
+logFC_all_contrasts <- topTags_inf_edgeR %>%
+  arrange(gene) %>%
+  #filter(FDR< 0.05) %>%
+  #dplyr::select(gene) %>%
+  mutate(repressed_in_infection = gene %in% names(genes_lower_in_infection),
+         induced_in_infection = gene %in% names(genes_higher_in_infection),
+         higher_in_Protein = gene %in% names(genes_higher_protein_diet),
+         higher_in_Lipid = gene %in% names(genes_higher_lipid_diet),
+         Protein_ixn_bigger_Inf = gene %in% names(genes_bigger_protein_infection_difference),
+         Lipid_ixn_bigger_Inf = gene %in% names(genes_bigger_lipid_infection_difference),
+         # Here we use ifelse to assign logFC values from the named vector based on the gene presence.
+        # logFC_repressed_in_infection = 
+        #   ifelse(gene %in% names(genes_lower_in_infection), genes_lower_in_infection[gene], NA),
+        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
+        # 
+        # logFC_higher_in_Protein = ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
+        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
+        # logFC_Protein_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
+        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
+        logFC_infection = topTags_inf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+          # case_when(
+          #   gene %in% names(genes_lower_in_infection) ~ genes_lower_in_infection[gene],
+          #   gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
+          #   TRUE ~ NA_real_
+          # ),
+          # )
+        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
+        
+        logFC_diet = topTags_diet_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+        #case_when(
+          # gene %in% names(genes_higher_protein_diet) ~ genes_higher_protein_diet[gene],
+          # gene %in% names(genes_higher_lipid_diet) ~ genes_higher_lipid_diet[gene],
+          # TRUE ~ NA_real_
+        #),
+        # )
+          # ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
+        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
+        logFC_interaction = topTags_ixn_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+  #case_when(
+        #   gene %in% names(genes_bigger_protein_infection_difference) ~ genes_bigger_protein_infection_difference[gene],
+        #   gene %in% names(genes_bigger_lipid_infection_difference) ~ genes_bigger_lipid_infection_difference[gene],
+        #   TRUE ~ NA_real_
+        # ),
+        FDR_infection = FDR, #case_when(
+          # gene %in% names(fdr_genes_infection) ~ fdr_genes_infection[gene],
+          #gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
+          # TRUE ~ NA_real_
+       # ),
+        FDR_diet = topTags_diet_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
+  # case_when(
+  #         gene %in% names(fdr_genes_diet) ~ fdr_genes_diet[gene],
+  #         # gene %in% names(genes_higher_protein_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
+  #         # gene %in% names(genes_higher_lipid_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
+  #         TRUE ~ NA_real_
+  #       ),
+        FDR_interaction = topTags_ixn_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR)
+  # case_when(
+  #         # gene %in% ((topTags_ixn_edgeR |>
+  # # filter(FDR < 0.05) |> pull(gene))) ~ (filter(topTags_ixn_edgeR, paste0(gene) == paste0(gene))$FDR),
+  #         gene %in% names(fdr_genes_ixn) ~ fdr_genes_ixn[gene],
+  #         # gene %in% names(genes_bigger_protein_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
+  #         # gene %in% names(genes_bigger_lipid_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
+  #         TRUE ~ NA_real_
+  #       )
+        # )
+          # ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
+        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
+   ) %>%
+  mutate(DE_in_infection = repressed_in_infection | induced_in_infection,
+         DE_in_diet = higher_in_Protein | higher_in_Lipid,
+         DE_in_ixn = Protein_ixn_bigger_Inf | Lipid_ixn_bigger_Inf) %>%
+  mutate(gene_label = case_when(
+    abs(logFC)>1 ~ gene_name,
+    TRUE ~ NA_character_
+  ),
+  nice_gene_name = case_when(
+    !is.na(gene_name) ~ gene_name,
+    TRUE ~ paste0("LOC",gene)
+  ))
+
+df_heatmap <- logFC_all_contrasts %>%
+  # filter(gene %in% genes_de_all_3) %>%
+  filter(FDR_interaction < 0.05 & abs(logFC_interaction>2) | FDR_infection < 0.05 & abs(logFC_infection>1) | FDR_diet < 0.05 & abs(logFC_diet>1) #| FDR_interaction < 0.05 & FDR_infection < 0.05  & FDR_diet < 0.05 
+         ) %>% #View()
+  # filter(FDR_interaction < 0.05 &  FDR_infection < 0.05 & FDR_diet < 0.05) %>% #View()
+  # slice_head(n=20) %>%
+  # mutate_if(is.numeric, round, 2) %>%
+  dplyr::select(
+    gene,
+    gene_name,
+    nice_gene_name,
+    description,
+    logFC_infection,
+    logFC_diet,
+    logFC_interaction,
+    FDR_infection,
+    FDR_diet,
+    FDR_interaction
+  )
+
+# Split into logFC and FDR matrices
+logFC_matrix <- as.matrix(df_heatmap[, c("logFC_infection", "logFC_diet", "logFC_interaction")])
+rownames(logFC_matrix) <-  paste0(df_heatmap$nice_gene_name, " - ", df_heatmap$description)
+FDR_matrix <- as.matrix(df_heatmap[, c("FDR_infection", "FDR_diet", "FDR_interaction")])
+rownames(FDR_matrix) <- paste0(df_heatmap$nice_gene_name, " - ", df_heatmap$description)
+
+
+# Define significance level
+sig.cutoff <- 0.05
+
+
+
+significance_matrix <- ifelse(FDR_matrix < sig.cutoff, "*", " ") %>%
+  replace_na(" ")
+
+colnames(logFC_matrix) <- c("Infection", "Diet", "Interaction")
+
+# Generate the heatmap with internal annotations
+heatmap <- Heatmap(logFC_matrix, name = "logFC", 
+                   cluster_rows = TRUE,
+                   show_row_dend = TRUE,
+                   heatmap_legend_param = list(direction = "horizontal"),
+                   cluster_columns = FALSE, 
+                   split=4,
+                   show_row_names = TRUE,
+                   show_column_names = TRUE, 
+                   clustering_distance_rows = "pearson",
+                   row_names_gp = gpar(fontsize = 6),
+                   column_names_gp = gpar(fontsize = 8),
+                   column_names_rot = 0,
+                   column_names_centered = TRUE,
+                   cell_fun = function(j, i, x, y, width, height, fill) {
+                       grid.rect(x, y, width, height, gp = gpar(fill = fill, col = NA))
+                       if (significance_matrix[i, j] == "*") {
+                           grid.text("X", x, y, gp = gpar(col = "black", fontsize = 6))
+                       }
+                   })
+
+# Draw the heatmap
+ht <- draw(heatmap)
+
+ht
+
+#row_order(ht)
+
+png(file="figures/logFC_heatmap.png", width=6, height=9, res=1200,units = "in")
+ht <- draw(heatmap, heatmap_legend_side = "bottom")
+dev.off()
+```
+
+enrichment of some of those
+```{r}
+list_GO_results <- list()
+j=0
+for (i in row_order(ht)) {
+  # print(i)
+  genes_i <- rownames(heatmap@matrix)[i] %>%
+    word(., 1)
+  j = j+1
+  list_GO_results[[j]] <- enrichGO(gene = logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i) %>%
+    pull(gene)  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                #universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 1,
+                qvalueCutoff  = 1) %>%
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
+    data.frame()
+  
+}
+```
+
+
+
+```{r}
+# overlap of top and bottom 2000 genes for each:
+top_2000_genes_ist <- list(
+    # c(
+      inf.u = topTags_inf_edgeR  %>%
+        top_n(2000, logFC) %>%
+        pull(gene),
+      inf.d = topTags_inf_edgeR  %>%
+        top_n(2000,-logFC) %>%
+        pull(gene),
+    # ), 
+    # c(
+      diet.p = topTags_diet_edgeR  %>%
+        top_n(2000, logFC) %>%
+        pull(gene),
+      diet.l = topTags_diet_edgeR  %>%
+        top_n(2000,-logFC) %>%
+        pull(gene),
+    # ), 
+    # c(
+      ixn.p = topTags_ixn_edgeR  %>%
+        top_n(2000, logFC) %>%
+        pull(gene),
+      ixn.l = topTags_ixn_edgeR  %>%
+        top_n(2000,-logFC) %>%
+        pull(gene)
+    # )
+    ) 
+
+upset_top2000_each <- UpSetR::upset(UpSetR::fromList(top_2000_genes_ist),nsets=6, order.by="freq")
+
+
+upset_top2000_each
+
+# ggsave("", width=50, height=50, units="cm", dpi=300)
+
+png(file="figures/upset_top2000_each.png", width=8, height=8, res=1200,units = "in")
+upset_top2000_each
+dev.off()
+```
+
+
+
+# Figure 6: Phenotype Correlation
+
+```{r}
+# delete this code chunk
+# plot phenotype correlation (interaction)
+topTags_tolerance_ixn %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Tolerance Score Interaction (protein inf response / lipid inf response)", 
+                   logFC.cutoff = logFC.cutoff,
+                   show.names=FALSE)
+
+# plot phenotype correlation (diet)
+topTags_tolerance_diet %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Tolerance Score Diet (protein / lipid)", 
+                   logFC.cutoff = logFC.cutoff,
+                   show.names=FALSE)
+
+# plot phenotype correlation (infection)
+topTags_tolerance_inf %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Tolerance Score Infection (inf/uninf)", 
+                   logFC.cutoff = logFC.cutoff,
+                   show.names=FALSE)
+```
+
+## 6A: Volcano tolerance
+```{r}
+topTags_tolerance %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Tolerance Score", 
+                   logFC.cutoff = logFC.cutoff,
+                   show.names=FALSE)
+
+ggsave(here("figures/volcano_topTags_tolerance_edgeR.png"), width = 10, height = 10, units = "cm", dpi=1200)
+
+topTags_ES_inf %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Eye Score",show.names = F, 
+                   logFC.cutoff = logFC.cutoff)
+
+ggsave(here("figures/volcano_topTags_EyeScore_edgeR.png"), width = 10, height = 10, units = "cm", dpi=1200)
+
+
+topTags_logLoad_inf %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("logLoad Pathogen",show.names = F, 
+                   logFC.cutoff = logFC.cutoff)
+
+ggsave(here("figures/volcano_topTags_logLoad_edgeR.png"), width = 10, height = 10, units = "cm", dpi=1200)
+
+```
+## 6B: Vennn of these
+```{r}
+ggVennDiagram::ggVennDiagram(
+  x = list("Tolerance" = topTags_tolerance %>% filter(FDR < 0.05) %>% pull(gene),
+           # "Diet_tol" = topTags_tolerance_diet %>% filter(FDR < 0.05) %>% pull(gene),
+           # "Interaction_tol"  = topTags_tolerance_ixn%>% filter(FDR < 0.05) %>% pull(gene),
+           "infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
+           "EyeScore" =topTags_ES_inf %>% filter(FDR < 0.05) %>% pull(gene)#, 
+           # "logLoad" = topTags_logLoad_inf %>% filter(FDR < 0.01) %>% pull(gene)#,
+           )
+)
+```
+
+
+## 6B: Heatmap of pheno DE genes
+```{r}
+
+```
+
+## 6C: Ontology of pheno DE genes.
+
+Run TOLERANCE enrichments:
+```{r}
+# GO enrichment
+enrichGO_higher_in_tolerance <- enrichGO(gene         = 
+  topTags_tolerance  %>%
+  # arrange(desc(logFC)) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, logFC) %>%
+  # filter(FDR < 0.5) %>%
+  # filter(logFC < -0.1) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene) ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_ixn_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "ixn",
+         Direction = "Prot",
+         Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")) %>% data.frame()
+
+# up in lipid
+enrichGO_lower_in_tolerance <- enrichGO(gene         = 
+  topTags_tolerance  %>%
+  # arrange(desc(logFC)) %>%
+  
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  top_n(2000, -logFC) %>%
+  # filter(FDR < 0.5) %>%
+  # filter(logFC < -0.1) %>%
+  # filter(gene %in% unfiltered_genes_with_GO) %>%
+  # arrange(desc(logFC)) %>%
+  # slice_max(logFC, prop=0.1) %>%
+  pull(gene)
+                                  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                universe      = topTags_ixn_edgeR$gene,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.05,
+                qvalueCutoff  = 0.05) |>
+  # simplify(by="ID") |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+         comparison = "ixn",
+         Direction = "Lipid") %>% data.frame()
+
+
+
+##################
+# KEGG enrichments
+##################
+
+
+# up in high protein ixn
+enrichKEGG_higher_in_tolerance <- topTags_tolerance  %>%
+  top_n(2000, logFC) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_tolerance$gene)
+
+# up in high fat ixn
+enrichKEGG_lower_in_tolerance <- topTags_tolerance  %>%
+  top_n(2000, -logFC) %>%
+    pull(gene) %>%
+    enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_tolerance$gene)
+
+# either way
+# enrichKEGG_in_diet <- topTags_diet_edgeR  %>%
+#   top_n(4000, abs(logFC)) %>%
+#   pull(gene) %>%
+#   enrichKEGG(gene = .,
+#                organism = 'scan',
+#                universe = topTags_diet_edgeR$gene)
+
+# gse enrichment
+gseKEGG_tolerance <- topTags_tolerance %>%
+  arrange(desc(logFC)) %>%
+  pull(logFC, gene) %>%
+  gseKEGG(
+    geneList     = .,
+    organism = 'scan',
+    by = "fgsea",
+    exponent = 1,
+    #minGSSize    = 120,
+    pvalueCutoff = 0.05,
+    verbose      = FALSE
+  )
+```
+
+
+```{r}
+## add KEGG terms to GO plot
+enrichGOKEGG_higher_in_tolerance_fig <-
+  enrichKEGG_higher_in_tolerance %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "Interaction",
+    Direction = "bigger_delta_protein",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_higher_in_tolerance %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "Interaction",
+        Direction = "bigger_delta_protein",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    colours = c("red", "#FFD6D7"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50)
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched: up with tolerance") +
+  theme_classic()
+
+# higher in lipid GO and KEGG
+enrichGOKEGG_lower_in_tolerance_fig <-
+  enrichKEGG_lower_in_tolerance %>%
+  as.data.frame() |>
+  mutate(
+    richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+    comparison = "tolerance",
+    Direction = "up_tolerance",
+    Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+  ) %>%
+  bind_rows(
+    enrichGO_lower_in_tolerance %>%
+      as.data.frame() |>
+      mutate(
+        richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)),
+        comparison = "tolerance",
+        Direction = "up_tolerance",
+        Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ")
+      )
+  ) %>%
+  ggplot(.,
+         showCategory = 8,
+         aes(richFactor, fct_reorder(Description, richFactor))) +
+  geom_segment(aes(xend = 0, yend = Description),
+               color = "black",
+               linewidth = 1) +
+  geom_point(aes(color = p.adjust, size = Count)) +
+  scale_color_gradientn(
+    # colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    colors = c("blue", "lightblue"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(3, 10)) +
+  scale_y_discrete(
+    label = function(x)
+      stringr::str_trunc(x, 50),
+    position = "right"
+  ) + # cut off long names
+  xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("Functions Enriched: down with tolerance") +
+  scale_x_reverse() +
+  theme_classic()
+
+
+
+enrichGOKEGG_higher_in_tolerance_fig
+enrichGOKEGG_lower_in_tolerance_fig
+
+
+ggpubr::ggarrange(enrichGOKEGG_lower_in_tolerance_fig, enrichGOKEGG_higher_in_tolerance_fig, ncol = 2, nrow = 1)
+
+ggsave(here("figures/enrichGOKEGG_DE_in_tolerance_fig.png"), width = 30, height = 15, units = "cm", dpi=1200)
+```
+
+
+....SIDEBAR: 
+Plot venn diagram of inf genes in general analysis vs tolerance phenotype
+```{r}
+ggVennDiagram::ggVennDiagram(
+  x = list("Infection_tol" = topTags_tolerance %>% filter(FDR < 0.05) %>% pull(gene),
+           # "Diet_tol" = topTags_tolerance_diet %>% filter(FDR < 0.05) %>% pull(gene),
+           # "Interaction_tol"  = topTags_tolerance_ixn%>% filter(FDR < 0.05) %>% pull(gene),
+           "infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
+           "Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet], 
+           "Interaction" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixn]
+           )#,
+  #category.names = c("Infection", "Diet", "Interaction")
+  #category.names = c("Infection", "Diet", "Interaction")#,
+  # category.col=c("red", "magenta", "blue"),
+  # cat.col=c("red", "magenta", "blue"),
+  # cat.fontface=2,
+  # margin=0.05,
+  # main="Venn Diagram of DE genes"
+)
+```
+<!-- # Phenotype of Day 0 tolerance -->
+<!-- this is ugly and doesn't provide any insights into the data, I think we should exclude it. -->
+<!-- ```{r} -->
+<!-- metadata_phenotypes_day0 <- metadata_phenotypes |> -->
+<!--   filter(Day==0) |> -->
+<!--   ## filter(MG.active=="YES") |> -->
+<!--   # add 1 to avoid undefined -->
+<!--   mutate(tolerance_1 = ES_AUC_7/(1+logLoad_AUC_14),  -->
+<!--          tolerance_2 = ES_AUC_7/(1+logLoad_day14), -->
+<!--          tolerance_3 = ES_day7/(1+logLoad_day7), -->
+<!--          tolerance_4 = r_ES_day3/(1+r_logLoad_day3), # maybe best? -->
+<!--          tolerance_5 = (1+r_logLoad_day3)/(1+r_ES_day3)-1, # this format works better for "tolerance" -->
+<!--          #tolerance_6 = (1+logLoad_day14)/(1+r_ES_AUC_14)-1, -->
+<!--          tolerance_0 = 1+logLoad/(1+ES)-1 -->
+<!--          ) %>% -->
+<!--   filter(MG.Status != "Control") %>% -->
+<!--   # filter(!Sample.ID %in% c("ES12", "ES25", "ES36", "ES58", "ES84", "ES53")) %>% -->
+<!--   mutate(tolerance_5_cat = dplyr::ntile(tolerance_5,3), -->
+<!--          #tolerance_5_cat = dplyr::ntile(tolerance_5,3), -->
+<!--          # tolerance_5_cat = dplyr::ntile(tolerance_1,3), -->
+<!--          tolerance_cat = dplyr::ntile(tolerance,3)) %>% -->
+<!--   mutate(diet.tolerance = paste0(Diet, ".",tolerance_cat)) %>% -->
+<!--   # mutate(SampID = str_replace_all(SampID,"\\.","-")) %>% -->
+<!--   column_to_rownames("SampID") -->
+
+<!-- gene_expression_matrix_day0 <- gene_expression_matrix |> -->
+<!--   data.frame() |> -->
+<!--   dplyr::select(ends_with("_0")) |> -->
+<!--   dplyr::select(contains("MG")) |> -->
+
+<!--   # these are birds who PCR shows no pathogen -->
+<!--   # dplyr::select(-contains("ES12")) |> -->
+<!--   # dplyr::select(-contains("ES25")) |> -->
+<!--   # dplyr::select(-contains("ES36")) |> -->
+<!--   # dplyr::select(-contains("ES58")) |> -->
+<!--   # dplyr::select(-contains("ES84")) |> -->
+<!--   # dplyr::select(-contains("ES53")) |> -->
+<!--   as.matrix() -->
+
+<!-- rownames(gene_expression_matrix_day0) <- entrez_names_gene_expression_matrix_ixn -->
+
+<!-- Diet_1 <- as.factor(metadata_phenotypes_day0$Diet) -->
+<!-- # Day_tolerance <- (metadata_phenotypes_day0$Day) -->
+
+
+<!-- # diet_tolerance <- interaction(Diet_1, metadata_phenotypes_day0$tolerance_5_cat) #%>% as.factor() -->
+<!-- # design0 <- model.matrix(~ 0 + diet_tolerance) -->
+
+<!-- ES_minMax0 <- metadata_phenotypes_day0$r_ES_day3 -->
+
+<!-- design0 <- model.matrix(~ ES_minMax0) -->
+
+
+<!-- y_ES0 <- DGEList( -->
+<!--   counts = gene_expression_matrix_day0, -->
+<!--   # names= entrez_names_gene_expression_matrix_day0, -->
+<!--   # group=Active_1, -->
+<!--   remove.zeros = TRUE -->
+<!-- ) -->
+
+<!-- #determine cpm cutoff -->
+<!-- cpm_cutoff0 <- as.numeric(round(cpm(10, mean(y_ES0$samples$lib.size)),1)) -->
+<!-- # cpm_cutoff <- 1 -->
+<!-- # apply cutoff -->
+<!-- keep0 <- rowSums(cpm(y_ES0) > cpm_cutoff0) >= 2 -->
+<!-- y_ES0 <- y_ES0[keep0,] -->
+<!-- summary(keep0) -->
+
+<!-- y_ES0 <- calcNormFactors(y_ES0) -->
+<!-- y_ES0 <- estimateDisp(y_ES0, design0)#, robust=TRUE) -->
+
+<!-- # y_ES0$samples$group <- #grouping_var -->
+<!-- #   interaction(Diet_1, metadata_phenotypes_day0$ES_5_cat) %>% as.factor() -->
+
+<!-- # y_ES$samples$group <- #grouping_var -->
+<!-- #   interaction(Diet_1, metadata_phenotypes_day0$ES_cat) %>% as.factor() -->
+
+<!-- # contrasts_ES0 <- makeContrasts(#design, #metadata,  -->
+<!-- #   contrasts = c("(diet_ESprotein.3 - diet_ESprotein.1) - (diet_ESlipid.3 - diet_ESlipid.1)", -->
+<!-- #                 # "Diet_1protein", -->
+<!-- #                 "(diet_ESprotein.3 + diet_ESprotein.2 + diet_ESprotein.1)/3-(diet_ESlipid.3 + diet_ESlipid.2 + diet_ESlipid.1)/3", -->
+<!-- #                 "(diet_ESprotein.3 + diet_ESlipid.3)/2 - (diet_ESprotein.1 + diet_ESlipid.1)/2" -->
+<!-- #                 #"diet_ESlipid.3 - diet_ESlipid.1", -->
+<!-- #                 #"diet_ESprotein.3 - diet_ESlipid.3" -->
+<!-- #                 ), levels=design0) -->
+
+<!-- fit0 <- glmQLFit(y_ES0, design0)#, robust=TRUE) -->
+
+<!-- # res0_ixn <-  glmQLFTest(fit0, contrast=contrasts_ES0[,1]) -->
+<!-- res0_inf <-  glmQLFTest(fit0, coef="ES_minMax0") -->
+
+<!-- # exactTest0 <- exactTest(fit0) -->
+<!-- # res1 <-  glmQLFTest(fit, coef = "Diet_1protein:ES_1") -->
+<!-- #res2 <-  glmQLFTest(fit, coef = "Diet_1lipid:ES_1") -->
+<!-- # #  -->
+<!-- # topTags_ES0_ixn <- topTags(res0_ixn, n=Inf) %>% data.frame() %>% -->
+<!-- #   arrange(FDR) %>% -->
+<!-- #   #mutate(logFC=round(logFC,2)) %>% -->
+<!-- #   # mutate(across(where(is.numeric), signif, 3)) %>% -->
+<!-- #   # mutate_if(is.numeric, signif, 3) %>% -->
+<!-- #   rownames_to_column("gene") %>% -->
+<!-- #   left_join(result_BM_merged, -->
+<!-- #     #gene_GO_tbl |> -->
+<!-- #               #mutate(gene = as.character(entrezgene_id)), -->
+<!-- #             by = "gene") %>% -->
+<!-- #   dplyr::select( -->
+<!-- #     c( -->
+<!-- #       "gene", -->
+<!-- #       "gene_name", -->
+<!-- #       "logFC", -->
+<!-- #       "logCPM", -->
+<!-- #       "F", -->
+<!-- #       "PValue", -->
+<!-- #       "FDR", -->
+<!-- #       "description", -->
+<!-- #       "entrezgene_id" -->
+<!-- #     ) -->
+<!-- #   ) %>% -->
+<!-- #   distinct()# %>% View() -->
+
+
+<!-- topTags_ES0_inf <- topTags(res0_inf, n=Inf) %>% data.frame() %>% -->
+<!--   arrange(FDR) %>% -->
+<!--   #mutate(logFC=round(logFC,2)) %>% -->
+<!--   # mutate(across(where(is.numeric), signif, 3)) %>% -->
+<!--   # mutate_if(is.numeric, signif, 3) %>% -->
+<!--   rownames_to_column("gene") %>% -->
+<!--   left_join(result_BM_merged, -->
+<!--     #gene_GO_tbl |> -->
+<!--               #mutate(gene = as.character(entrezgene_id)), -->
+<!--             by = "gene") %>% -->
+<!--   dplyr::select( -->
+<!--     c( -->
+<!--       "gene", -->
+<!--       "gene_name", -->
+<!--       "logFC", -->
+<!--       "logCPM", -->
+<!--       "F", -->
+<!--       "PValue", -->
+<!--       "FDR", -->
+<!--       "description", -->
+<!--       "entrezgene_id" -->
+<!--     ) -->
+<!--   ) %>% -->
+<!--   distinct() -->
+<!-- ``` -->
+
+<!-- END SIDEBAR.... -->
+
+
+# Figure 7: Corr Phenotype measures correlation ES vs logload vs tolerance
+```{r}
+# Corr Phenotype measures correlation ES vs logload vs tolerance
+topTags_tolerance %>%
+left_join(topTags_ES_inf, by=c("gene","gene_name", "description", "entrezgene_id"),suffix = c(".tolerance", ".ES")) %>%
+  left_join(topTags_logLoad_inf, by=c("gene","gene_name", "description", "entrezgene_id")) %>%
+  mutate(logFC.logLoad=logFC) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description"), suffix=c(".logLoad","")) %>%
+  dplyr::select(logFC.tolerance, logFC.ES, logFC.logLoad, logFC) %>%
+  ggpairs(mapping = aes(alpha=0.5)) +
+  theme_classic() +
+  ggtitle("ALL Genes: Correlation of Phenotypic LogFC estimates")
+
+ggsave("figures/AllGenesCorrPhenotypeLogFC.png", width=16, height=16, units = "cm", dpi=1200)
+
+# Corr Phenotype measures correlation ES vs logload vs tolerance
+topTags_tolerance %>%
+left_join(topTags_ES_inf, by=c("gene","gene_name", "description", "entrezgene_id"),suffix = c(".tolerance", ".ES")) %>%
+  left_join(topTags_logLoad_inf, by=c("gene","gene_name", "description", "entrezgene_id")) %>%
+  mutate(logFC.logLoad=logFC) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description"), suffix=c(".logLoad","")) %>%
+  filter(FDR.tolerance < 0.05 | FDR < 0.05 | FDR.ES < 0.05 | FDR.logLoad < 0.05 
+) %>%
+  # filter(logCPM>1) %>%
+  # filter(logFC.tolerance*logFC<0) %>% #View()
+  dplyr::select(gene,logFC.tolerance, logFC.ES, logFC.logLoad, logFC) %>%
+  column_to_rownames("gene") %>%
+  ggpairs(mapping = aes(alpha=0.1),progress = FALSE) +
+  theme_classic() +
+  ggtitle("DE Genes: Correlation of Phenotypic LogFC estimates")
+
+ggsave("figures/DEGenesCorrPhenotypeLogFC.png", width=16, height=16, units = "cm", dpi=1200)
+```
+
+```{r}
+enrichGO(gene         = 
+  topTags_tolerance %>%
+left_join(topTags_ES_inf, by=c("gene","gene_name", "description", "entrezgene_id"),suffix = c(".tolerance", ".ES")) %>%
+  left_join(topTags_logLoad_inf, by=c("gene","gene_name", "description", "entrezgene_id")) %>%
+  mutate(logFC.logLoad=logFC) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description"), suffix=c(".logLoad","")) %>%
+  filter(FDR.tolerance < 0.05 & FDR < 0.05 #| FDR.ES < 0.05 | FDR.logLoad < 0.05 
+) %>%
+  # filter(logCPM>1) %>%
+  # filter(logFC.tolerance*logFC>0) %>%
+  # filter(logFC.tolerance < 0) %>%
+  pull(gene) 
+                                  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe      = unfiltered_genes_with_GO,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 1,
+                qvalueCutoff  = 1) |>
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% data.frame()
+
+## kegg enrichment of genes opposite direction between tolerance and infection
+topTags_tolerance %>%
+left_join(topTags_ES_inf, by=c("gene","gene_name", "description", "entrezgene_id"),suffix = c(".tolerance", ".ES")) %>%
+  left_join(topTags_logLoad_inf, by=c("gene","gene_name", "description", "entrezgene_id")) %>%
+  # mutate(logFC.logLoad=logFC) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description"), suffix=c(".logLoad","")) %>%
+  filter(FDR.tolerance < 0.05 | FDR < 0.05 #| FDR.ES < 0.05 | FDR.logLoad < 0.05 
+) %>%
+  # filter(logCPM>1) %>%
+  filter(logFC.tolerance*logFC<0) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_tolerance$gene
+             )
+
+topTags_tolerance %>%
+left_join(topTags_ES_inf, by=c("gene","gene_name", "description", "entrezgene_id"),suffix = c(".tolerance", ".ES")) %>%
+  left_join(topTags_logLoad_inf, by=c("gene","gene_name", "description", "entrezgene_id")) %>%
+  # mutate(logFC.logLoad=logFC) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description"), suffix=c(".logLoad","")) %>%
+  filter(FDR.tolerance < 0.05 | FDR < 0.05 #| FDR.ES < 0.05 | FDR.logLoad < 0.05 
+) %>%
+  # filter(logCPM>1) %>%
+  filter(logFC.tolerance*logFC>0) %>%
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+               organism = 'scan',
+               universe = topTags_tolerance$gene
+             )
+```
+
+```{r}
+topTags_tolerance %>%
+left_join(topTags_ES_inf, by=c("gene","gene_name", "description", "entrezgene_id"),suffix = c(".tolerance", ".ES")) %>%
+  left_join(topTags_logLoad_inf, by=c("gene","gene_name", "description", "entrezgene_id")) %>%
+  # mutate(logFC.logLoad=logFC) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description"), suffix=c(".logLoad","")) %>%
+  # filter(FDR.tolerance < 0.05 | FDR < 0.05 #| FDR.ES < 0.05 | FDR.logLoad < 0.05 
+# ) %>%
+  # filter(logCPM>1) %>%
+  filter(logFC.tolerance*logFC>0.5) %>% #View()
+  pull(gene) %>%
+  enrichKEGG(gene = .,
+             universe = topTags_tolerance$gene,
+               organism = 'scan',
+             pvalueCutoff = 1
+            
+               
+             
+             )
+```
+
+
+
+# Figure 8: PCA plot of gene expression for all samples
+
+```{r}
+# PCA plot of gene expression for all samples
+PCA <- plotMDS(y_ixn, gene.selection="common",
+               top = 2000,pch = 2, cex = 0.5, main = "PCA plot of gene expression for all samples", dim.plot=c(1,2))
+```
+
+```{r}
+
+ggPCA <- tibble(
+  SampID = colnames(PCA$distance.matrix.squared),
+  x = PCA$x,
+  y =PCA$y
+) %>%
+  mutate(SampID = str_replace_all(SampID, "\\.","-")) %>%
+  left_join(metadata_phenotypes, by="SampID")
+
+ggplot(ggPCA, aes(x=x,y=y, group=Bird.ID, shape = Day, color = Diet)) +
+  geom_line(aes(linetype = MG.Status), alpha = 0.5) +
+  geom_point() +
+  theme_classic() +
+  # theme(legend.position = "none") +
+  labs(title="PCA plot of gene expression for all samples") +
+  xlab(paste0("Principal Component 1 (",100*round(PCA$var.explained[1],2),"%)")) +
+  ylab(paste0("Principal Component 2 (",100*round(PCA$var.explained[2],2),"%)")) #+
+  # facet_wrap(~MG.Status)
+
+ggsave("figures/PCA_plot_all_samples.png", width = 6, height = 5, units = "in", dpi = 600)
+
+```
+
+
+
+
+
+# Supplemental Code
+
+Plot individual genes
+```{r}
+genes_to_plot <- c("103812987", # chemokine c-c ixn diff bigger in protein tolerance
+                   "103817495", # LARP1, important for translation gene expression (lysosomes)
+  "127059202", # feather beta keratin, DE in tolerance ixn
+  "103813205", # BPI fold-containing family C protein
+  "103823136", # ADAM metallopeptidase with thrombospondin type 1
+  "127060733", # germ cell nuclear acidic protein-like
+                   "103813247", # Galanin receptor 3 GAL3 (gprotein coupled receptor, up in tol inf and ixn)
+                   "127061143", # Cathepsin S-like, DE in tolerance and diet
+                   "108961920", 
+                   "103823426", #JCHAIN
+                   "103822244", # very different in diet, (mas-related G-protein coupled receptor member )
+                        # it seems like the one above just driven by a few birds.
+                   "103812721", # insig1, diff in diet(very pretty difference, higher in prot)
+                   "103821804", # SLC4A1, important for pH of blood maintenance. not DE but higher in lipid inf
+                   "103826733") #CPT1A, top DE gene for diet
+i <- 8
+
+metadata_phenotypes2 <- metadata_phenotypes_ixn %>% 
+  mutate(tolerance_1 = ES_AUC_7/(1+logLoad_AUC_14), 
+         tolerance_2 = ES_AUC_7/(1+logLoad_day14),
+         tolerance_3 = ES_day7/(1+logLoad_day7),
+         tolerance_4 = r_ES_day3/(1+r_logLoad_day3), # maybe best?
+         tolerance_5 = (1+r_logLoad_day3)/(1+r_ES_day3)-1, # this format works better for "tolerance"
+         #tolerance_6 = (1+logLoad_day14)/(1+r_ES_AUC_14)-1,
+         tolerance_0 = 1+logLoad/(1+ES)-1,
+         tolerance_01 = scale(tolerance,center=min(tolerance),scale=diff(range(tolerance)))
+         ) %>%
+  mutate(tolerance_5_cat = dplyr::ntile(tolerance_5,3),
+         #tolerance_5_cat = dplyr::ntile(tolerance_5,3),
+         # tolerance_5_cat = dplyr::ntile(tolerance_1,3),
+         tolerance_cat = dplyr::ntile(tolerance,3),
+         tolerance_cat_num = as.numeric(tolerance_cat)) %>%
+  mutate(diet.tolerance = paste0(Diet, ".",tolerance_cat)) #%>%
+  # group_by(Bird.ID) %>%
+  # mutate(tolerance_mean = mean(tolerance))
+
+# plot individual genes
+y_ixn$counts %>%
+  as.data.frame() %>%
+  rownames_to_column("gene") %>%
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>%
+  separate_wider_delim(sample, names = c("sampleID","BirdID", "condition-diet", "day"), delim = "_", too_many = "merge") %>%
+  separate_wider_delim(`condition-diet`, names = c("condition","diet"), delim = ".", too_many = "merge") %>%
+  # filter(gene == "103826733") %>% #CPT1A, top DE gene for diet
+  # filter(gene == "103822409") %>% #FGD2, gene that is expressed in macrophages
+  # filter(gene == "103823426") %>%
+  filter(gene == genes_to_plot[i]) %>%
+  # filter(gene == "103813189") %>% # ALDH1L2, biggest FC in DE genes for lipid infection
+  #filter(gene == "103823426") %>% #JCHAIN
+  # filter(gene == "103827129") %>% #TENT5C
+  # filter(gene=="103822886") %>% #NPR3
+  # filter(gene=="103824071") %>% #BCAN, biggest expression FC for diet, higher in lipid
+  # filter(gene == "127061207") %>% #Evi5-like (oncogene)
+  # filter(gene == "103817526") %>%  # Ablim3
+  left_join(metadata_phenotypes2, by = c("sampleID" = "Sample.ID")) %>%
+  dplyr::select(-c(sampleID,Day,MG.Diet.Day, MG.Day,Diet.Day, Exposure.Diet.Day,MG.active,Exposure.MG,Exposure.Diet.Day, Exposure.Diet,ES_minMax, ES_day0_analysis,ES, tolerance, logLoad)) %>% #View()
+  group_by(BirdID) %>% #View()
+  pivot_wider(names_from = "day", values_from = "counts") %>%
+  # mutate(day0 = replace_na(`0`, 0),
+  #               day14 = replace_na(`14`, 0),
+  #               day21 = replace_na(`21`, 0)) %>%
+  mutate(day0 = replace_na(`0`, 0),
+                day14 = replace_na(`14`, 0),
+                day21 = replace_na(`21`, 0)) %>%
+  mutate(diff_21 = (day21) - (day0),
+         diff_14 = (day14) - (day0)) %>%
+  pivot_longer(c("diff_14", diff_21), names_to = "diff_day", values_to = "counts_diff") %>% #View()
+  #filter(day==0) %>%
+  #drop_na() %>% View()
+  ggplot(aes(x = diet, y = counts_diff, color = condition, group = "BirdID", size=tolerance_cat_num)) +
+    # geom_point(position = "jitter") +
+    ggbeeswarm::geom_quasirandom(alpha=1) +
+    # geom_line() +
+    facet_wrap(~diff_day) +
+    theme_bw()
+
+
+# plot individual genes (alternate)
+y_ixn$counts %>%
+  as.data.frame() %>%
+  rownames_to_column("gene") %>%
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>%
+  separate_wider_delim(sample, names = c("sampleID","BirdID", "condition-diet", "day"), delim = "_", too_many = "merge") %>%
+  separate_wider_delim(`condition-diet`, names = c("condition","diet"), delim = ".", too_many = "merge") %>%
+  # filter(gene == "103826733") %>% #CPT1A, top DE gene for diet
+  filter(gene == genes_to_plot[i]) %>%
+  # filter(gene == "103822409") %>% #FGD2, gene that is expressed in macrophages
+  # filter(gene == "103823426") %>%
+  # filter(gene == "103813189") %>% # ALDH1L2, biggest FC in DE genes for lipid infection
+  #filter(gene == "103823426") %>% #JCHAIN
+  # filter(gene == "103827129") %>% #TENT5C
+  # filter(gene == "127061207") %>% #Evi5-like (oncogene)
+  # filter(gene=="103824071") %>% #BCAN, biggest expression FC for diet, higher in lipid
+  # filter(gene == "103817526") %>%  # Ablim3
+  left_join(metadata_phenotypes2, by = c("sampleID" = "Sample.ID")) %>%
+  dplyr::select(-c(sampleID,Day,MG.Diet.Day, MG.Day,Diet.Day, Exposure.Diet.Day,MG.active,Exposure.MG,Exposure.Diet.Day, Exposure.Diet)) %>%
+  group_by(BirdID) %>%
+  pivot_wider(names_from = "day", values_from = "counts") %>%
+  # mutate(day0 = replace_na(`0`, 0),
+  #               day14 = replace_na(`14`, 0),
+  #               day21 = replace_na(`21`, 0)) %>%
+  mutate(day0 = replace_na(`0`, NA),
+                day14 = replace_na(`14`, NA),
+                day21 = replace_na(`21`, NA)) %>%
+  #mutate(diff_21 = (day21) - (day0),
+         # diff_14 = (day14) - (day0)) %>%
+  pivot_longer(c("day14", "day21", "day0"), names_to = "day", values_to = "counts") %>% #View()
+  #filter(day==0) %>%
+  ggplot(aes(x = diet, y = counts, color = condition, shape=day, group = "BirdID", size=tolerance_cat_num)) +
+    # geom_point(position = "jitter") +
+    ggbeeswarm::geom_quasirandom(alpha=1) +
+    # geom_line() +
+    # facet_wrap(~day) +
+    scale_y_log10() +
+    theme_classic()
+
+
+
+# plot individual genes (alternate)
+y_tolerance$counts %>%
+  as.data.frame() %>%
+  rownames_to_column("gene") %>%
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>%
+  separate_wider_delim(sample, names = c("sampleID","BirdID", "condition-diet", "day"), delim = "_", too_many = "merge") %>%
+  separate_wider_delim(`condition-diet`, names = c("condition","diet"), delim = ".", too_many = "merge") %>%
+  # filter(gene == "103826733") %>% #CPT1A, top DE gene for diet
+  filter(gene == genes_to_plot[i]) %>%
+  # filter(gene == "103822409") %>% #FGD2, gene that is expressed in macrophages
+  # filter(gene == "103823426") %>%
+  # filter(gene == "103813189") %>% # ALDH1L2, biggest FC in DE genes for lipid infection
+  #filter(gene == "103823426") %>% #JCHAIN
+  # filter(gene == "103827129") %>% #TENT5C
+  # filter(gene == "127061207") %>% #Evi5-like (oncogene)
+  # filter(gene=="103824071") %>% #BCAN, biggest expression FC for diet, higher in lipid
+  # filter(gene == "103817526") %>%  # Ablim3
+  left_join(metadata_phenotypes2, by = c("sampleID" = "Sample.ID")) %>%
+  dplyr::select(-c(sampleID,Day,MG.Diet.Day, MG.Day,Diet.Day, Exposure.Diet.Day,MG.active,Exposure.MG,Exposure.Diet.Day, Exposure.Diet)) %>%
+  group_by(BirdID) %>%
+  pivot_wider(names_from = "day", values_from = "counts") %>%
+  # mutate(day0 = replace_na(`0`, 0),
+  #               day14 = replace_na(`14`, 0),
+  #               day21 = replace_na(`21`, 0)) %>%
+  mutate(day0 = replace_na(`0`, NA),
+                day14 = replace_na(`14`, NA),
+                day21 = replace_na(`21`, NA)) %>%
+  #mutate(diff_21 = (day21) - (day0),
+         # diff_14 = (day14) - (day0)) %>%
+  pivot_longer(c("day14", "day21", "day0"), names_to = "day", values_to = "counts") %>% #View()
+  #filter(day==0) %>%
+  ggplot(aes(x = tolerance_median, y = (counts)#, color = condition#, shape=day#, group = "BirdID"#, size=tolerance_cat_num
+             )) +
+    geom_point() +
+    geom_line() +
+    # ggbeeswarm::geom_quasirandom(alpha=1) +
+    # geom_line() +
+    geom_smooth(method="lm") +
+    # facet_wrap(~day) +
+    # scale_y_log10() +
+    theme_classic() + facet_wrap(~Diet)
+
+
+# plot individual genes (alternate2)
+y_tolerance$counts %>%
+  as.data.frame() %>%
+  rownames_to_column("gene") %>%
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>%
+  separate_wider_delim(sample, names = c("sampleID","BirdID", "condition-diet", "day"), delim = "_", too_many = "merge") %>%
+  separate_wider_delim(`condition-diet`, names = c("condition","diet"), delim = ".", too_many = "merge") %>%
+  # filter(gene == "103826733") %>% #CPT1A, top DE gene for diet
+  filter(gene == genes_to_plot[i]) %>%
+  # filter(gene == "103822409") %>% #FGD2, gene that is expressed in macrophages
+  # filter(gene == "103823426") %>%
+  # filter(gene == "103813189") %>% # ALDH1L2, biggest FC in DE genes for lipid infection
+  #filter(gene == "103823426") %>% #JCHAIN
+  # filter(gene == "103827129") %>% #TENT5C
+  # filter(gene == "127061207") %>% #Evi5-like (oncogene)
+  # filter(gene=="103824071") %>% #BCAN, biggest expression FC for diet, higher in lipid
+  # filter(gene == "103817526") %>%  # Ablim3
+  left_join(metadata_phenotypes2, by = c("sampleID" = "Sample.ID")) %>%
+  dplyr::select(-c(sampleID,Day,MG.Diet.Day, MG.Day,Diet.Day, Exposure.Diet.Day,MG.active,Exposure.MG,Exposure.Diet.Day, Exposure.Diet)) %>%
+  group_by(BirdID) %>%
+  pivot_wider(names_from = "day", values_from = "counts") %>%
+  # mutate(day0 = replace_na(`0`, 0),
+  #               day14 = replace_na(`14`, 0),
+  #               day21 = replace_na(`21`, 0)) %>%
+  mutate(day0 = replace_na(`0`, NA),
+                day14 = replace_na(`14`, NA),
+                day21 = replace_na(`21`, NA)) %>%
+  #mutate(diff_21 = (day21) - (day0),
+         # diff_14 = (day14) - (day0)) %>%
+  pivot_longer(c("day14", "day21", "day0"), names_to = "day", values_to = "counts") %>% #View()
+  filter(day=="day14", MG.Status == "MG") %>% #View()
+  ggplot(aes(x = tolerance_median, y = log2(counts)#, color = condition#, shape=day#, group = "BirdID"#, size=tolerance_cat_num
+             )) +
+    geom_point() +
+    # geom_line() +
+    # ggbeeswarm::geom_quasirandom(alpha=1) +
+    # geom_line() +
+    geom_smooth(method="lm") +
+    # facet_wrap(~day) +
+    # scale_y_log10() +
+    theme_classic() + 
+    facet_wrap(~Diet)
+```
+
+temporary
+```{r}
+
+# plot individual genes (alternate2)
+y_tolerance$counts %>%
+  as.data.frame() %>%
+  rownames_to_column("gene") %>%
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>%
+  separate_wider_delim(sample, names = c("sampleID","BirdID", "condition-diet", "day"), delim = "_", too_many = "merge") %>%
+  separate_wider_delim(`condition-diet`, names = c("condition","diet"), delim = ".", too_many = "merge") %>%
+  # filter(gene == "103826733") %>% #CPT1A, top DE gene for diet
+  filter(gene == genes_to_plot[i]) %>%
+  # filter(gene == "103824949") %>% #bone morph protein (tolerance relevant)
+  # filter(gene == "103822409") %>% #FGD2, gene that is expressed in macrophages
+  # filter(gene == "103823426") %>%
+  # filter(gene == "103813189") %>% # ALDH1L2, biggest FC in DE genes for lipid infection
+  # filter(gene == "103823426") %>% #JCHAIN
+  # filter(gene == "103827129") %>% #TENT5C
+  # filter(gene == "127061207") %>% #Evi5-like (oncogene)
+  # filter(gene=="103824071") %>% #BCAN, biggest expression FC for diet, higher in lipid
+  # filter(gene == "103817526") %>%  # Ablim3
+  left_join(metadata_phenotypes2, by = c("sampleID" = "Sample.ID")) %>%
+  dplyr::select(-c(sampleID,Day,MG.Diet.Day, MG.Day,Diet.Day, Exposure.Diet.Day,MG.active,Exposure.MG,Exposure.Diet.Day, Exposure.Diet)) %>%
+  group_by(BirdID) %>%
+  pivot_wider(names_from = "day", values_from = "counts") %>%
+  # mutate(day0 = replace_na(`0`, 0),
+  #               day14 = replace_na(`14`, 0),
+  #               day21 = replace_na(`21`, 0)) %>%
+  mutate(day0 = replace_na(`0`, NA),
+                day14 = replace_na(`14`, NA),
+                day21 = replace_na(`21`, NA)) %>%
+  #mutate(diff_21 = (day21) - (day0),
+         # diff_14 = (day14) - (day0)) %>%
+  pivot_longer(c("day14", "day21", "day0"), names_to = "day", values_to = "counts") %>% #View()
+  # filter(day=="day14") %>%
+  filter(day!="day0") %>%
+  filter(MG.Status == "MG") %>% #View()
+  ggplot(aes(x = tolerance_median, y = log2(counts)#, color = condition#, shape=day#, group = "BirdID"#, size=tolerance_cat_num
+             )) +
+    geom_point() +
+    # geom_line() +
+    # ggbeeswarm::geom_quasirandom(alpha=1) +
+    # geom_line() +
+    geom_smooth(method="lm") +
+    # facet_wrap(~day) +
+    # scale_y_log10() +
+    theme_classic() + 
+    facet_wrap(~Diet)
+```
+
+
+I want to make a bar chart of ribosomal gene's logFC across all of the conditions, let's try it:
+```{r}
+topTags_inf_edgeR %>%
+  left_join(topTags_diet_edgeR,by = c("gene" = "gene", "gene_name" = "gene_name", "logCPM"="logCPM", "description" = "description"), suffix = c("_inf","_diet")) %>%
+  left_join(topTags_ixn_edgeR,by = c("gene" = "gene", "gene_name" = "gene_name", "logCPM"="logCPM", "description" = "description")) %>%
+  left_join(topTags_tolerance, by = c("gene" = "gene", "gene_name" = "gene_name", #"logCPM"="logCPM", 
+                                      "description" = "description"#, "entrezgene_id" = "entrezgene_id"
+                                      ), suffix = c("_interaction", "_tolerance")) %>%
+  left_join(topTags_ES_inf, by = c("gene" = "gene", "gene_name" = "gene_name", #"logCPM"="logCPM", 
+                                   "description" = "description")) %>%
+  mutate(logFC_ES = logFC,
+         FDR_ES = FDR) %>%
+  filter(str_detect(gene_name, '^RPL|^RPS')) %>%
+  dplyr::select(c(gene_name,contains("logFC_"))) %>%
+  pivot_longer(-gene_name, names_to = "condition", values_to = "logFC") %>%
+  ggplot(aes(x = reorder(gene_name,logFC), y = logFC#, fill = condition
+             )) +
+  geom_col(position = "dodge") +
+  theme_classic() +
+  facet_wrap(~condition) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("logFC of Ribosomal genes across comparisons")
+
+
+ggsave(here("figures/ribosome_genes_fig.png"), width = 50, height = 20, units = "cm", dpi=1200)
+```
+

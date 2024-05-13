@@ -21,3 +21,4 @@ test_geneID2GO_BM.map
 *.rdb
 *.rdx
 .Rproj.user
+*.gz
