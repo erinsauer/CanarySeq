@@ -659,7 +659,7 @@ metadata_phenotypes_ixn  %>%
 
 library(biomartr)
 # more complete annotation for genes.
-biomartr::getCollection( db = "refseq", organism = "Serinus canaria")
+# biomartr::getCollection( db = "refseq", organism = "Serinus canaria")
 
 scan_gff <- biomartr::read_gff("./_db_downloads/collections/refseq/Serinus_canaria/Serinus_canaria_genomic_refseq.gff.gz") %>%
   filter(type=="gene", source == "Gnomon") %>%
@@ -5401,7 +5401,7 @@ set.seed(123)
 dummy <- tpm_data %>% t() %>%
   data.frame() %>% rownames_to_column("sample") %>%
   left_join(metadata_phenotypes, by=c("sample"="SampID")) %>%
-  # filter(MG.Status == "MG") %>%
+  filter(MG.Status == "MG") %>%
   # filter(ES>0) %>%
   # dplyr::select(where(~ any(. != 0))) %>%
   mutate(ES = as.ordered(as.factor(ES)))
@@ -5411,7 +5411,7 @@ dummy <- tpm_data %>% t() %>%
 #                 B = as.factor(sample(x = c("day", "night"), size = 50, 
 #                                      replace = T)),
 #                 C = as.factor(sample(x = c("blue", "red", "green"), size = 50, replace = T)))
-
+library(tidyverse)
 library(VGAM)
 mod_f <- function(x) {
   vglm(
@@ -5437,20 +5437,20 @@ edgeR_analyzed_genes <- topTags_inf_edgeR %>% left_join(result_BM_merged, by=c("
   # filter(logFC>0.5) %>%
   pull(match_gene, name = gene)# %>% unique()
 
-n <- 1000
+n <- length(unique(edgeR_analyzed_genes))#1000
 
 formulas <- c(paste0("ES~", rownames(tpm_data)[rownames(tpm_data) %in% edgeR_analyzed_genes
                                                ]))[1:n]
 
 tbl <- tibble(forms = formulas)
 
-tbl_2 <- tbl %>% mutate(all = map(formulas, mod_f),
-                        gla = all %>% map(summary),
-                        coef_tmp = gla %>% map(coef),
-                        coef = coef_tmp %>% map(as_tibble, rownames = "gene")
+tbl_2 <- tbl %>% mutate(all = map(formulas, mod_f) %>% map(summary) %>% map(coef) %>% map(as_tibble, rownames = "gene")
+                        # gla = all %>% map(summary),
+                        # coef_tmp = gla %>% map(coef),
+                        # coef = coef_tmp %>% map(as_tibble, rownames = "gene")
                         # aug = all %>% map(augment),
                         # AIC = all%>% map_dbl("AIC")
-                        ) %>% dplyr::select(-all, -gla, -coef_tmp)
+                        )# %>% dplyr::select(-all, -gla, -coef_tmp)
 
 # tbl_2$coef %>% purrr::reduce(c) %>% as.data.frame(names(.)) %>% rownames_to_column("gene") %>%
 #   filter(!str_detect(gene, "Intercept")) %>%
@@ -5458,9 +5458,8 @@ tbl_2 <- tbl %>% mutate(all = map(formulas, mod_f),
 #   head(10)
 
 
-
-tbl_2$coef %>% set_names(rownames(tpm_data)[1:n]) %>% dplyr::bind_rows() %>%
-  filter(!str_detect(gene, "Intercept")) %>% left_join(result_BM_merged, by=c("gene" = "gene_tag")) %>% View()
+tbl_2$all %>% set_names(rownames(tpm_data)[1:n]) %>% dplyr::bind_rows() %>%
+  filter(!str_detect(gene, "Intercept")) %>% View()# left_join(result_BM_merged, by=c("gene" = "gene_tag")) %>% View()
 
 # vglm(formula = "ES~LOC103823426", family = cumulative(parallel = TRUE, #jchain
 #                         reverse = FALSE),
