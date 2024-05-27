@@ -22,3 +22,5 @@ test_geneID2GO_BM.map
 *.rdx
 .Rproj.user
 *.gz
+_db_downloads/collections/refseq/Serinus_canaria/doc_Serinus_canaria_db_refseq.tsv
+_db_downloads/collections/refseq/Serinus_canaria/doc_Serinus canaria_db_refseq.txt
