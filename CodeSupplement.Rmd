@@ -1,0 +1,563 @@
+---
+title: "Code Supplement Canary-Seq"
+author: "Carson Stacy"
+date: "2024-07-15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pak("eulerr")
+library(eulerr)
+library(cowplot)
+```
+
+
+# Figure 1
+
+#TODO Add Erin's code for this figure here.
+```{r}
+
+```
+
+
+# Figure 2
+
+## 2A
+```{r}
+# ggVennDiagram::ggVennDiagram(
+#   x = list(#"Infection_tol" = topTags_tolerance %>% filter(FDR < 0.05) %>% pull(gene),
+#            # "Diet_tol" = topTags_tolerance_diet %>% filter(FDR < 0.05) %>% pull(gene),
+#            # "Interaction_tol"  = topTags_tolerance_ixn%>% filter(FDR < 0.05) %>% pull(gene),
+#            "infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
+#            "Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet], 
+#            "Interaction" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixn]
+#            )
+# )
+
+# function to convert eulerr to ggplot (https://gist.github.com/danlooo/d23d8bcf8856c7dd8e86266097404ded.js")
+# prefer to move to a helper function file.
+ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, ...) {
+  data <-
+    eulerr::euler(combinations = combinations) %>%
+    plot(quantities = show_quantities) %>%
+    pluck("data")
+  
+  tibble() %>%
+    ggplot() +
+    ggforce::geom_ellipse(
+      data = data$ellipses %>% as_tibble(rownames = "Set"),
+      mapping = aes(x0 = h, y0 = k, a = a, b = b, angle = 0, fill = Set),
+      alpha = 0.5
+    ) +
+    geom_text(
+      data = {
+        data$centers %>%
+          mutate(
+            label = labels %>% map2(quantities, ~ {
+              if (!is.na(.x) && !is.na(.y) && show_labels) {
+                paste0(.x, "\n", sprintf(.y, fmt = "%.4g"))
+              } else if (!is.na(.x) && show_labels) {
+                .x
+              } else if (!is.na(.y)) {
+                .y
+              } else {
+                ""
+              }
+            })
+          )
+      },
+      mapping = aes(x = x, y = y, label = label)
+    ) +
+    theme(panel.grid = element_blank()) +
+    coord_fixed() +
+    scale_fill_hue()
+}
+
+
+fig2A <- list("Infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
+     "Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet],
+     "Infection:Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixn]
+     ) %>%
+  ggeulerr(shape="circle") +
+    theme_void(base_size = 18)+
+    theme(legend.position = "bottom", 
+          legend.title= element_blank(),
+          plot.margin = margin(t = 5,  # Top margin
+                             r = 0,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 5)) # Left margin
+  
+ggsave(plot = fig2A, filename= here("figures/venn_plot_interaction_fig.png"), width = 16, height = 16, units = "cm", dpi=1200)
+
+```
+
+
+## 2B
+Density plot of estimated gene expression changes due to infection, according to diet.
+```{r}
+fig2B <- topTags_lipid_inf_edgeR %>%
+  left_join(., topTags_protein_inf_edgeR, by = c("gene","gene_name","description"),suffix = c("_lipid", "_protein")) %>%
+  left_join(., topTags_inf_edgeR, by = c("gene","gene_name","description")) %>%
+  pivot_longer(c(logFC_lipid, logFC_protein), names_to = "diet", values_to = "logFC_plot") %>%
+  mutate(diet = 
+           case_when(diet == "logFC_protein" ~ "protein",
+                     diet == "logFC_lipid" ~ "lipid")) %>%
+mutate(fdr = case_when(
+  diet == "lipid" ~ FDR_lipid,
+  diet == "protein" ~ FDR_protein
+)) %>%
+  filter(FDR_lipid < 0.05| FDR_protein < 0.05 | FDR < 0.05) %>%
+  ggplot(aes(x=logFC_plot,  color = diet, fill = diet
+             )) +
+  geom_density(alpha=0.5#,bw=0.01,#,outline.type = "upper"
+                  ) +
+  # geom_histogram(aes(y=..density..), alpha=0.5, position="identity", bins=30) +
+  xlim(-3, 3) +
+  # facet_grid(rows=vars(diff_day), cols=vars(diet)) +
+  # scale_y_sqrt() +
+  #ggtitle("2B") +
+  xlab("logFC") +
+  theme_classic(base_size = 18) +
+    theme(legend.position = c(0.8,0.6))
+
+
+ggsave(plot = fig2B, filename = here("figures/logFC_density_DE_in_diet_fig.png"), width = 16, height = 16, units = "cm", dpi=1200)
+```
+
+
+## 2C
+```{r}
+font_size <- 35
+
+tbl_tol_results %>%
+  left_join(topTags_diet_uninf_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM"="logCPM", "description" = "description"), suffix = c("_inf", "_diet")) %>%
+  mutate(FDR_diet = FDR) %>%
+  dplyr::select(-FDR) %>%
+  left_join(topTags_logLoad_inf, by = c("gene.z" = "gene", "gene_name" = "gene_name",
+                                        #"logCPM"="logCPM", 
+                                        "description" = "description"
+                                        ),suffix = c("_inf", "_logLoad")
+            ) %>%# View()
+  left_join(topTags_ixn_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM_inf"="logCPM", "description" = "description"),suffix = c("_logLoad", "_ixn")) %>%
+  left_join(topTags_lipid_inf_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM_inf"="logCPM", "description" = "description")) %>%
+  left_join(topTags_protein_inf_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM_inf"="logCPM", "description" = "description"),suffix = c("_inf_lipid", "_inf_prot")) %>%
+  filter(#FDR_tol < 0.05 & 
+           FDR_inf < 0.05 & FDR_diet < 0.05 & FDR_ixn < 0.05 #& 
+           & FDR_inf_lipid < 0.05
+           # FDR_logLoad < 0.05 
+           #|
+           # gene_name_tol %in% c("JCHAIN", "EXOG",
+           #                    "LOC103823677", "MZB1", "LOC103818060",
+           #                    "MYD88", "LOC108961394",
+           #                    "PTGDR", "PTGER2", "NEFM", "NEFL")
+           ) %>%
+  # filter(gene_name_tol %in% c("JCHAIN", "EXOG",
+  #                             "LOC103823677", "MZB1", "LOC103818060", 
+  #                             "MYD88", "LOC108961394",
+  #                             "PTGDR", "PTGER2", "NEFM", "NEFL")) %>%
+  dplyr::select(gene_name,#_tol, 
+                description,#_tol, 
+                logFC_inf, 
+                logFC_inf_lipid,
+                logFC_inf_prot,
+                # logFC_logLoad, 
+                logFC_diet, 
+                logFC_ixn, 
+                FDR_inf,
+                #Estimate, #logCPM_inf,
+                # FDR_tol, 
+                FDR_diet,
+                FDR_ixn,
+                FDR_inf_lipid,
+                FDR_inf_prot
+                ) %>%
+  arrange(desc(logFC_inf)) %>% 
+  # mutate(across(is.numeric, round, 3)) %>% 
+  mutate(gene_name = replace_na(gene_name, "TENT5C"),
+         description = replace_na(description, "terminal nucleotidyltranferase 5C")) %>% 
+  gt::gt() %>%
+  gt::tab_options(table.font.size = font_size) %>%
+  gt::cols_hide(c(FDR_inf, FDR_ixn, FDR_diet, FDR_inf_prot, FDR_inf_lipid)) %>%
+  gt::tab_header(title = "31 Genes Differentially Expressed by Diet, Infection, and Diet:Infection") %>%
+  gt::fmt_number(decimals = 2) %>%
+  gt::cols_label(gene_name = "Gene Name",
+                 description = "Description",
+                 logFC_inf = "logFC Infection (all)",
+                 logFC_inf_lipid = "logFC Infection (lipid)",
+                 logFC_inf_prot = "logFC Infection (protein)",
+                 logFC_diet = "logFC Diet (protein-lipid)",
+                 logFC_ixn = "logFC Interaction"
+                 #Estimate = "Estimate (ES)",
+                 #logCPM_inf = "logCPM"
+                 ) %>%
+  gt::cols_width(gene_name ~ "5em",
+                 description ~ "20em",
+                 logFC_inf ~ "5em",
+                 logFC_inf_lipid ~ "5em",
+                 logFC_inf_prot ~ "5em",
+                 logFC_diet ~ "5em",
+                 logFC_ixn ~ "5em",
+                 # Estimate ~ "5em",
+                 # logCPM_inf ~ "5em"
+                 ) %>%
+  gt::data_color(columns = c(logFC_inf, logFC_inf_lipid, logFC_inf_prot, logFC_diet, logFC_ixn),
+             fn = scales::col_numeric(palette = c("blue","white", "red"), domain = c(-5,5))) %>%
+  gt::cols_align(columns = c(logFC_inf, logFC_inf_lipid, logFC_inf_prot, logFC_diet, logFC_ixn), align="center") %>%
+  gt::tab_style(style = 
+              list(
+                gt::cell_text(weight = "bold")
+              ),
+            locations = gt::cells_body(columns = logFC_inf,
+                                   rows = FDR_inf < 0.05)
+  ) %>%
+  gt::tab_style(style = 
+              list(
+                gt::cell_text(weight = "bold")
+              ),
+            locations = gt::cells_body(columns = logFC_diet,
+                                   rows = FDR_diet < 0.05)
+  ) %>%
+  gt::tab_style(style = 
+              list(
+                gt::cell_text(weight = "bold")
+              ),
+            locations = gt::cells_body(columns = logFC_ixn,
+                                   rows = FDR_ixn < 0.05)
+  ) %>%
+  gt::tab_style(style = 
+              list(
+                gt::cell_text(weight = "bold")
+              ),
+            locations = gt::cells_body(columns = logFC_inf_lipid,
+                                   rows = FDR_inf_lipid < 0.05)
+  ) %>%
+  gt::tab_style(style = 
+              list(
+            gt::cell_text(weight = "bold")
+              ),
+            locations = gt::cells_body(columns = logFC_inf_prot,
+                                   rows = FDR_inf_prot < 0.05)
+  ) %>%
+  gt::gtsave(file = here::here("tables/top_genes_ixndietinf_colors.png"), zoom=2, vwidth = 4000, vheight=4000, expand=20)
+```
+
+Figure 2 Panels
+```{r, fig.width=12, fig.height=8}
+fig2C <- ggdraw() + draw_image(here("tables/top_genes_ixndietinf_colors.png")) 
+
+fig2AB <- cowplot::plot_grid(fig2A, fig2B, ncol=1, labels = c("A","B"))
+fig2 <- cowplot::plot_grid(fig2AB, NULL, fig2C, rel_widths = c(0.8, -0.05, 1), ncol=3,labels = c(" "," ", " "))
+
+fig2
+
+ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 24, height = 16, units = "cm", dpi=1200, bg="white")
+```
+
+
+
+# Figure 3
+
+## Fig 3A 
+
+Heatmap of DE genes in all contrasts
+```{r, fig.height=10, fig.width=8}
+logFC_all_contrasts <- topTags_inf_edgeR %>%
+  arrange(gene) %>%
+  #filter(FDR< 0.05) %>%
+  #dplyr::select(gene) %>%
+  mutate(repressed_in_infection = gene %in% names(genes_lower_in_infection),
+         induced_in_infection = gene %in% names(genes_higher_in_infection),
+         higher_in_Protein = gene %in% names(genes_higher_protein_diet),
+         higher_in_Lipid = gene %in% names(genes_higher_lipid_diet),
+         Protein_ixn_bigger_Inf = gene %in% names(genes_bigger_protein_infection_difference),
+         Lipid_ixn_bigger_Inf = gene %in% names(genes_bigger_lipid_infection_difference),
+         # Here we use ifelse to assign logFC values from the named vector based on the gene presence.
+        # logFC_repressed_in_infection = 
+        #   ifelse(gene %in% names(genes_lower_in_infection), genes_lower_in_infection[gene], NA),
+        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
+        # 
+        # logFC_higher_in_Protein = ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
+        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
+        # logFC_Protein_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
+        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
+        logFC_infection = topTags_inf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+          # case_when(
+          #   gene %in% names(genes_lower_in_infection) ~ genes_lower_in_infection[gene],
+          #   gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
+          #   TRUE ~ NA_real_
+          # ),
+          # )
+        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
+        
+        logFC_diet = topTags_diet_uninf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+        #case_when(
+          # gene %in% names(genes_higher_protein_diet) ~ genes_higher_protein_diet[gene],
+          # gene %in% names(genes_higher_lipid_diet) ~ genes_higher_lipid_diet[gene],
+          # TRUE ~ NA_real_
+        #),
+        # )
+          # ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
+        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
+        logFC_interaction = topTags_ixn_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+  #case_when(
+        #   gene %in% names(genes_bigger_protein_infection_difference) ~ genes_bigger_protein_infection_difference[gene],
+        #   gene %in% names(genes_bigger_lipid_infection_difference) ~ genes_bigger_lipid_infection_difference[gene],
+        #   TRUE ~ NA_real_
+        # ),
+        FDR_infection = FDR, #case_when(
+          # gene %in% names(fdr_genes_infection) ~ fdr_genes_infection[gene],
+          #gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
+          # TRUE ~ NA_real_
+       # ),
+        FDR_diet = topTags_diet_uninf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
+  # case_when(
+  #         gene %in% names(fdr_genes_diet) ~ fdr_genes_diet[gene],
+  #         # gene %in% names(genes_higher_protein_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
+  #         # gene %in% names(genes_higher_lipid_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
+  #         TRUE ~ NA_real_
+  #       ),
+        FDR_interaction = topTags_ixn_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
+  # case_when(
+  #         # gene %in% ((topTags_ixn_edgeR |>
+  # # filter(FDR < 0.05) |> pull(gene))) ~ (filter(topTags_ixn_edgeR, paste0(gene) == paste0(gene))$FDR),
+  #         gene %in% names(fdr_genes_ixn) ~ fdr_genes_ixn[gene],
+  #         # gene %in% names(genes_bigger_protein_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
+  #         # gene %in% names(genes_bigger_lipid_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
+  #         TRUE ~ NA_real_
+  #       )
+        # )
+          # ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
+        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
+        logFC_ES = topTags_ES_inf |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+        logFC_logLoad = topTags_logLoad_inf |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+        # logFC_tolerance = topTags_tolerance |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+        logFC_inf_lipid = topTags_lipid_inf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+        logFC_inf_protein = topTags_protein_inf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
+        FDR_inf_lipid = topTags_lipid_inf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
+        FDR_inf_protein = topTags_protein_inf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
+        FDR_ES = topTags_ES_inf |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
+        FDR_logLoad = topTags_logLoad_inf |> arrange(gene) |> filter(gene == gene) |> pull(FDR)#,
+        # FDR_tolerance = topTags_tolerance |> arrange(gene) |> filter(gene == gene) |> pull(FDR)
+   ) %>%
+  mutate(DE_in_infection = repressed_in_infection | induced_in_infection,
+         DE_in_diet = higher_in_Protein | higher_in_Lipid,
+         DE_in_ixn = Protein_ixn_bigger_Inf | Lipid_ixn_bigger_Inf) %>%
+  mutate(gene_label = case_when(
+    abs(logFC)>1 ~ gene_name,
+    TRUE ~ NA_character_
+  ),
+  nice_gene_name = case_when(
+    !is.na(gene_name) ~ gene_name,
+    TRUE ~ paste0("LOC",gene)
+  ))
+
+# Define significance level
+sig.cutoff <- 0.05
+
+df_heatmap <- logFC_all_contrasts %>%
+  # filter(gene %in% genes_de_all_3) %>%
+  filter(DE_in_infection | DE_in_diet | DE_in_ixn) %>%
+  # filter(FDR_interaction < 0.05 & abs(logFC_interaction)>2 | FDR_infection < 0.05 & abs(logFC_infection)>1 | FDR_diet < 0.05 & abs(logFC_diet)>1 #| FDR_interaction < 0.05 & FDR_infection < 0.05  & FDR_diet < 0.05 
+         # ) %>% #View()
+  
+  # filter(FDR_interaction < sig.cutoff & FDR_diet < sig.cutoff & (abs(logFC_interaction) > 1 | abs(logFC_diet) > 1)) %>%
+  
+  # filter(str_detect(gene_name, '^RPL|^RPS')) %>%
+  # filter(gene_name %in% immune_genes$SYMBOL) %>%
+  # filter(FDR_interaction < 0.05 &  FDR_infection < 0.05 & FDR_diet < 0.05) %>% #View()
+  # slice_head(n=20) %>%
+  # mutate_if(is.numeric, round, 2) %>%
+  dplyr::select(
+    gene,
+    gene_name,
+    nice_gene_name,
+    description,
+    logFC_infection,
+    logFC_diet,
+    logFC_interaction,
+    FDR_infection,
+    FDR_diet,
+    FDR_interaction,
+    logFC_inf_lipid,
+    logFC_inf_protein,
+    FDR_inf_lipid,
+    FDR_inf_protein
+    # logFC_ES,
+    # logFC_logLoad,
+    # FDR_ES,
+    # FDR_logLoad
+  )
+
+# Split into logFC and FDR matrices
+logFC_matrix <- as.matrix(df_heatmap[, c("logFC_infection", "logFC_inf_lipid", "logFC_inf_protein", "logFC_diet", "logFC_interaction"
+                                         )])
+rownames(logFC_matrix) <-  paste0(df_heatmap$nice_gene_name, " - ", df_heatmap$description)
+
+FDR_matrix <- as.matrix(df_heatmap[, c("FDR_infection", "FDR_inf_lipid", "FDR_inf_protein", "FDR_diet", "FDR_interaction"
+                                       )])
+rownames(FDR_matrix) <- paste0(df_heatmap$nice_gene_name, " - ", df_heatmap$description)
+
+
+
+
+
+significance_matrix <- ifelse(FDR_matrix < sig.cutoff, "*", " ") %>%
+  replace_na(" ")
+
+colnames(logFC_matrix) <- c("Inf (all)", "Inf (L)", "Inf (P)", "Diet", "Interaction"
+                            )
+
+df <- scale(logFC_matrix)
+factoextra::fviz_nbclust(k.max = 54, df, factoextra::hcut, method = "silhouette", nboot = 500) +
+# geom_vline(xintercept = 4, linetype = 2)+
+labs(subtitle = "Elbow method")
+
+
+# add functional enrichments
+heatmap_enrichment_terms = list(
+    text1 = c("Translation", "Translation Regulation", "Ribonucleoprotein Complex"),
+    text2 = c("Nuclear Protein Complex", "Homologous Recombination*"),
+    text3 = c("Transferase Activity*"),
+    text4 = c("Lysosome", "Protein Kinase Activity", "Phosphorylation"),
+    text5 = c("Innate Immune Response", "Defense Response", "Apoptosis"),
+    text6 = c("Lysosome*", "Lytic Vacuole*"),
+    text7 = c("Apoptosis*", "Channel Activity*"),
+    text8 = c("ECM-receptor interaction*", "Nucleosome*")
+)
+
+# note how we set the width of this empty annotation
+ha = rowAnnotation(foo = anno_empty(border = FALSE, 
+    width = max_text_width(unlist(heatmap_enrichment_terms)) + unit(4, "mm")))
+
+# Generate the heatmap with internal annotations
+heatmap <- Heatmap(logFC_matrix, name = "logFC", 
+                   cluster_rows = TRUE,
+                   show_row_dend = TRUE,
+                   width = unit(8, "cm"),
+                   heatmap_legend_param = list(direction = "horizontal"),
+                   cluster_columns = FALSE, 
+                   split=8,
+                   show_row_names = FALSE,
+                   show_column_names = TRUE, 
+                   column_names_side = "top",
+                   clustering_distance_rows = "pearson",
+                   row_names_gp = gpar(fontsize = 10),
+                   column_names_gp = gpar(fontsize = 12),
+                   column_names_rot = 0,
+                   column_names_centered = TRUE,
+                   right_annotation = ha,
+                   cell_fun = function(j, i, x, y, width, height, fill) {
+                       grid.rect(x, y, width, height, gp = gpar(fill = fill, col = NA))
+                       if (significance_matrix[i, j] == "*") {
+                           grid.text("*", x, y, gp = gpar(col = "black", alpha=0.5, fontsize = 6))
+                       }
+                   }
+                   ) 
+for(i in 1:8) {
+    + decorate_annotation("foo", slice = i, {
+        grid.rect(x = 0.01, width = unit(0.75, "mm"), gp = gpar(fill = "black", col = NA), just = "left")
+        grid.text(paste(heatmap_enrichment_terms[[i]], collapse = "\n"), x = unit(4, "mm"), just = "left")
+    })
+}
+
+
+# Draw the heatmap
+ht <- draw(heatmap2, heatmap_legend_side = "bottom")
+
+ht
+
+#row_order(ht)
+
+png(file="figures/test.logFC_heatmap.png", width=10, height=9, res=1200,units = "in")
+heatmap2 <- Heatmap(logFC_matrix, name = "logFC", 
+                   cluster_rows = TRUE,
+                   show_row_dend = TRUE,
+                   width = unit(8, "cm"),
+                   heatmap_legend_param = list(direction = "horizontal"),
+                   cluster_columns = FALSE, 
+                   split=8,
+                   show_row_names = FALSE,
+                   show_column_names = TRUE,
+                   column_names_side = "top",
+                   clustering_distance_rows = "pearson",
+                   row_names_gp = gpar(fontsize = 10),
+                   column_names_gp = gpar(fontsize = 12),
+                   column_names_rot = 0,
+                   column_names_centered = TRUE,
+                   right_annotation = ha,
+                   cell_fun = function(j, i, x, y, width, height, fill) {
+                       grid.rect(x, y, width, height, gp = gpar(fill = fill, col = NA))
+                       if (significance_matrix[i, j] == "*") {
+                           grid.text("*", x, y, gp = gpar(col = "black", alpha=0.5, fontsize = 6))
+                       }
+                   }
+                   ) 
+
+heatmap2 
+for(i in 1:8) {
+    + decorate_annotation("foo", slice = i, {
+        grid.rect(x = 0.01, width = unit(0.75, "mm"), gp = gpar(fill = "black", col = NA), just = "left")
+        grid.text(paste(heatmap_enrichment_terms[[i]], collapse = "\n"), x = unit(4, "mm"), just = "left")
+    })
+}
+#draw(., )
+dev.off()
+```
+
+enrichment of each cluster
+```{r}
+list_GO_results <- list()
+j=0
+for (i in row_order(ht)) {
+  # print(i)
+  genes_i <- rownames(heatmap@matrix)[i] %>%
+    word(., 1)
+  j = j+1
+  list_GO_results[[j]] <- enrichGO(gene = logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i) %>%
+    pull(gene)  ,
+                OrgDb         = orgdb,
+                keyType       = 'ENTREZID',
+                # universe = topTags_diet_edgeR$gene,
+                # universe      = df_heatmap$gene,#unfiltered_genes_with_GO,
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.8,
+                qvalueCutoff  = 0.8) %>%
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
+    data.frame()
+  
+}
+
+list_kegg_results <- list()
+j=0
+for (i in row_order(ht)) {
+  # print(i)
+  genes_i <- rownames(heatmap@matrix)[i] %>%
+    word(., 1)
+  j = j+1
+  list_kegg_results[[j]] <- enrichKEGG(gene = logFC_all_contrasts %>%
+    filter(gene_name %in% genes_i) %>%
+    pull(gene)  ,
+               organism = 'scan', keyType = "kegg",
+               universe = topTags_diet_edgeR$gene,
+               pvalueCutoff = 0.8,
+                qvalueCutoff  = 0.8) %>%
+  # filter(ONTOLOGY %in% c("MF","BP")) |>
+  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
+    data.frame()
+}
+```
+
+```{r}
+
+```
+
+## Fig3B
+
+## Fig3C
