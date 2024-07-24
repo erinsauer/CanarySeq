@@ -5955,7 +5955,7 @@ de_ES <- tbl_2$all %>% set_names(rownames(tpm_data)[1:n]) %>%
   # intersect(topTags_inf_edgeR %>% filter(FDR <0.05) %>% pull(gene)) #%>% length()
 
 topTags_inf_edgeR %>%
-  filter(gene %in% de_ES) %>% View()
+  filter(gene %in% de_ES) #%>% View()
 
 de_ES[de_ES %ni% de_ES_and_inf]
 ```
