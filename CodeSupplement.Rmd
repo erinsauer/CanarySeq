@@ -15,8 +15,47 @@ library(eulerr)
 library(cowplot)
 library(ggplot2)
 library(tidyverse)
+
+library(ggpubr)
+library(here)
+library(kableExtra)
+library(AnnotationHub)
+library(gridtext)
+library(graphics)
+
+options(ggrepel.max.overlaps = Inf)
 ```
 
+```{r}
+# load figure code objects.
+DE_genes_edgeR_upset
+topTags_lipid_inf_edgeR
+topTags_protein_inf_edgeR
+topTags_inf_edgeR
+topTags_ixn_edgeR
+topTags_diet_uninf_edgeR
+topTags_logLoad_inf
+
+tbl_tol_results
+
+gseGO_infection
+gseGO_infection_protein
+gseGO_infection_lipid
+gseKEGG_infection
+gseKEGG_infection_protein
+gseKEGG_infection_lipid
+gseGO_diet_uninf
+
+genes_lower_in_infection
+genes_higher_in_infection
+genes_higher_protein_diet
+genes_higher_lipid_diet
+genes_bigger_protein_infection_difference
+genes_bigger_lipid_infection_difference
+
+topTags_ES_inf
+topTags_logLoad_inf
+```
 
 # Figure 1
 
@@ -30,19 +69,9 @@ library(tidyverse)
 
 ## 2A
 ```{r}
-# ggVennDiagram::ggVennDiagram(
-#   x = list(#"Infection_tol" = topTags_tolerance %>% filter(FDR < 0.05) %>% pull(gene),
-#            # "Diet_tol" = topTags_tolerance_diet %>% filter(FDR < 0.05) %>% pull(gene),
-#            # "Interaction_tol"  = topTags_tolerance_ixn%>% filter(FDR < 0.05) %>% pull(gene),
-#            "infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
-#            "Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet], 
-#            "Interaction" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixn]
-#            )
-# )
-
 # function to convert eulerr to ggplot (https://gist.github.com/danlooo/d23d8bcf8856c7dd8e86266097404ded.js")
 # prefer to move to a helper function file.
-ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, ...) {
+ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, text_size = 2, ...) {
   data <-
     eulerr::euler(combinations = combinations) %>%
     plot(quantities = show_quantities) %>%
@@ -72,7 +101,7 @@ ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, .
             })
           )
       },
-      mapping = aes(x = x, y = y, label = label)
+      mapping = aes(x = x, y = y, label = label), size = text_size
     ) +
     theme(panel.grid = element_blank()) +
     coord_fixed() +
@@ -82,16 +111,19 @@ ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, .
 
 fig2A <- list("Infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
      "Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet],
-     "Infection:Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixn]
+     "     Infection × Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixn]
      ) %>%
-  ggeulerr(shape="circle") +
-    theme_void(base_size = 18)+
-    theme(legend.position = "bottom", 
+  ggeulerr(shape="circle", text_size = 2.5) +
+    theme_void(base_size = 2)+
+    theme(legend.position = "none", 
           legend.title= element_blank(),
+            text = element_text(size=6),
           plot.margin = margin(t = 5,  # Top margin
                              r = 0,  # Right margin
                              b = 5,  # Bottom margin
                              l = 5)) # Left margin
+
+fig2A
   
 ggsave(plot = fig2A, filename= here("figures/venn_plot_interaction_fig.png"), width = 16, height = 16, units = "cm", dpi=1200)
 
@@ -99,41 +131,45 @@ ggsave(plot = fig2A, filename= here("figures/venn_plot_interaction_fig.png"), wi
 
 
 ## 2B
-Density plot of estimated gene expression changes due to infection, according to diet.
 ```{r}
-fig2B <- topTags_lipid_inf_edgeR %>%
-  left_join(., topTags_protein_inf_edgeR, by = c("gene","gene_name","description"),suffix = c("_lipid", "_protein")) %>%
-  left_join(., topTags_inf_edgeR, by = c("gene","gene_name","description")) %>%
-  pivot_longer(c(logFC_lipid, logFC_protein), names_to = "diet", values_to = "logFC_plot") %>%
-  mutate(diet = 
-           case_when(diet == "logFC_protein" ~ "protein",
-                     diet == "logFC_lipid" ~ "lipid")) %>%
-mutate(fdr = case_when(
-  diet == "lipid" ~ FDR_lipid,
-  diet == "protein" ~ FDR_protein
-)) %>%
-  filter(FDR_lipid < 0.05| FDR_protein < 0.05 | FDR < 0.05) %>%
-  ggplot(aes(x=logFC_plot,  color = diet, fill = diet
-             )) +
-  geom_density(alpha=0.5#,bw=0.01,#,outline.type = "upper"
-                  ) +
-  # geom_histogram(aes(y=..density..), alpha=0.5, position="identity", bins=30) +
-  xlim(-3, 3) +
-  # facet_grid(rows=vars(diff_day), cols=vars(diet)) +
-  # scale_y_sqrt() +
-  #ggtitle("2B") +
-  xlab("logFC") +
-  theme_classic(base_size = 18) +
-    theme(legend.position = c(0.8,0.6))
+fig2b.ma.inf.L <- topTags_lipid_inf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("MG Infection (Lipid)",show.names = F, 
+                   logFC.cutoff = logFC.cutoff) +
+  labs(x=expression("log"["2"]~"(counts per million)"),
+       y=expression("log"["2"]~"(fold change)")) +
+  ylim(-4,6) +
+     guides(color = guide_legend(override.aes = list(size = 2) ) ) + 
+      theme(
+            text = element_text(size=8),
+            axis.text = element_text(size=8),title = element_text(size=8))
+  
 
+fig2b.ma.inf.P <- topTags_protein_inf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("MG Infection (Protein)",show.names = F, 
+                   logFC.cutoff = logFC.cutoff) + theme(legend.position = "right") + guides(color = guide_legend(reverse=TRUE)) +
+  labs(x=expression("log"["2"]~"(counts per million)"),
+       y=expression("log"["2"]~"(fold change)")) +
+  ylim(-4,6) +
+     guides(color = guide_legend(override.aes = list(size = 2) ) ) + 
+      theme(
+            text = element_text(size=8),
+            axis.text = element_text(size=8),title = element_text(size=8))
 
-ggsave(plot = fig2B, filename = here("figures/logFC_density_DE_in_diet_fig.png"), width = 16, height = 16, units = "cm", dpi=1200)
+fig2B <- ggpubr::ggarrange(fig2b.ma.inf.L, fig2b.ma.inf.P, ncol=1,common.legend = T, legend = "bottom") 
+
+fig2B
+
+ggsave(plot = fig2B, filename = here("figures/logFC_density_DE_in_diet_fig.png"), width = 3, height = 4, units = "cm", dpi=1200)
 ```
+
+
 
 
 ## 2C
 ```{r}
-font_size <- 35
+font_size <- 45#35
 
 tbl_tol_results %>%
   left_join(topTags_diet_uninf_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM"="logCPM", "description" = "description"), suffix = c("_inf", "_diet")) %>%
@@ -184,14 +220,14 @@ tbl_tol_results %>%
   gt::gt() %>%
   gt::tab_options(table.font.size = font_size) %>%
   gt::cols_hide(c(FDR_inf, FDR_ixn, FDR_diet, FDR_inf_prot, FDR_inf_lipid)) %>%
-  gt::tab_header(title = "31 Genes Differentially Expressed by Diet, Infection, and Diet:Infection") %>%
+  gt::tab_header(title = "31 Genes Differentially Expressed by Diet, Infection, and Diet×Infection") %>%
   gt::fmt_number(decimals = 2) %>%
   gt::cols_label(gene_name = "Gene Name",
                  description = "Description",
                  logFC_inf = "logFC Infection (all)",
                  logFC_inf_lipid = "logFC Infection (lipid)",
                  logFC_inf_prot = "logFC Infection (protein)",
-                 logFC_diet = "logFC Diet (protein-lipid)",
+                 logFC_diet = "logFC Diet (protein vs lipid)",
                  logFC_ixn = "logFC Interaction"
                  #Estimate = "Estimate (ES)",
                  #logCPM_inf = "logCPM"
@@ -244,25 +280,356 @@ tbl_tol_results %>%
             locations = gt::cells_body(columns = logFC_inf_prot,
                                    rows = FDR_inf_prot < 0.05)
   ) %>%
+  tab_options(data_row.padding = px(15)) %>%
   gt::gtsave(file = here::here("tables/top_genes_ixndietinf_colors.png"), zoom=2, vwidth = 4000, vheight=4000, expand=20)
 ```
 
+
+## Figure 2 combined
 Figure 2 Panels
-```{r, fig.width=12, fig.height=8}
+```{r, fig.width=8, fig.height=6}
 fig2C <- ggdraw() + draw_image(here("tables/top_genes_ixndietinf_colors.png")) 
 
-fig2AB <- cowplot::plot_grid(fig2A, fig2B, ncol=1, labels = c("A","B"))
-fig2 <- cowplot::plot_grid(fig2AB, NULL, fig2C, rel_widths = c(0.8, -0.05, 1), ncol=3,labels = c(" "," ", " "))
+fig2AB <- cowplot::plot_grid(fig2A,NULL, fig2B, ncol=1, labels = c("A","B",""), rel_heights = c(1.1,0.12,2))
+fig2 <- cowplot::plot_grid(fig2AB, NULL, fig2C, rel_widths = c(0.7, 0.025, 1.3), ncol=3,labels = c(" ","C", " "))
 
 fig2
 
-ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 24, height = 16, units = "cm", dpi=1200, bg="white")
+ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 8, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
 # Figure 3
 
-## Fig 3A 
+
+
+## Fig3A
+
+```{r}
+cor_dietvInfL_DE <- left_join(topTags_lipid_inf_edgeR, topTags_diet_uninf_edgeR, #topTags_inf_edgeR,
+          by=c("gene","gene_name", "description"),suffix = c(".inf", ".diet")) %>%
+    left_join(topTags_inf_edgeR,by=c("gene","gene_name", "description")) %>%
+  filter(FDR.inf < 0.05 | FDR.diet < 0.05) %>% #View()
+  # filter(FDR < 0.05 & FDR.diet < 0.05) %>%
+  # filter(FDR.inf < 0.05 & FDR.diet < 0.05) %>% #View()
+  ggplot(aes(x=logFC.inf, y=logFC.diet)) +
+  geom_point(alpha = 0.5, color = "black", size=0.5) +
+  geom_smooth(method = "lm") +
+  ggpubr::stat_cor(label.x = -2.6, label.y = 6,  size = 2.5, digits = 2, label.sep="\n",
+                   aes(label = after_stat(r.label))) +
+  #ggpubr::stat_regline_equation(label.x = -3, label.y = 2, size = 3) +
+  # geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  geom_rug(col="#7CAE00", alpha = 0.2, sides="l",length = unit(0.05, "npc")) +
+  geom_rug(col="#F8766D", alpha=0.2, sides = "b",length = unit(0.05, "npc")) +
+  # ggrepel::geom_text_repel(aes(label=gene_name), box.padding = 0.5, size = 2) +
+  theme_classic() +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  ylab("") +
+  xlab("log fold change\n infection (lipid)") +
+  # xlab("logFC infection\n (lipid)")+
+  #ggtitle("Cor(logFC) diet vs lipid infection (both FDR < 0.05)")+ 
+  theme(panel.spacing = unit(c(0, 0, 0, 0), "cm"),
+        axis.text = element_text(size = 8), axis.title=element_text(size=8)) #+
+  # theme_classic()
+
+ggsave("figures/DEGenesBothCorrlipInfDietLogFC.png", width=16, height=16, units = "cm", dpi=1200)
+
+cor_dietvInfP_DE <- left_join(topTags_protein_inf_edgeR, topTags_diet_uninf_edgeR, #topTags_inf_edgeR,
+          by=c("gene","gene_name", "description"),suffix = c(".inf", ".diet")) %>%
+  left_join(topTags_inf_edgeR,by=c("gene","gene_name", "description")) %>%
+  filter(FDR.inf < 0.05 | FDR.diet < 0.05) %>% #View()
+  # filter(FDR < 0.05 & FDR.diet < 0.05) %>%
+  ggplot(aes(x=logFC.inf, y=logFC.diet)) +
+  geom_point(alpha = 0.5, size=0.5) +
+  geom_smooth(method = "lm") +
+  ggpubr::stat_cor(label.x = -2, label.y = 6,  size = 2.5, digits = 2, label.sep="\n",
+                   aes(label = after_stat(r.label))) +
+  #ggpubr::stat_regline_equation(label.x = -3, label.y = 2, size = 3) +
+  geom_rug(col="#7CAE00", alpha = 0.2, sides="l",length = unit(0.05, "npc")) +
+  geom_rug(col="#00BFC4", alpha=0.2, sides = "b",length = unit(0.05, "npc")) +
+  # ggrepel::geom_text_repel(aes(label=gene_name), box.padding = 0.5, size = 2) +
+  theme_classic() +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  ylab("") +
+  xlab("log fold change\n infection (protein)") +
+  # xlab("logFC infection\n (protein)")+
+  #ggtitle("Cor(logFC) diet vs lipid infection (both FDR < 0.05)")+ 
+  theme(panel.spacing = unit(c(0, 0, 0, 0), "cm"),
+        axis.text = element_text(size = 8), axis.title=element_text(size=8))  #+
+  # theme_classic()
+
+ggsave("figures/DEGenesBothCorrprotInfDietLogFC.png", width=8, height=8, units = "cm", dpi=1200)
+
+cor_dietvInf_DE <- left_join(topTags_inf_edgeR, topTags_diet_uninf_edgeR,
+# left_join(topTags_lipid_inf_edgeR, topTags_diet_uninf_edgeR, #topTags_inf_edgeR,
+          by=c("gene","gene_name", "description"),suffix = c(".inf", ".diet")) %>%
+  filter(FDR.inf < 0.05 | FDR.diet < 0.05) %>% #View()
+  ggplot(aes(x=logFC.inf, y=logFC.diet)) +
+  geom_point(alpha = 0.5, size=0.5) +
+  # ggrepel::geom_label_repel(aes(label=gene_name), box.padding = 0.5) +
+  geom_smooth(method = "lm") +
+  ggpubr::stat_cor(label.x = -2, label.y = 6, size = 2.5, digits = 2, label.sep="\n",
+                   aes(label = after_stat(r.label))) +
+  #ggpubr::stat_regline_equation(label.x = -3, label.y = 2, size = 3) +
+  geom_rug(col="#7CAE00", alpha = 0.2, sides="l",length = unit(0.05, "npc")) +
+  geom_rug(col="#C77CFF", alpha = 0.2, sides = "b",length = unit(0.05, "npc")) +
+  #ggrepel::geom_text_repel(aes(label=gene_name), box.padding = 0.5, size = 2) +
+  
+  theme_classic() +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  xlab("log fold change\n infection (all)") +
+  ylab("log fold change\n diet (Protein vs Lipid)") +
+  # xlab("logFC infection\n (all)")+
+  #ggtitle("Cor(logFC) diet vs lipid infection (both FDR < 0.05)")+ 
+  theme(panel.spacing = unit(c(0, 0, 0, 0), "cm"),
+        axis.text = element_text(size = 8), axis.title=element_text(size=8)
+        ) 
+
+ggsave("figures/DEGenesBothCorrInfDietLogFC.png", width=8, height=8, units = "cm", dpi=1200)
+
+```
+######
+
+inf x diet.
+```{r}
+protvslipid_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
+                                      topTags_lipid_inf_edgeR, 
+                                      #topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  filter(FDR.protein < 0.05 | FDR.lipid < 0.05) %>% #View()
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC.protein, y=logFC.lipid)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  theme_classic() +
+  ggtitle("Cor(logFC) protein vs lipid infection")
+
+
+allvslipid_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
+                                      topTags_lipid_inf_edgeR, 
+                                      #topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  filter(FDR < 0.05 | FDR.lipid < 0.05 | FDR.protein < 0.05 ) %>% #View()
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC, y=logFC.lipid)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  theme_classic() +
+  #
+  ggtitle("Cor(logFC) combined vs lipid infection")
+
+protvsall_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
+                                      topTags_lipid_inf_edgeR, 
+                                      #topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  #filter(FDR < 0.05 | FDR.protein < 0.05 ) %>% #View()
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC, y=logFC.protein)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  theme_classic() +
+  #ylab("") +
+  ggtitle("Cor(logFC) combined vs lipid infection")
+```
+
+
+## Fig3B
+
+```{r}
+
+fig4_plot_list <- list(
+(gseGO_infection)@result %>%
+  mutate(comparison = "infection (all)"),
+(gseGO_infection_protein)@result %>%
+  mutate(comparison = "infection (protein)"),
+(gseGO_infection_lipid)@result %>%
+  mutate(comparison = "infection (lipid)"),
+gseKEGG_infection@result %>%
+  mutate(comparison = "infection (all) KEGG"),
+gseKEGG_infection_protein@result %>%
+  mutate(comparison = "infection (protein) KEGG"),
+gseKEGG_infection_lipid@result %>%
+  mutate(comparison = "infection (lipid) KEGG"),
+(gseGO_diet_uninf)@result %>%
+  mutate(comparison = "diet (protein vs lipid)")
+)
+# 
+# bind_rows(fig4_plot_list[[1]], 
+#           fig4_plot_list[[2]],
+#           fig4_plot_list[[3]],
+#           fig4_plot_list[[7]]) %>%
+#   filter(ID %in% DE_GO_terms_any_inf_simple) %>%
+#   mutate(Description = str_replace_all(Description, "biological process involved in ", ""),
+#          `p.adj<0.05` = case_when(p.adjust < 0.05 ~ "YES",
+#                             TRUE ~ 'NO')) %>%
+#   mutate(Term = paste0(" ",Description, " (", ID, ") ")) %>%
+#   mutate(Term = fct_reorder(as.factor(Term), -enrichmentScore)) %>%
+#   mutate(Term_labels = case_when(
+#     Description == "monoatomic ion transport" & comparison == "infection (all)" ~ Term,
+#     Description == "monoatomic ion transport" ~ NA,
+#     comparison == "infection (all)" ~ Term,
+#     TRUE ~ NA
+#   ),
+#   y_labels = case_when(
+#     Description == "monoatomic ion transmembrane transport" & comparison == "infection (all)" ~ 0.42,
+#     Description == "monoatomic ion transport" & comparison == "infection (all)" ~ 0.36,
+#     TRUE ~ 0
+#   )) %>%
+#   group_by(Term) %>%
+#   mutate(Term_labels2 = case_when(
+#     n() == 4 & comparison == "infection (all)" ~ Term,
+#     n() == 3 & !is.na(Term_labels) & comparison == "infection (all)" ~ Term,
+#     n() == 2 & is.na(Term_labels) & comparison == "infection (protein)" ~ Term,
+#     n() == 2 & is.na(Term_labels) & comparison == "infection (lipid)" ~ Term,
+#     n() == 1 ~ Term,
+#     TRUE ~ NA) 
+#     )%>%
+#   ungroup() %>% 
+#   arrange(desc(enrichmentScore)) %>%
+#   ggplot(., aes(x= reorder(Term, -enrichmentScore), y=enrichmentScore, group = comparison, fill = comparison, alpha=`p.adj<0.05`#-log(p.adjust)
+#                 )) +
+#   geom_col(#position = "dodge",
+#            position = position_dodge(preserve = 'single')) +
+#   geom_text(aes(y = y_labels, label = Term_labels2, hjust = as.numeric(enrichmentScore) > 0), alpha=1) + 
+#   xlab("GO Term") +
+#   scale_alpha_discrete(range=c(0.2, 1)) +
+#   scale_fill_manual(values = c("yellow","purple", "blue","red")) +
+#   coord_flip() + theme_classic() +
+#   theme(axis.title.y=element_blank(),
+#           axis.text.y=element_blank(),
+#           axis.ticks.y=element_blank(),axis.text = element_text(size = 14), axis.title=element_text(size=16))
+# 
+# ggsave("figures/GO_term_enrichment_comparison.png", width = 12, height = 10, units = "in", dpi = 600)
+```
+how about we scale the logFC values for each of those so they are on 0,1 scale? maybe, but that could be messy b/c of outliers.. z score fine but goes too far out.. maybe just leave it out? or rescale? we'll see.
+
+```{r, fig.height=8}
+
+DE_KEGG_terms_any_inf <- bind_rows(fig4_plot_list[[4]], 
+          fig4_plot_list[[5]],
+          fig4_plot_list[[6]]) %>%
+  filter(p.adjust < 0.05) %>%
+  pull(ID) %>% unique()
+
+bind_rows(fig4_plot_list[[4]], 
+          fig4_plot_list[[5]],
+          fig4_plot_list[[6]]) %>%
+  filter(ID %in% DE_KEGG_terms_any_inf) %>%
+  mutate(Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", ""),
+         `p.adj<0.05` = case_when(p.adjust < 0.05 ~ "YES",
+                            TRUE ~ 'NO')) %>%
+  mutate(Term = paste0(" ",Description, " (", ID, ") ")) %>%
+  mutate(Term = fct_reorder(as.factor(Term), -enrichmentScore)) %>%
+  mutate(Term_labels = case_when(
+    # Description == "monoatomic ion transport" & comparison == "infection (all)" ~ Term,
+    # Description == "monoatomic ion transport" ~ NA,
+    comparison == "infection (all) KEGG" ~ Term,
+    TRUE ~ NA
+  ),
+  y_labels = case_when(
+    Description == "Spliceosome" & comparison == "infection (protein) KEGG	" ~ 0.1,
+    TRUE ~ 0
+  )) %>%
+  arrange(desc(enrichmentScore)) %>%
+  ggplot(., aes(x= reorder(Term, -enrichmentScore), y=enrichmentScore, group = comparison, fill = comparison, alpha=`p.adj<0.05`#-log(p.adjust)
+                )) +
+  geom_col(position = "dodge") +
+  geom_text(aes(y = y_labels, label = Term_labels, hjust = as.numeric(enrichmentScore) > 0), alpha=1) + 
+  xlab("GO Term") +
+  scale_alpha_discrete(range=c(0.6, 1)) +
+  scale_fill_manual(values = c("purple", "blue","red")) +
+  coord_flip() + theme_classic() +
+  theme(axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())
+
+
+barplot_enrichments <- bind_rows(fig4_plot_list[[1]], 
+          fig4_plot_list[[2]],
+          fig4_plot_list[[3]],
+          fig4_plot_list[[7]]) %>%
+  filter(ID %in% DE_GO_terms_any_inf_simple) %>%
+  mutate(Description = str_replace_all(Description, "biological process involved in ", ""),
+         `p.adj<0.05` = case_when(p.adjust < 0.05 ~ "YES",
+                            TRUE ~ 'NO')) %>%
+  mutate(Term = paste0(" ",Description, " "#, "(", ID, ") "
+                       )
+         ) %>%
+  mutate(Term = fct_reorder(as.factor(Term), -enrichmentScore)) %>%
+  mutate(Term_labels = case_when(
+  #   Description == "monoatomic ion transport" & comparison == "infection (all)" ~ Term,
+  #   Description == "monoatomic ion transport" ~ NA,
+  #   comparison == "infection (all)" ~ Term,
+     TRUE ~ NA
+  ),
+   y_labels = case_when(
+  #   Description == "monoatomic ion transmembrane transport" & comparison == "infection (all)" ~ 0.42,
+  #   Description == "monoatomic ion transport" & comparison == "infection (all)" ~ 0.36,
+     TRUE ~ 0
+   )) %>%
+  group_by(Term) %>%
+  mutate(Term_labels2 = case_when(
+    n() == 4 & comparison == "infection (all)" ~ Term,
+    n() == 3 & !is.na(Term_labels) & comparison == "infection (all)" ~ Term,
+    n() == 2 & is.na(Term_labels) & comparison == "infection (protein)" ~ Term,
+    n() == 2 & is.na(Term_labels) & comparison == "infection (lipid)" ~ Term,
+    n() == 1 ~ Term,
+    TRUE ~ NA) 
+    )%>%
+  ungroup() %>% 
+  arrange(desc(enrichmentScore)) %>%
+  ggplot(., aes(x= reorder(Term, -enrichmentScore), y=enrichmentScore, group = comparison, fill = comparison, alpha=`p.adj<0.05`, color=`p.adj<0.05`#-log(p.adjust)
+                )) +
+    geom_col(#position = "dodge",
+             position = position_dodge(preserve = 'single'), linewidth = 0.2) +
+    geom_text(aes(y = y_labels, label = Term_labels2, hjust = as.numeric(enrichmentScore) > 0), alpha=1,
+              size = 2.25, color = "black") + 
+    xlab("GO Term") +
+    scale_alpha_discrete(range=c(0.4, 1), guide="none") +
+    scale_fill_manual(#values = c("yellow2","purple", "blue","red")
+                      values = c("#7CAE00","#C77CFF", "#F8766D","#00BFC4") ) +
+    scale_color_manual(values = c("#00000000","black"), guide="none") +
+    coord_flip(clip="off") + theme_classic() +
+    geom_hline(yintercept = 0) +
+    theme(axis.title.y=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks.y=element_blank(),
+          axis.text = element_text(size = 10), axis.title=element_text(size=10)) +
+      theme(legend.position = "top", legend.text = element_text(size=8,hjust=0.5),
+            legend.title = element_text(size=8),
+            #legend.box = "vertical",
+            legend.key.size = unit(0.25, 'cm'),legend.justification="center") + 
+    guides(fill = guide_legend(reverse=TRUE,nrow=2)) +
+    annotate("text", y=0.75, x = 25, label = "upregulated", size=2.25) +
+    annotate("text", y=-0.65, x = 25, label = "downregulated", size=2.25)
+
+barplot_enrichments
+
+ggsave(plot = barplot_enrichments, "figures/GO_term_enrichment_comparison.png", width = 12, height = 10, units = "in", dpi = 1200)
+```
+
+## Fig 3C
 
 Heatmap of DE genes in all contrasts
 ```{r, fig.height=10, fig.width=8}
@@ -277,62 +644,12 @@ logFC_all_contrasts <- topTags_inf_edgeR %>%
          Protein_ixn_bigger_Inf = gene %in% names(genes_bigger_protein_infection_difference),
          Lipid_ixn_bigger_Inf = gene %in% names(genes_bigger_lipid_infection_difference),
          # Here we use ifelse to assign logFC values from the named vector based on the gene presence.
-        # logFC_repressed_in_infection = 
-        #   ifelse(gene %in% names(genes_lower_in_infection), genes_lower_in_infection[gene], NA),
-        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
-        # 
-        # logFC_higher_in_Protein = ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
-        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
-        # logFC_Protein_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
-        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
         logFC_infection = topTags_inf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
-          # case_when(
-          #   gene %in% names(genes_lower_in_infection) ~ genes_lower_in_infection[gene],
-          #   gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
-          #   TRUE ~ NA_real_
-          # ),
-          # )
-        # logFC_induced_in_infection = ifelse(gene %in% names(genes_higher_in_infection), genes_higher_in_infection[gene], NA),
-        
         logFC_diet = topTags_diet_uninf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
-        #case_when(
-          # gene %in% names(genes_higher_protein_diet) ~ genes_higher_protein_diet[gene],
-          # gene %in% names(genes_higher_lipid_diet) ~ genes_higher_lipid_diet[gene],
-          # TRUE ~ NA_real_
-        #),
-        # )
-          # ifelse(gene %in% names(genes_higher_protein_diet), genes_higher_protein_diet[gene], NA),
-        # logFC_higher_in_Lipid = ifelse(gene %in% names(genes_higher_lipid_diet), genes_higher_lipid_diet[gene], NA),
         logFC_interaction = topTags_ixn_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
-  #case_when(
-        #   gene %in% names(genes_bigger_protein_infection_difference) ~ genes_bigger_protein_infection_difference[gene],
-        #   gene %in% names(genes_bigger_lipid_infection_difference) ~ genes_bigger_lipid_infection_difference[gene],
-        #   TRUE ~ NA_real_
-        # ),
-        FDR_infection = FDR, #case_when(
-          # gene %in% names(fdr_genes_infection) ~ fdr_genes_infection[gene],
-          #gene %in% names(genes_higher_in_infection) ~ genes_higher_in_infection[gene],
-          # TRUE ~ NA_real_
-       # ),
+        FDR_infection = FDR, 
         FDR_diet = topTags_diet_uninf_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
-  # case_when(
-  #         gene %in% names(fdr_genes_diet) ~ fdr_genes_diet[gene],
-  #         # gene %in% names(genes_higher_protein_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
-  #         # gene %in% names(genes_higher_lipid_diet) ~ filter(topTags_diet_edgeR, paste0(gene) == paste0(gene))$FDR,
-  #         TRUE ~ NA_real_
-  #       ),
         FDR_interaction = topTags_ixn_edgeR |> arrange(gene) |> filter(gene == gene) |> pull(FDR),
-  # case_when(
-  #         # gene %in% ((topTags_ixn_edgeR |>
-  # # filter(FDR < 0.05) |> pull(gene))) ~ (filter(topTags_ixn_edgeR, paste0(gene) == paste0(gene))$FDR),
-  #         gene %in% names(fdr_genes_ixn) ~ fdr_genes_ixn[gene],
-  #         # gene %in% names(genes_bigger_protein_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
-  #         # gene %in% names(genes_bigger_lipid_infection_difference) ~ filter(topTags_ixn_edgeR, gene == gene)$FDR,
-  #         TRUE ~ NA_real_
-  #       )
-        # )
-          # ifelse(gene %in% names(genes_bigger_protein_infection_difference), genes_bigger_protein_infection_difference[gene], NA),
-        # logFC_Lipid_ixn_bigger_Inf = ifelse(gene %in% names(genes_bigger_lipid_infection_difference), genes_bigger_lipid_infection_difference[gene], NA)
         logFC_ES = topTags_ES_inf |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
         logFC_logLoad = topTags_logLoad_inf |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
         # logFC_tolerance = topTags_tolerance |> arrange(gene) |> filter(gene == gene) |> pull(logFC),
@@ -362,16 +679,6 @@ sig.cutoff <- 0.05
 df_heatmap <- logFC_all_contrasts %>%
   # filter(gene %in% genes_de_all_3) %>%
   filter(DE_in_infection | DE_in_diet | DE_in_ixn) %>%
-  # filter(FDR_interaction < 0.05 & abs(logFC_interaction)>2 | FDR_infection < 0.05 & abs(logFC_infection)>1 | FDR_diet < 0.05 & abs(logFC_diet)>1 #| FDR_interaction < 0.05 & FDR_infection < 0.05  & FDR_diet < 0.05 
-         # ) %>% #View()
-  
-  # filter(FDR_interaction < sig.cutoff & FDR_diet < sig.cutoff & (abs(logFC_interaction) > 1 | abs(logFC_diet) > 1)) %>%
-  
-  # filter(str_detect(gene_name, '^RPL|^RPS')) %>%
-  # filter(gene_name %in% immune_genes$SYMBOL) %>%
-  # filter(FDR_interaction < 0.05 &  FDR_infection < 0.05 & FDR_diet < 0.05) %>% #View()
-  # slice_head(n=20) %>%
-  # mutate_if(is.numeric, round, 2) %>%
   dplyr::select(
     gene,
     gene_name,
@@ -387,10 +694,6 @@ df_heatmap <- logFC_all_contrasts %>%
     logFC_inf_protein,
     FDR_inf_lipid,
     FDR_inf_protein
-    # logFC_ES,
-    # logFC_logLoad,
-    # FDR_ES,
-    # FDR_logLoad
   )
 
 # Split into logFC and FDR matrices
@@ -404,8 +707,6 @@ rownames(FDR_matrix) <- paste0(df_heatmap$nice_gene_name, " - ", df_heatmap$desc
 
 
 
-
-
 significance_matrix <- ifelse(FDR_matrix < sig.cutoff, "*", " ") %>%
   replace_na(" ")
 
@@ -415,19 +716,43 @@ colnames(logFC_matrix) <- c("Inf (all)", "Inf (L)", "Inf (P)", "Diet", "Interact
 df <- scale(logFC_matrix)
 factoextra::fviz_nbclust(k.max = 54, df, factoextra::hcut, method = "silhouette", nboot = 500) +
 # geom_vline(xintercept = 4, linetype = 2)+
+labs(subtitle = "silhouette method")
+
+factoextra::fviz_nbclust(k.max = 54, df, factoextra::hcut, method = "wss", nboot = 500) +
+# geom_vline(xintercept = 4, linetype = 2)+
 labs(subtitle = "Elbow method")
 
 
-# add functional enrichments
-heatmap_enrichment_terms = list(
-    text1 = c("Translation", "Translation Regulation", "Ribonucleoprotein Complex"),
-    text2 = c("Nuclear Protein Complex", "Homologous Recombination*"),
-    text3 = c("Transferase Activity*"),
-    text4 = c("Lysosome", "Protein Kinase Activity", "Phosphorylation"),
-    text5 = c("Innate Immune Response", "Defense Response", "Apoptosis"),
-    text6 = c("Lysosome*", "Lytic Vacuole*"),
-    text7 = c("Apoptosis*", "Channel Activity*"),
-    text8 = c("ECM-receptor interaction*", "Nucleosome*")
+# factoextra::fviz_nbclust(k.max = 54, df, factoextra::hcut, method = "gap_stat", nboot = 500) +
+# # geom_vline(xintercept = 4, linetype = 2)+
+# labs(subtitle = "gap stat method")
+
+
+# # add functional enrichments
+# heatmap_enrichment_terms = list(
+#     text1 = c("Translation", "Translation Regulation", "Ribonucleoprotein Complex"),
+#     text2 = c("Nuclear Protein Complex", "Homologous Recombination*"),
+#     text3 = c("Transferase Activity*"),
+#     text4 = c("Lysosome", "Protein Kinase Activity", "Phosphorylation"),
+#     text5 = c("Innate Immune Response", "Defense Response", "Apoptosis"),
+#     text6 = c("Lysosome*", "Lytic Vacuole*"),
+#     text7 = c("Apoptosis*", "Channel Activity*"),
+#     text8 = c("ECM-receptor interaction*", "Nucleosome*")
+# )
+
+heatmap_enrichment_terms <- list(
+    text1 = list("Translation", "Translation Regulation", 
+                 "Ribonucleoprotein Complex"),
+    text2 = list("Nuclear Protein Complex", "Homologous Recombination"),
+    text3 = list(expression(Transferase~Activity^"\u2020")),
+    text4 = list("Lysosome", "Protein Kinase Activity", "Phosphorylation"),
+    text5 = list("Innate Immune Response", "Defense Response", "Apoptosis"),
+    text6 = list(expression(Lysosome^"\u2020"),
+                 expression(Lytic~Vacuole^"\u2020")),
+    text7 = list(expression(Apoptosis^"\u2020"),
+                 expression(Channel~Activity^"\u2020")),
+    text8 = list(expression(ECM-receptor~interaction^"\u2020"),
+                 expression(Nucleosome^"\u2020"))
 )
 
 # note how we set the width of this empty annotation
@@ -435,35 +760,35 @@ ha = rowAnnotation(foo = anno_empty(border = FALSE,
     width = max_text_width(unlist(heatmap_enrichment_terms)) + unit(4, "mm")))
 
 # Generate the heatmap with internal annotations
-heatmap <- Heatmap(logFC_matrix, name = "logFC", 
-                   cluster_rows = TRUE,
-                   show_row_dend = TRUE,
-                   width = unit(8, "cm"),
-                   heatmap_legend_param = list(direction = "horizontal"),
-                   cluster_columns = FALSE, 
-                   split=8,
-                   show_row_names = FALSE,
-                   show_column_names = TRUE, 
-                   column_names_side = "top",
-                   clustering_distance_rows = "pearson",
-                   row_names_gp = gpar(fontsize = 10),
-                   column_names_gp = gpar(fontsize = 12),
-                   column_names_rot = 0,
-                   column_names_centered = TRUE,
-                   right_annotation = ha,
-                   cell_fun = function(j, i, x, y, width, height, fill) {
-                       grid.rect(x, y, width, height, gp = gpar(fill = fill, col = NA))
-                       if (significance_matrix[i, j] == "*") {
-                           grid.text("*", x, y, gp = gpar(col = "black", alpha=0.5, fontsize = 6))
-                       }
-                   }
-                   ) 
-for(i in 1:8) {
-    + decorate_annotation("foo", slice = i, {
-        grid.rect(x = 0.01, width = unit(0.75, "mm"), gp = gpar(fill = "black", col = NA), just = "left")
-        grid.text(paste(heatmap_enrichment_terms[[i]], collapse = "\n"), x = unit(4, "mm"), just = "left")
-    })
-}
+# heatmap <- Heatmap(logFC_matrix, name = "logFC", 
+#                    cluster_rows = TRUE,
+#                    show_row_dend = TRUE,
+#                    width = unit(8, "cm"),
+#                    heatmap_legend_param = list(direction = "horizontal"),
+#                    cluster_columns = FALSE, 
+#                    split=8,
+#                    show_row_names = FALSE,
+#                    show_column_names = TRUE, 
+#                    column_names_side = "top",
+#                    clustering_distance_rows = "pearson",
+#                    row_names_gp = gpar(fontsize = 10),
+#                    column_names_gp = gpar(fontsize = 12),
+#                    column_names_rot = 0,
+#                    column_names_centered = TRUE,
+#                    right_annotation = ha,
+#                    cell_fun = function(j, i, x, y, width, height, fill) {
+#                        grid.rect(x, y, width, height, gp = gpar(fill = fill, col = NA))
+#                        if (significance_matrix[i, j] == "*") {
+#                            grid.text("*", x, y, gp = gpar(col = "black", alpha=0.5, fontsize = 6))
+#                        }
+#                    }
+#                    ) 
+# for(i in 1:8) {
+#     + decorate_annotation("foo", slice = i, {
+#         grid.rect(x = 0.01, width = unit(0.75, "mm"), gp = gpar(fill = "black", col = NA), just = "left")
+#         grid.text(paste(heatmap_enrichment_terms[[i]], collapse = "\n"), x = unit(4, "mm"), just = "left")
+#     })
+# }
 
 
 # Draw the heatmap
@@ -473,19 +798,30 @@ ht
 
 #row_order(ht)
 
-png(file="figures/test.logFC_heatmap.png", width=10, height=9, res=1200,units = "in")
+# change padding 
+ht_opt$DIMNAME_PADDING = unit(0.25, "cm")
+#ht_opt$COLUMN_ANNO_PADDING = unit(0.25, "cm")
+
 heatmap2 <- Heatmap(logFC_matrix, name = "logFC", 
                    cluster_rows = TRUE,
                    show_row_dend = TRUE,
                    width = unit(8, "cm"),
-                   heatmap_legend_param = list(direction = "horizontal"),
+                   heatmap_legend_param = list(direction = "horizontal",
+                                               legend_width = unit(3, "in"), 
+                                               title = expression(
+                                                 "log"["2"]~"(fold change)"
+                                                 ),
+                                               legend_position = "topleft",
+                                               title_gp = gpar(fontsize = 12),
+                                               labels_gp = gpar(fontsize=12)
+                                               ),
                    cluster_columns = FALSE, 
                    split=8,
                    show_row_names = FALSE,
                    show_column_names = TRUE,
                    column_names_side = "top",
                    clustering_distance_rows = "pearson",
-                   row_names_gp = gpar(fontsize = 10),
+                   row_names_gp = gpar(fontsize = 12),
                    column_names_gp = gpar(fontsize = 12),
                    column_names_rot = 0,
                    column_names_centered = TRUE,
@@ -498,16 +834,41 @@ heatmap2 <- Heatmap(logFC_matrix, name = "logFC",
                    }
                    ) 
 
-heatmap2 
-for(i in 1:8) {
-    + decorate_annotation("foo", slice = i, {
+
+png(file="figures/logFC_heatmap.png", width=8, height=16, res=1200,units = "in",bg = "transparent")
+
+draw(heatmap2, heatmap_legend_side = "bot")
+
+for (i in 1:8) {
+    decorate_annotation("foo", slice = i, {
         grid.rect(x = 0.01, width = unit(0.75, "mm"), gp = gpar(fill = "black", col = NA), just = "left")
-        grid.text(paste(heatmap_enrichment_terms[[i]], collapse = "\n"), x = unit(4, "mm"), just = "left")
+        text_lines <- heatmap_enrichment_terms[[i]]
+        n_lines <- length(text_lines)
+        # Calculate the center point: Half the number of lines from middle
+        start_y <- unit(0.5, "npc")  # middle of the slice
+        # Adjust starting y position up by half the number of lines
+        adjust_y <- unit(n_lines / 2 - 0.5, "lines") * 1.5 # adjustment from center
+
+        for (j in seq_along(text_lines)) {
+            text_line <- text_lines[[j]]
+            # Adjust position: start from center and move up or down
+            line_y <- start_y - adjust_y + 1.5*unit(j - 1, "lines")
+            grid.text(text_line, x = unit(4, "mm"), y = line_y, just = "left")
+        }
     })
 }
-#draw(., )
+
+decorate_annotation("foo",  { 
+    grid.text("           Functional Enrichments", 
+              x = unit(0.4,"npc") - unit(0.2,"cm"),
+              y = unit(1, "npc") + unit(0.55, "cm"),
+                just = "top", 
+              gp = gpar(fontface="bold")) 
+})
+
 dev.off()
 ```
+
 
 enrichment of each cluster
 ```{r}
@@ -515,7 +876,7 @@ list_GO_results <- list()
 j=0
 for (i in row_order(ht)) {
   # print(i)
-  genes_i <- rownames(heatmap@matrix)[i] %>%
+  genes_i <- rownames(heatmap2@matrix)[i] %>%
     word(., 1)
   j = j+1
   list_GO_results[[j]] <- enrichGO(gene = logFC_all_contrasts %>%
@@ -523,14 +884,10 @@ for (i in row_order(ht)) {
     pull(gene)  ,
                 OrgDb         = orgdb,
                 keyType       = 'ENTREZID',
-                # universe = topTags_diet_edgeR$gene,
-                # universe      = df_heatmap$gene,#unfiltered_genes_with_GO,
                 ont           = "ALL",
                 pAdjustMethod = "BH",
                 pvalueCutoff  = 0.8,
                 qvalueCutoff  = 0.8) %>%
-  # filter(ONTOLOGY %in% c("MF","BP")) |>
-  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
     data.frame()
   
 }
@@ -539,7 +896,7 @@ list_kegg_results <- list()
 j=0
 for (i in row_order(ht)) {
   # print(i)
-  genes_i <- rownames(heatmap@matrix)[i] %>%
+  genes_i <- rownames(heatmap2@matrix)[i] %>%
     word(., 1)
   j = j+1
   list_kegg_results[[j]] <- enrichKEGG(gene = logFC_all_contrasts %>%
@@ -547,18 +904,1015 @@ for (i in row_order(ht)) {
     pull(gene)  ,
                organism = 'scan', keyType = "kegg",
                universe = topTags_diet_edgeR$gene,
-               pvalueCutoff = 0.8,
-                qvalueCutoff  = 0.8) %>%
-  # filter(ONTOLOGY %in% c("MF","BP")) |>
-  # mutate(richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio))) %>% 
+               pvalueCutoff = 0.9,
+                qvalueCutoff  = 0.9) %>%
     data.frame()
 }
 ```
 
+
+## Figure 3 combined
+
+```{r, fig.width=7, fig.height=8}
+fig3C <- ggdraw() + draw_image(here("figures/logFC_heatmap.png"), scale = 1.25, halign=0.4) +
+  theme_void()#+ theme(plot.margin = unit(c(2, 0, 2, -5.0), "cm"))
+
+fig3A <- cowplot::plot_grid(cor_dietvInf_DE+theme(rect = element_rect(fill = "transparent"),
+                                                  plot.background = element_rect(fill = "transparent",
+                                 colour = NA_character_)), NULL, 
+
+                            cor_dietvInfL_DE+theme(rect = element_rect(fill = "transparent"),
+                                                   plot.background = element_rect(fill = "transparent",
+                                 colour = NA_character_)), NULL,
+                            cor_dietvInfP_DE+theme(rect = element_rect(fill = "transparent"),
+                                                   plot.background = element_rect(fill = "transparent",
+                                 colour = NA_character_)), 
+                            ncol=5, rel_widths = c(1,-0.15,1,-0.15,1))
+# fig3AB <- cowplot::plot_grid(fig3A, fig3B, ncol=2, labels= c("A", "B"),
+#                              rel_heights = c(1,1), align = "h"
+#                              )
+
+
+
+fig3AB <- cowplot::plot_grid(NULL, fig3A, NULL, barplot_enrichments ,  ncol=1, rel_heights = c(0.05,0.5, -0.01, 1.75), labels = c("A", " ", "", "B"), vjust=c(1.5, 0,0,4))
+fig3AB
+
+
+fig3 <- cowplot::plot_grid(fig3AB, NULL, fig3C, ncol=3, labels = c("", "", "C"),
+                           # rel_widths = c(2.2,0.1,1.65)
+                           rel_widths = c(2.3, 0, 1.8)
+                           )
+fig3
+#cowplot::get_legend(barplot_enrichments) %>% ggdraw()
+#fig3_legend <- get_legend(barplot_enrichments)
+
+
+
+
+
+# ggpubr::ggarrange(fig3AB, fig3C, get_legend(barplot_enrichments),ncol=2)
+
+# fig2AB <- cowplot::plot_grid(fig2A, fig2B, ncol=1, labels = c("A","B"))
+# fig2 <- cowplot::plot_grid(fig2AB, NULL, fig2C, rel_widths = c(0.8, -0.05, 1), ncol=3,labels = c(" "," ", " "))
+
+# fig2
+
+ggsave(plot = fig3, filename = here("figures/fig3.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
+```
+
+
+# Figure 4
+
+## 4A: Venn Diagram of DE gene overlap between phenotype measures and infection
+
+compile results.
+```{r}
+merged_results <- tbl_tol_results %>%
+  left_join(topTags_diet_uninf_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM"="logCPM", "description" = "description"), suffix = c("_inf", "_diet")) %>%
+  mutate(FDR_diet = FDR) %>%
+  dplyr::select(-FDR) %>%
+  left_join(topTags_logLoad_inf, by = c("gene.z" = "gene", "gene_name" = "gene_name",
+                                        #"logCPM"="logCPM", 
+                                        "description" = "description"
+                                        ),suffix = c("_inf", "_logLoad")
+            ) %>%# View()
+  left_join(topTags_ixn_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM_inf"="logCPM", "description" = "description"),suffix = c("_logLoad", "_ixn")) %>%
+  left_join(topTags_lipid_inf_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM_inf"="logCPM", "description" = "description")) %>%
+  left_join(topTags_protein_inf_edgeR, by = c("gene.z" = "gene", "gene_name" = "gene_name", "logCPM_inf"="logCPM", "description" = "description"),suffix = c("_inf_lipid", "_inf_prot")) %>% #View()
+  mutate(
+    Estimate = case_when(
+      Estimate > 20 ~ 20,
+      Estimate < -20 ~ -20,
+      TRUE ~ Estimate
+    ),
+    est = as.numeric(scale(Estimate)), 
+  DE_inf = case_when(
+    FDR_inf < 0.05 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  DE_inf_prot = case_when(
+    FDR_inf_prot < 0.05 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  DE_inf_lipid = case_when(
+    FDR_inf_lipid < 0.05 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  DE_diet = case_when(
+    FDR_diet < 0.05 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  DE_ixn = case_when(
+    FDR_ixn < 0.05 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  DE_logLoad = case_when(
+    FDR_logLoad < 0.05 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  DE_ES = case_when(
+    FDR_tol < 0.05 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  goi = case_when(
+    gene_name %in% c("JCHAIN","INSRR","NEFM", "ALDH1L2"
+                         #"NEFL", "USP46"#,
+                         #"LOC103823677", "MZB1", "LOC103818060", 
+                         #"MYD88", "LOC108961394",
+                         # "INSRR"
+                         #"PTGDR", "PTGER2", "NEFM", "NEFL"
+                         ) ~ gene_name,
+    TRUE ~ NA
+  ),
+  goi_inf = case_when(
+    FDR_inf < 0.05 & abs(logFC_inf)>1~ gene_name,
+    TRUE ~ NA
+  ),
+  goi_inf_prot = case_when(
+    FDR_inf_prot < 0.05 & abs(logFC_inf_prot)>1.5~ gene_name,
+    TRUE ~ NA
+  ),
+  goi_inf_lipid = case_when(
+    FDR_inf_lipid < 0.05 & abs(logFC_inf_lipid)>2.5~ gene_name,
+    TRUE ~ NA
+  ),
+  goi_diet = case_when(
+    FDR_diet < 0.05 & abs(logFC_diet)>2.5~ gene_name,
+    TRUE ~ NA
+  ),
+  goi_ixn = case_when(
+    FDR_ixn < 0.05 & abs(logFC_ixn)>2.5~ gene_name,
+    TRUE ~ NA
+  ),
+  goi_logLoad = case_when(
+    FDR_logLoad < 0.05 & abs(logFC_logLoad)>1~ gene_name,
+    TRUE ~ NA
+  ),
+  goi_ES = case_when(
+    FDR_tol < 0.05 & FDR_inf < 0.05 & abs(est)>4~ gene_name,
+    abs(est) > 2 & FDR_tol < 0.05 & FDR_inf < 0.05 & FDR_diet < 0.05 & FDR_ixn < 0.05 ~ gene_name,
+    TRUE ~ NA
+  )
+  )  %>% unique()
+```
+
+
+```{r}
+fig4a.1 <- list("Infection" = merged_results$gene.z[merged_results$DE_inf],
+     "Pathogen\n Load" = merged_results$gene.z[merged_results$DE_logLoad],
+     "Eye Score" = merged_results$gene.z[merged_results$DE_ES]
+     ) %>%
+  ggeulerr(shape="circle",, text_size = 3) +
+  scale_fill_manual(#values = c("yellow2","purple", "blue","red")
+                    values = c("darkblue","#C77CFF","orange") , name = " ") +
+  # scale_fill_manual(#values = c("yellow2","purple", "blue","red")
+                     #values = c("pink","#C77CFF", "#F8766D","#00BFC4") ) +
+    theme_void(base_size = 18) +
+    theme(#legend.position = "bottom", 
+          legend.title= element_blank(),
+          plot.margin = margin(t = 5,  # Top margin
+                             r = 10,  # Right margin
+                             b = 5,  # Bottom margin
+                             l = 10)) %>% # Left margin
+theme(legend.position = "none"#, #legend.text = element_text(size=8,hjust=8),
+          #legend.title = element_text(size=12),
+          #legend.box = "vertical",
+          #legend.key.size = unit(0.25, 'cm'),
+          #legend.justification="left"
+      #text = element_text(size = 32)
+      ) #+ 
+  #guides(fill = guide_legend(reverse=TRUE,nrow=1))
+
+
+fig4a.1
+ggsave(plot = fig4a.1, filename= here("figures/fig4a_venn_plot_phenotype_fig.png"), width = 16, height = 16, units = "cm", dpi=1200, bg="white")
+```
+## 4A.table Table of genes DE in infection, eye score, and pathogen load analyses
+
+this might also just be a part of 4A...
+
+```{r}
+merged_results %>%
+  filter(FDR_inf < 0.05 & FDR_tol < 0.05) %>%
+  filter(gene_name %in% c("JCHAIN", "EXOG",
+                              "LOC103823677", "MZB1", "LOC103818060",
+                              "MYD88", "LOC108961394",
+                              "PTGDR", "PTGER2", #"NEFM", 
+                          "NEFL")) %>%
+  dplyr::select(gene_name, gene, description, 
+                logFC_inf, Estimate, #logCPM_inf
+                ) %>%
+  arrange(desc(logFC_inf)) %>%
+  mutate(across(where(is.numeric), round, 2)) %>%
+  gt::gt() %>%
+  gt::tab_header(title = "Notable Genes among 191 shared in Eye Score and Infection") %>%
+  gt::cols_hide(gene) %>%
+  gt::cols_label(gene_name = "Gene Name",
+                 description = "Description",
+                 logFC_inf = "logFC (Infection)",
+                 Estimate = md("$\\hat\\beta$   (Eye Score)")#,
+                 #logCPM_inf = "logCPM"
+                 ) %>%
+  gt::cols_width(gene_name ~ "5em",
+                 description ~ "15em",
+                  logFC_inf ~ "8em",
+                 Estimate ~ "8em"#,
+                 #logCPM_inf ~ "5em"
+                 ) %>%
+  gt::gtsave(file = here("tables/top_genes_all.png"))
+```
+
+```{r}
+fig4a.2 <- ggdraw() + draw_image(here("tables/top_genes_all.png")) + theme_void()
+
+fig4A <- cowplot::plot_grid(fig4a.1, fig4a.2, ncol=2, labels = c("A"," "),align = "h", rel_widths = c(1.4,2))
+fig4A
+```
+
+
+
+
+## 4B/C: network plot of genes DE accoridng to Eye Scores.
+
+```{r, fig.height=4, fig.width=8}
+library(clusterProfiler)
+ah <- AnnotationHub()
+orgs <- subset(ah, ah$rdataclass == "OrgDb")
+orgdb <- query(orgs, "Serinus canaria")[[1]]
+
+options(ggrepel.max.overlaps = Inf)
+network_ES_plot <- enrichGO_tol_ord2 %>%
+  #simplify() %>%
+  setReadable(orgdb) %>%
+#  enrichplot::pairwise_termsim() %>%
+  filter(ID %in% c("GO:0006412","GO:0006511",
+                   "GO:0031966","GO:0006955",# "GO:0009057",
+                   "GO:0006952","GO:0006629")) %>%
+clusterProfiler::cnetplot(., layout = "graphopt", 
+           # foldChange = ., 
+           showCategory = 6, nodel_label ="category",
+           max.overlaps=Inf,
+           species = "scan",#node_label="gene",
+           cex.params = list(gene_label = 0, category_label = 0.55),
+           color.params = list(foldChange = tbl_tol_results %>%
+                                 mutate(est= -case_when(
+    Estimate > 5 ~ 5,
+    Estimate < -5 ~ -5,
+    TRUE ~ Estimate
+  )) %>%
+  arrange(desc(est)) %>%
+  pull(est, entrezgene_id))
+  ) + theme(legend.position = "right") + scale_color_continuous( expression(hat(beta)~"Eye Score"),type = "viridis"#, values = c("gold","purple")
+                                                                 )
+
+network_ES_plot
+```
+
+
+## Figure 4 combined
+```{r, fig.height=7, fig.width=7}
+
+fig4 <- cowplot::plot_grid(fig4A, network_ES_plot, ncol=1, labels = c("", "B"), rel_heights = c(3,2.5))
+fig4
+ggsave(plot = fig4, filename= here("figures/fig4_phenotype.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+```
+
+
+
+# Supplemental Figures
+
+helper functions.
+```{r plot-DE-cleanerCode}
+sig.cutoff <- 0.05
+logFC.cutoff <- 0
+
+# Function to clean and mutate the data
+clean_and_mutate_data <- function(data, sig.cutoff=0.05, logFC.cutoff=0.575) {
+  data %>%
+    mutate(delabel = case_when(
+      !is.na(gene_name) ~ gene_name,
+      TRUE ~ paste0("LOC",gene)
+    )) %>%
+    mutate(delabel = case_when(
+      FDR < sig.cutoff ~ delabel,
+      abs(logFC) > logFC.cutoff ~ delabel,
+      TRUE ~ NA
+    )) %>%
+    mutate(diffexpressed = case_when(
+      FDR > sig.cutoff ~ "Neither",
+      logFC < 0 ~ "Down",
+      logFC > 0 ~ "Up"
+    )) %>%
+    mutate(diffexpressed = factor(diffexpressed, levels = c("Neither", "Down", "Up"))) %>%
+    arrange(diffexpressed)
+}
+
+# Function to create the plot
+create_gene_plot <- function(data, title, sig.cutoff=0.05, logFC.cutoff=0.575, show.names=T) {
+  ggplot(data, aes(x = logCPM, 
+                   y = logFC, 
+                   col = diffexpressed, 
+                   label = delabel#, size=AveExpr
+                   )) +
+    geom_point(size=0.5) +
+    theme_classic() +
+    scale_color_manual("Differentially\n Expressed",values = c("black", "blue", "red")) +
+    #geom_vline(xintercept = c(-logFC.cutoff, logFC.cutoff), col = "red") +
+    #geom_hline(yintercept = -log10(sig.cutoff), col = "red") +
+    {if (show.names) ggrepel::geom_text_repel(size=2, na.rm=TRUE)} +
+      scale_size_area() +
+    # ggsci::scale_color_aaas() +
+      ggtitle(title) + 
+      theme(legend.position="none",
+            text = element_text(size=10),
+            axis.text = element_text(size=10))
+
+      # scale_size_area() +
+      # # ggsci::scale_color_aaas() +
+      # ggtitle(title) + 
+      # theme(legend.position="none")
+    # }
+    #ggrepel::geom_label_repel(size = 2) +
+    # scale_size_area() +
+    # # ggsci::scale_color_aaas() +
+    # ggtitle(title) + 
+    # theme(legend.position="none")
+}
+```
+
+## Figure S1: MA plots
+```{r}
+# Density plot of estimated gene expression changes due to infection, according to diet.
+# this was moved to the supplement per feedback advice.
+s1.density <- topTags_lipid_inf_edgeR %>%
+  left_join(., topTags_protein_inf_edgeR, by = c("gene","gene_name","description"),suffix = c("_lipid", "_protein")) %>%
+  left_join(., topTags_inf_edgeR, by = c("gene","gene_name","description")) %>%
+  pivot_longer(c(logFC_lipid, logFC_protein), names_to = "diet", values_to = "logFC_plot") %>%
+  mutate(diet =
+           case_when(diet == "logFC_protein" ~ "protein",
+                     diet == "logFC_lipid" ~ "lipid")) %>%
+mutate(fdr = case_when(
+  diet == "lipid" ~ FDR_lipid,
+  diet == "protein" ~ FDR_protein
+)) %>%
+  filter(FDR_lipid < 0.05| FDR_protein < 0.05 | FDR < 0.05) %>%
+  ggplot(aes(x=logFC_plot,  color = diet, fill = diet
+             )) +
+  geom_density(alpha=0.5#,bw=0.01,#,outline.type = "upper"
+                  ) +
+  # geom_histogram(aes(y=..density..), alpha=0.5, position="identity", bins=30) +
+  xlim(-3, 3) +
+  # facet_grid(rows=vars(diff_day), cols=vars(diet)) +
+  # scale_y_sqrt() +
+  #ggtitle("2B") +
+  xlab("logFC") +
+  theme_classic(base_size = 18) +
+    theme(legend.position = c(0.8,0.6))
+
+
+# ggsave(plot = figs1.density, filename = here("figures/logFC_density_DE_in_diet_fig.png"), width = 16, height = 16, units = "cm", dpi=1200)
+
+s1.ma.inf <- topTags_inf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("MG Infection (all)",show.names = F, 
+                   logFC.cutoff = logFC.cutoff)
+
+s1.ma.diet <- topTags_diet_uninf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Diet",show.names = F, 
+                   logFC.cutoff = logFC.cutoff) +
+  geom_text(inherit.aes = F,data= data.frame(label = c("higher on lipid diet", "higher on protein diet"),
+                             x = c(10,9.5),
+                             y= c(-4,5), delabel = c(T,T), 
+                             diffexpressed=c("Down", "Up")
+                             ), 
+            aes(x=x, y=y, label=label), size=2.5, color = c("blue", "red"))
+
+
+s1.ma.interaction <- topTags_ixn_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("MG-Diet Interaction",show.names = F, 
+                   logFC.cutoff = logFC.cutoff) +
+  geom_text(inherit.aes = F,data= data.frame(label = c("Greater MG effect \non lipid diet", "Greater MG effect \non protein diet"),
+                             x = c(10,9.5),
+                             y= c(-4.25,4.25), delabel = c(T,T), 
+                             diffexpressed=c("Down", "Up")
+                             ), 
+            aes(x=x, y=y, label=label), size=2.5, color = c("blue", "red"))
+
+s1.ma.inf.L <- topTags_lipid_inf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("MG Infection (Lipid)",show.names = F, 
+                   logFC.cutoff = logFC.cutoff) 
+
+s1.ma.inf.P <- topTags_protein_inf_edgeR %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("MG Infection (Protein)",show.names = F, 
+                   logFC.cutoff = logFC.cutoff) + theme(legend.position = "right") + guides(color = guide_legend(reverse=TRUE)) 
+
+s1.legend <- get_legend(s1.ma.inf.P)
+
+fig.s1.ma <- cowplot::plot_grid(s1.ma.inf, #s1.ma.inf.L, s1.ma.inf.P+ theme(legend.position = "none"), 
+                             s1.ma.diet, s1.ma.interaction, 
+                              s1.legend, labels = c(LETTERS[seq(1,3)], "") )
+
+fig.s1.ma
+
+fig.s1 <- cowplot::plot_grid(fig.s1.ma, s1.density, ncol=1, labels = c("", "D"))
+
+fig.s1
+
+ggsave(plot = fig.s1, filename = here("figures/fig.s1.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+```
+
+
+## Figure S2: KEGG plots
+
+```{r}
+fig.s2a <- gseGO_all_df %>%
+  mutate(Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " "),
+         DE =ifelse(p.adjust < 0.05, "YES", "NO"),
+         comparison = factor(comparison, levels = c("infection_all","infection_lipid", "infection_protein","diet_uninf","interaction_diet:infection", "eye_score", "pathogen_load"),
+                             labels = c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction", "Eye Score", "Pathogen Load"))
+         ) %>%
+  filter(comparison %in% c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction")) %>%
+  group_by(comparison) %>% #str()
+  arrange(pvalue) %>%
+  #filter(p.adjust < 0.3) %>%
+  slice_head(n=10) %>%
+  ggplot(.,
+       showCategory = 10,
+       aes(enrichmentScore, fct_reorder(Description, enrichmentScore))) +
+  geom_segment(aes(xend = 0, yend = Description, linetype = fct_rev(DE))) +
+  geom_point(aes(color = p.adjust, size = setSize)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_linetype_discrete("Significant\nenrichment", labels =  c("yes","no")) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 45, side="left")) + # cut off long names
+  #xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("GO Enrichments") +
+  theme_bw() +
+  facet_wrap(~comparison, nrow=5, scales = "free_y") +
+      theme(legend.position="none",
+            text = element_text(size=6),
+            axis.text = element_text(size=6))
+
+
+fig.s2b <- gseKEGG_all_df %>%
+  mutate(Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " "),
+         DE =ifelse(p.adjust < 0.05, "YES", "NO"),
+         comparison = factor(comparison, levels = c("infection_all","infection_lipid", "infection_protein","diet_uninf","interaction_diet:infection", "eye_score", "pathogen_load"),
+                             labels = c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction", "Eye Score", "Pathogen Load"))
+         ) %>%
+  filter(comparison %in% c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction")) %>%
+  group_by(comparison) %>%
+  arrange(pvalue) %>%
+  # arrange(desc(abs(enrichmentScore))) %>%
+  #filter(p.adjust < 0.3) %>%
+  slice_head(n=10) %>% 
+  ggplot(.,
+       showCategory = 10,
+       aes(enrichmentScore, fct_reorder(Description, enrichmentScore))) +
+  geom_segment(aes(xend = 0, yend = Description, linetype = fct_rev(DE))) +
+  geom_point(aes(color = p.adjust, size = setSize)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_linetype_discrete("Significant\nenrichment", labels =  c("yes","yes")) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 42)) + # cut off long names
+  #xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("KEGG Enrichments") +
+  theme_bw() +
+  facet_wrap(~comparison, nrow=5, scales = "free_y") + 
+      theme(legend.position="none",
+            text = element_text(size=6),
+            axis.text = element_text(size=6))
+
+
+
+# fig.s2 <- cowplot::plot_grid(fig.s2a, fig.s2b, nrow=1)
+fig.s2 <- ggpubr::ggarrange(fig.s2a, fig.s2b, common.legend = T,legend = "right")
+fig.s2
+
+ggsave(plot = fig.s2, filename = here("figures/fig.s2.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
+```
+
+
+## Figure S3: Gene Expression Correlations by Contrast
+
+```{r}
+# merged_results %>%
+#   dplyr::select(gene.z,entrezgene_id_inf, Estimate, logFC_inf, logFC_inf_lipid, logFC_inf_prot,
+#                 logFC_diet, logFC_ixn, logFC_logLoad) %>%
+#   mutate(rowid = paste0(gene.z, "_", entrezgene_id_inf)) %>%
+#   group_by(rowid) %>%
+#   slice_head(n=1) %>%
+#   column_to_rownames("gene.z") %>%
+#   dplyr::select(-c(rowid, entrezgene_id_inf)) %>%
+#   cor(use="pairwise.complete.obs") %>%
+#   corrplot::corrplot(diag = T, addCoef.col = 'black')
+
+fig.s3 <- merged_results %>%
+  dplyr::select(DE_inf, gene.z,entrezgene_id_inf, Estimate, logFC_inf, logFC_inf_lipid, logFC_inf_prot,
+                logFC_diet, logFC_ixn, logFC_logLoad) %>%
+  rename(all_of(c("logFC_inf" = "Infection \n(all)" ,
+         "logFC_inf_lipid" = "Infection \n(lipid)",
+         "logFC_inf_prot" = "Infection \n(protein)",
+         "logFC_diet"="Diet" ,
+         "logFC_ixn"="MG-Diet \nInteraction",
+         "Estimate" = "Eye \nScore",
+         "logFC_logLoad"="Pathogen\n Load" 
+         ))) %>%
+  mutate(`Differentially\nExpressed\nInfection` = ifelse(DE_inf,"yes","no")) %>%
+  relocate(`Differentially\nExpressed\nInfection`, .before = DE_inf) %>%
+  dplyr::select(-DE_inf) %>%
+  mutate(rowid = paste0(gene.z, "_", entrezgene_id_inf)) %>%
+  group_by(rowid) %>%
+  slice_head(n=1) %>%
+  column_to_rownames("gene.z") %>%
+  dplyr::select(-c(rowid, entrezgene_id_inf)) %>%
+  GGally::ggpairs(., aes(color=fct_rev(`Differentially\nExpressed\nInfection`), alpha=0.3),
+    upper = list(continuous = GGally::wrap("cor", size = 2))) + 
+  theme_classic() +
+  theme(axis.text = element_text(size = 7), 
+        axis.title=element_text(size=7), axis.text.x=element_text(angle=90, hjust=1))
+
+fig.s3
+ggsave(plot = fig.s3, filename = here("figures/fig.s3.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+
+```
+
+## Figure S4: Upset All Contrasts
+
+```{r}
+library(ComplexUpset)
+lab_size = 1.5
+pt_size = 0.9
+
+fig.s4 <- merged_results %>%
+  upset(., c("DE_inf",#"DE_inf_prot", "DE_inf_lipid", 
+             "DE_diet", "DE_ixn", "DE_ES"#, "DE_logLoad"
+             ), name="Comparison",
+        base_annotations=list(
+        'Intersection size'=intersection_size(text = list(size=3, vjust=-0.15),
+            text_colors=c(
+                on_background='black', on_bar='white'
+            )
+        )
+        + annotate(
+            geom='text', x=Inf, y=Inf,
+            label=paste('Total:', nrow(topTags_inf_edgeR)),
+            vjust=1.2, hjust=1.2, size = 3
+        )
+        + ylab('# of genes')
+    ),
+        annotations = list(
+        'Infection\n(all)'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=logFC_inf,color=-log10(FDR_inf), label=goi#_inf
+                               ))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=pt_size,
+                na.rm=TRUE) + ggrepel::geom_text_repel(#min.segment.length = 0.1, 
+                                                       direction = "y",
+                                                       size=lab_size,
+nudge_x = -0.4,force=0.1,
+                                                       max.overlaps = 10) + scale_color_continuous(name="-log10(adj.p.value)", limits = c(0,5)) + theme(legend.direction = "vertical")
+        ),
+        'Infection\n(lipid)'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=logFC_inf_lipid,color=-log10(FDR_inf_lipid), label=goi#_inf_lipid
+                               ))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=pt_size,
+                na.rm=TRUE)+ ggrepel::geom_text_repel(#min.segment.length = 0.1, 
+                                                       direction = "y",size=lab_size,nudge_x = -0.4, force=0.1, max.overlaps = 5) + scale_color_continuous(name="-log10(FDR) ") + theme(legend.position='none')
+        ),
+        'Infection\n(protein)'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=logFC_inf_prot,color=-log10(FDR_inf_prot), label=goi#_inf_lipid
+                               ))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=pt_size,
+                na.rm=TRUE) + ggrepel::geom_text_repel(#min.segment.length = 0.1, 
+                                                       direction = "y",size=lab_size,nudge_x = -0.4, force=0.1, max.overlaps = 5) + scale_color_continuous(name="-log10(FDR)  ") + theme(legend.position='none')
+        ),
+        'Diet\n(Protein-Lipid)'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=logFC_diet,color=-log10(FDR_diet), label=goi#_diet
+                               ))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=pt_size,
+                na.rm=TRUE) + ggrepel::geom_text_repel(#min.segment.length = 0.1, 
+                                                       direction = "y",size=lab_size,nudge_x = -0.4, force=0.1, max.overlaps = 5) + scale_color_continuous(name="-log10(FDR)   ") + theme(legend.position='none')
+        ),
+        'Interaction\n(Protein-Lipid)'=(
+            # note that aes(x=intersection) is supplied by default and can be skipped
+            ggplot(mapping=aes(y=logFC_ixn,color=-log10(FDR_ixn), label=goi#_ixn
+                               ))
+            # checkout ggbeeswarm::geom_quasirandom for better results!
+            + ggbeeswarm::geom_quasirandom(alpha=0.5, size=pt_size,
+                na.rm=TRUE) + ggrepel::geom_text_repel(#min.segment.length = 0.1, 
+                                                       direction = "y",size=lab_size,nudge_x = -0.4, force=0.1, max.overlaps = 5) + scale_color_continuous(name="-log10(FDR)    ") + theme(legend.position='none')
+        ),
+        'Eye Score'=(
+            ggplot(mapping=aes(y=est,color=-log10(FDR_tol),label=goi#_ES
+                               ))
+            + ggbeeswarm::geom_quasirandom(size=pt_size,
+                na.rm=TRUE) + ggrepel::geom_text_repel(#min.segment.length = 0.1, 
+                                                       direction = "y",size=lab_size,nudge_x = -0.4, force=0.1, max.overlaps = 5) + scale_color_continuous(name="-log10(FDR)     ")+ guides(fill = guide_legend(override.aes = list(size = 0.5))) + theme(legend.position='none')
+        )#,
+        # 'logLoad'=(
+        #     ggplot(mapping=aes(y=logFC_logLoad))
+        #     + ggbeeswarm::geom_quasirandom(alpha=0.5, size=0.5,
+        #         na.rm=TRUE)
+        # )
+        ),
+        keep_empty_groups=TRUE, themes=upset_default_themes(text=element_text(size=8),axis.title=element_text(size=8,face="bold")),
+        min_degree=2, min_size = 8,
+    # moves legends over the set sizes
+    guides='over') & theme(legend.margin=margin(t=0, r=0, b=1, l=0, 'cm'))
+
+
+
+ggsave(plot = fig.s4, filename = "figures/fig.s4.DE_genes_multinode_ES_combined_upsetplot.png", width = 6, height = 9, units = "in", dpi = 1200)
+```
+
+
+## Figure S5: MA plot for phenotype analysis
+```{r}
+s5.ma.logLoad <- topTags_logLoad_inf %>%
+  clean_and_mutate_data() %>% 
+  create_gene_plot("Pathogen Load Effect on Gene Expression",show.names = F, 
+                   logFC.cutoff = logFC.cutoff) +scale_y_continuous(limits = ~ c(-1, 1) * max(abs(.x))) +
+  theme(plot.title = element_text(size=10), legend.position = "bottom")
+
+s5.ma.eyeScore <- merged_results %>%
+  filter(!is.na(Estimate)) %>%
+    mutate(delabel = case_when(
+      !is.na(gene_name) ~ gene_name,
+      TRUE ~ paste0("LOC",gene)
+    )) %>%
+    mutate(delabel = case_when(
+      FDR_tol < sig.cutoff ~ delabel,
+      abs(Estimate) > logFC.cutoff ~ delabel,
+      TRUE ~ NA
+    )) %>%
+    mutate(diffexpressed = case_when(
+      FDR_tol > sig.cutoff ~ "Neither",
+      Estimate < 0 ~ "Down",
+      Estimate > 0 ~ "Up"
+    )) %>%
+    mutate(diffexpressed = factor(diffexpressed, levels = c("Neither", "Down", "Up"))) %>%
+    arrange(diffexpressed) %>%
+  mutate(logCPM = logCPM_inf) %>%
+  ggplot(., aes(x = logCPM, 
+                   y = Estimate, 
+                   col = diffexpressed, 
+                   label = delabel#, size=AveExpr
+                   )) +
+    geom_point(size=0.5) +
+    theme_classic() +
+    scale_color_manual("Differentially\n Expressed",values = c("black", "blue", "red")) +
+    #geom_vline(xintercept = c(-logFC.cutoff, logFC.cutoff), col = "red") +
+    #geom_hline(yintercept = -log10(sig.cutoff), col = "red") +
+    #{if (show.names) ggrepel::geom_text_repel(size=2, na.rm=TRUE)} +
+      scale_size_area() +
+    # ggsci::scale_color_aaas() +
+      ggtitle("Eye Score Effect on Gene Expression") + 
+      theme(legend.position="none",
+            text = element_text(size=10),
+            axis.text = element_text(size=10)) +
+    # add custom text to plot
+  geom_text(inherit.aes = F,data= data.frame(label = c("Expression + correlates\n   with Eye Score", "Expression - correlates\n  with Eye Score"),
+                             x = c(10,10),
+                             y= c(-15,15), delabel = c(T,T), 
+                             diffexpressed=c("Down", "Up")
+                             ), 
+            aes(x=x, y=y, label=label), size=2.5, color = c("blue", "red")) +
+    #theme(legend.position = "right") + 
+    guides(color = guide_legend(reverse=TRUE)) +
+  theme(plot.title = element_text(size=10))
+
+  
+  
+  
+  
+  
+# s5.legend <- get_legend(s5.ma.eyeScore)
+
+# fig.s5.no.legend <- cowplot::plot_grid(s5.ma.logLoad, s5.ma.eyeScore#+ theme(legend.position = "none")
+#                                        , labels = c("AUTO"),nrow=2)
+
+fig.s5 <- cowplot::plot_grid(s5.ma.logLoad, s5.ma.eyeScore, nrow=2, labels = c("AUTO"),
+                             rel_heights = c(1.3,1))
+
+
+fig.s5
+
+ggsave(plot = fig.s5, filename = here("figures/fig.s5.png"), width = 4, height = 6, units = "in", dpi=1200, bg="white")
+```
+
+
+## Figure S6: GO and KEGG (Phenotype)
+
+```{r}
+fig.s6a <- gseGO_all_df %>%
+  mutate(Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " "),
+         DE =ifelse(p.adjust < 0.05, "YES", "NO"),
+         comparison = factor(comparison, levels = c("infection_all","infection_lipid", "infection_protein","diet_uninf","interaction_diet:infection", "eye_score", "pathogen_load"),
+                             labels = c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction", "Eye Score", "Pathogen Load"))
+         ) %>%
+  filter(comparison %ni% c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction")) %>%
+  group_by(comparison) %>% #str()
+  arrange(pvalue) %>%
+  #filter(p.adjust < 0.3) %>%
+  slice_head(n=10) %>%
+  ggplot(.,
+       showCategory = 10,
+       aes(enrichmentScore, fct_reorder(Description, enrichmentScore))) +
+  geom_segment(aes(xend = 0, yend = Description, linetype = fct_rev(DE))) +
+  geom_point(aes(color = p.adjust, size = setSize)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_linetype_discrete("Significant\nenrichment", labels =  c("yes","no")) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 45, side="right")) + # cut off long names
+  #xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("GO Enrichments") +
+  theme_bw() +
+  facet_wrap(~fct_rev(comparison), nrow=5, scales = "free_y") +
+      theme(legend.position="none",
+            text = element_text(size=6),
+            axis.text = element_text(size=6))
+
+
+fig.s6b <- gseKEGG_all_df %>%
+  mutate(Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " "),
+         DE =ifelse(p.adjust < 0.05, "YES", "NO"),
+         comparison = factor(comparison, levels = c("infection_all","infection_lipid", "infection_protein","diet_uninf","interaction_diet:infection", "eye_score", "pathogen_load"),
+                             labels = c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction", "Eye Score", "Pathogen Load"))
+         ) %>%
+  filter(comparison %ni% c("Infection (all)", "Infection (lipid)", "Infection (protein)", "Diet", "MG-Diet Interaction")) %>%
+  group_by(comparison) %>%
+  arrange(pvalue) %>%
+  # arrange(desc(abs(enrichmentScore))) %>%
+  #filter(p.adjust < 0.3) %>%
+  slice_head(n=10) %>% 
+  ggplot(.,
+       showCategory = 10,
+       aes(enrichmentScore, fct_reorder(Description, enrichmentScore))) +
+  geom_segment(aes(xend = 0, yend = Description, linetype = fct_rev(DE))) +
+  geom_point(aes(color = p.adjust, size = setSize)) +
+  scale_color_gradientn(
+    colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    trans = "log10",
+    guide = guide_colorbar(reverse = TRUE, order = 1)
+  ) +
+  scale_linetype_discrete("Significant\nenrichment", labels =  c("yes","yes")) +
+  scale_size_continuous(range = c(2, 10)) +
+  scale_y_discrete(label = function(x) stringr::str_trunc(x, 42)) + # cut off long names
+  #xlab("Rich Factor") +
+  ylab(NULL) +
+  ggtitle("KEGG Enrichments") +
+  theme_bw() +
+  facet_wrap(~fct_rev(comparison), nrow=5, scales = "free_y") + 
+      theme(legend.position="none",
+            text = element_text(size=6),
+            axis.text = element_text(size=6))
+
+fig.s6 <- ggpubr::ggarrange(fig.s6a, fig.s6b, common.legend = T,legend = "right")
+fig.s6
+
+ggsave(plot = fig.s6, filename = here("figures/fig.s6.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
+```
+
+
+## Figure S7: PCA plot
+```{r}
+PCA <- plotMDS(y_ixn, gene.selection="common",
+               top = 300, pch = 2, cex = 0.5, main = "PCA plot of gene expression for all samples", dim.plot=c(1,2))
+
+ggPCA <- tibble(
+  SampID = colnames(PCA$distance.matrix.squared),
+  x = PCA$x,
+  y =PCA$y
+) %>%
+  mutate(SampID = str_replace_all(SampID, "\\.","-")) %>%
+  left_join(metadata_phenotypes, by="SampID")
+
+fig.s7 <- ggplot(ggPCA, aes(x=x,y=y, group=interaction(Diet,MG.active), #shape = Day,
+                  color = interaction(MG.active,Diet), linetype = Diet)) +
+  #geom_line(aes(alpha = MG.Status)) +
+  geom_point() +
+  theme_classic() +
+  # theme(legend.position = "none") +
+  labs(title="PCA plot of gene expression") +
+  xlab(paste0("Principal Component 1 (",100*round(PCA$var.explained[1],2),"%)")) +
+  ylab(paste0("Principal Component 2 (",100*round(PCA$var.explained[2],2),"%)")) +
+  scale_color_discrete("MG.Diet") +
+  stat_ellipse(type = "norm",level=0.8)
+  # facet_wrap(~MG.active)
+
+ggsave(plot = fig.s7, filename = here("figures/fig.s7.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
+```
+
+
+
+# Suppplemental Tables
+
+## Table S2: DE genes in the interaction between diet and infection response
+
+```{r}
+# topTags_ixn_edgeR |>
+#   filter(FDR < 0.05) |>
+#   # arrange(desc(logFC)) %>%
+#   arrange(logFC) |>
+#   mutate(across(is.numeric, signif, 3)) |>
+#   mutate(across(is.numeric, as.character, 3)) |>
+#   dplyr::select(gene, gene_name, logFC, logCPM, `F`, PValue, FDR, description) |>
+#   kbl(booktabs = T, longtable = T) |>
+#     kable_styling("striped", latex_options = c("repeat_header")) #|>
+#   save_kable(here("tables/table.s2.png"))
+
+```
+To include all comparisons in this table, let's instead show 20 largest magnitude DE (10 up and 10 down) genes for each contrast in a single table.
+```{r}
+table.s3.ixn <- topTags_ixn_edgeR %>%
+  filter(FDR<0.05) %>%
+  group_by(sign(logFC)) %>%
+  arrange(desc(abs(logFC))) %>%
+  slice_head(n=10) %>%
+  arrange(logFC) %>%
+  ungroup() %>%
+  mutate(comparison = "MG-Diet Interaction") %>%
+  dplyr::select(comparison, gene, gene_name, logFC, FDR, description)
+
+table.s3.inf <- topTags_inf_edgeR %>%
+  filter(FDR<0.05) %>%
+  group_by(sign(logFC)) %>%
+  arrange(desc(abs(logFC))) %>%
+  slice_head(n=10) %>%
+  arrange(logFC) %>%
+  ungroup() %>%
+  mutate(comparison = "MG Infection") %>%
+  dplyr::select(comparison, gene, gene_name, logFC, FDR, description)
+
+table.s3.diet <- topTags_diet_uninf_edgeR %>%
+  filter(FDR<0.05) %>%
+  group_by(sign(logFC)) %>%
+  arrange(desc(abs(logFC))) %>%
+  slice_head(n=10) %>%
+  arrange(logFC) %>%
+  ungroup() %>%
+  mutate(comparison = "Diet (Protein vs Lipid)") %>%
+  dplyr::select(comparison, gene, gene_name, logFC, FDR, description)
+
+bind_rows(table.s3.ixn, table.s3.inf, table.s3.diet) |>
+  mutate(across(is.numeric, signif, 3)) |>
+  mutate(across(is.numeric, as.character, 3)) |>
+  dplyr::select(-comparison) |>
+  rename(gene = "Top DE Genes",
+         gene_name = "Gene Name") |>
+  replace_na(list(rep("", 5))) |>
+  kbl(booktabs = T, longtable = T) |>
+    kable_styling("striped", latex_options = c("repeat_header")) |>
+  pack_rows("MG-Diet Interaction", 1, 20) |>
+  pack_rows("MG Infection", 21, 40) |>
+  pack_rows("Diet (Protein-Lipid)", 41, 60) #|>
+  # save_kable(here("tables/table.s2.png"))
+```
+
+
+
+## Table S3: Significant GO terms
+```{r}
+gseGO_all_df |>
+    rownames_to_column("rowname") |>
+  dplyr::select(comparison, ID, Description, setSize, enrichmentScore, NES, pvalue, p.adjust, qvalue, rank, ONTOLOGY) |>
+  mutate(comparison = case_when(
+    comparison == "infection_all" ~ "Infection (all)",
+    comparison == "diet_uninf" ~ "Diet (Protein-Lipid)",
+    comparison == "interaction_diet:infection" ~ "MG-Diet Interaction",
+    comparison == "infection_protein" ~ "Infection (protein)",
+    comparison == "infection_lipid" ~ "Infection (lipid)",
+    comparison == "pathogen_load" ~ "Pathogen Load",
+    comparison == "eye_score" ~ "Eye Score"
+  )) |>
+  mutate(across(is.numeric, signif, 3)) |>
+  kbl(booktabs = T, longtable = T) |>
+    kable_styling("striped", latex_options = c("repeat_header")) |>
+  # pack_rows("MG-Diet Interaction", 1, 20) |>
+  # pack_rows("MG Infection", 21, 40) |>
+  # pack_rows("Diet (Protein-Lipid)", 41, 60) 
+  collapse_rows(columns = 1, valign="top", latex_hline = "major") #|>
+  #save_kable(here("tables/table.s3.png"))
+```
+
+## Table S4: Heatmap Cluster GO Enrichments
+```{r}
+table.s4.go <- list_GO_results |>
+  bind_rows(.id= "cluster") |>
+  rownames_to_column("rowname") |>
+  group_by(cluster) |>
+  arrange(pvalue) |>
+  filter(Count > 3) |>
+  slice_head(n=5) |>
+  dplyr::select(cluster, ID, Description, GeneRatio, BgRatio,# pvalue,
+                p.adjust#, qvalue, ONTOLOGY
+                ) |>
+  mutate(across(is.numeric, signif, 3)) #|>
+  # kbl(booktabs = T, longtable = T) |>
+  #   kable_styling("striped", latex_options = c("repeat_header")) |>
+  # # pack_rows("MG-Diet Interaction", 1, 20) |>
+  # # pack_rows("MG Infection", 21, 40) |>
+  # # pack_rows("Diet (Protein-Lipid)", 41, 60) 
+  # collapse_rows(columns = 1, valign="top", latex_hline = "major")
+
+table.s4.kegg <- list_kegg_results |>
+  bind_rows(.id= "cluster") |>
+  rownames_to_column("rowname") |>
+  group_by(cluster) |>
+  arrange(pvalue) |>
+  filter(Count > 3) |>
+  slice_head(n=5) |>
+  dplyr::select(cluster, ID, Description, GeneRatio, BgRatio,# pvalue,
+                p.adjust#, qvalue, ONTOLOGY
+                ) |>
+  mutate(Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", "")) |>
+  mutate(across(is.numeric, signif, 3)) #|>
+  
+  
+bind_rows(table.s4.go, table.s4.kegg) |>
+  group_by(cluster) |>
+  arrange(cluster) |>
+  mutate(across(is.numeric, as.character, 3)) |>
+  kbl(booktabs = T, longtable = T) |>
+    kable_styling("striped", latex_options = c("repeat_header")) |>
+  # pack_rows("MG-Diet Interaction", 1, 20) |>
+  # pack_rows("MG Infection", 21, 40) |>
+  # pack_rows("Diet (Protein-Lipid)", 41, 60) 
+  collapse_rows(columns = 1, valign="top", latex_hline = "major")
+
+
+```
+
+## Table S5: DE genes for pathogen load
+```{r}
+ topTags_logLoad_inf |>
+  filter(FDR<0.05) %>%
+  group_by(sign(logFC)) %>%
+  arrange(desc(abs(logFC))) %>%
+  slice_head(n=20) %>%
+  arrange(logFC) %>%
+  ungroup() %>%
+  mutate(comparison = "MG-Diet Interaction") %>%
+  dplyr::select(gene, gene_name, logFC, FDR, description) |>
+  mutate(across(is.numeric, signif, 3)) |>
+  mutate(across(is.numeric, as.character, 3)) |>
+  rename(gene = "Top DE Genes",
+         gene_name = "Gene Name") |>
+  kbl(booktabs = T, longtable = T) |>
+    kable_styling("striped", latex_options = c("repeat_header"))
+```
+
+## Table S6: DE genes for Eye Score
+```{r}
+ tbl_tol_results |>
+  filter(FDR_tol<0.05) %>%
+  group_by(sign(Estimate)) %>%
+  arrange(`Pr(>|z|)`) %>%
+  slice_head(n=20) %>%
+  arrange(Estimate) %>%
+  ungroup() %>%
+  mutate(comparison = "MG-Diet Interaction") %>%
+  dplyr::select(gene.z, gene_name, Estimate,`Pr(>|z|)`, description) |>
+  mutate(across(is.numeric, signif, 3)) |>
+  mutate(across(is.numeric, as.character, 3)) |>
+  rename(gene.z = "Top DE Genes",
+         gene_name = "Gene Name"#,
+         #FDR_tol = "FDR"
+         ) |>
+  kbl(booktabs = T, longtable = T) |>
+    kable_styling("striped", latex_options = c("repeat_header"))
+```
+
+
+## Table S7: RNA-seq Mapping statistics
 ```{r}
 
 ```
 
-## Fig3B
-
-## Fig3C
