@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 pak("eulerr")
 library(eulerr)
 library(cowplot)
+library(ggplot2)
+library(tidyverse)
 ```
 
 
@@ -256,7 +258,6 @@ fig2
 
 ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 24, height = 16, units = "cm", dpi=1200, bg="white")
 ```
-
 
 
 # Figure 3

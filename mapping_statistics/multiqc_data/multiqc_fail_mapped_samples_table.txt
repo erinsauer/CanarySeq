@@ -1,0 +1,2 @@
+Sample	STAR uniquely mapped reads (%)
+ES89_Blue-049_Control-protein_0	3.38
