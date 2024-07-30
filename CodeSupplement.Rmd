@@ -10,22 +10,31 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-pak("eulerr")
+#pak("eulerr")
 library(eulerr)
 library(cowplot)
 library(ggplot2)
 library(tidyverse)
-
 library(ggpubr)
 library(here)
 library(kableExtra)
 library(AnnotationHub)
 library(gridtext)
 library(graphics)
+library(data.table)
+library(edgeR)
+library(ComplexUpset)
+library(ComplexHeatmap)
+library(tidyverse)
+library(clusterProfiler)
+library(flextable)
+library(GGally)
+library(biomartr)
 
 options(ggrepel.max.overlaps = Inf)
 ```
 
+# TODO: make sure we have all of these objects...
 ```{r}
 # load figure code objects.
 DE_genes_edgeR_upset
@@ -57,7 +66,70 @@ topTags_ES_inf
 topTags_logLoad_inf
 ```
 
-# Figure 1
+# Data Preparation
+```{r load annotations}
+# get annotation hub (orgdb)
+ah <- AnnotationHub()
+orgs <- subset(ah, ah$rdataclass == "OrgDb")
+orgdb <- query(orgs, "Serinus canaria")[[1]]
+```
+
+## load custom functions
+```{r custom functions}
+source(here::here("scripts/canary_data_processing_functions.R"))
+```
+
+```{r read-data}
+# assign file path locaiton of rsem.merged.gene_counts.tsv file
+filepath_rsem_gene_counts <- here::here("data", "rsem.merged.gene_counts.tsv")
+
+# read in rsem.merged.gene_counts.tsv
+g.counts.l <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>% as_tibble()
+```
+
+
+## Remove problematic samples
+
+The Sample ES89 was removed due to failed sequencing.
+Samples ES31,ES32, and ES65 were removed due to incomplete sample metadata.
+Samples from bird SEM19-1481 had their metadata corrected due to an error in recording of diet received.
+```{r remove-samples}
+g.counts.l <- g.counts.l %>%
+  dplyr::select(-c(
+      "ES89_Blue-049_Control-protein_0",
+      "ES31_Blue-055_NA_0",
+      "ES32_Blue-055_NA_14",
+      "ES65_106_NA_0" )) %>% 
+  # dplyr::select(-contains("Blue-050")) %>%
+  # change diet group of bird SEM19-1481 from MG-lipid to MG-protein
+  dplyr::rename(all_of(
+       # c(`ES64_SEM19-1481_MG-lipid_21`="ES64_SEM19-1481_MG-protein_21",
+       #   `ES52_SEM19-1481_MG-lipid_14`="ES52_SEM19-1481_MG-protein_14",
+       #   `ES83_SEM19-1481_MG-lipid_0`="ES83_SEM19-1481_MG-protein_0"))
+       # )
+       c(`ES64_SEM19-1481_MG-protein_21`="ES64_SEM19-1481_MG-lipid_21",
+         `ES52_SEM19-1481_MG-protein_14`="ES52_SEM19-1481_MG-lipid_14",
+         `ES83_SEM19-1481_MG-protein_0`="ES83_SEM19-1481_MG-lipid_0"))
+       )
+```
+
+
+## read metadata
+```{r}
+# see generate_metadata.R script for metadata generation code.
+metadata_phenotypes <-
+  read_tsv(here("sample_metadata/metadata_phenotypes.tsv"))
+```
+
+
+
+
+
+
+
+# Main Text Figures
+
+## Figure 1
 
 #TODO Add Erin's code for this figure here.
 ```{r}
@@ -65,9 +137,9 @@ topTags_logLoad_inf
 ```
 
 
-# Figure 2
+## Figure 2
 
-## 2A
+### 2A
 ```{r}
 # function to convert eulerr to ggplot (https://gist.github.com/danlooo/d23d8bcf8856c7dd8e86266097404ded.js")
 # prefer to move to a helper function file.
@@ -130,7 +202,7 @@ ggsave(plot = fig2A, filename= here("figures/venn_plot_interaction_fig.png"), wi
 ```
 
 
-## 2B
+### 2B
 ```{r}
 fig2b.ma.inf.L <- topTags_lipid_inf_edgeR %>%
   clean_and_mutate_data() %>% 
@@ -167,7 +239,7 @@ ggsave(plot = fig2B, filename = here("figures/logFC_density_DE_in_diet_fig.png")
 
 
 
-## 2C
+### 2C
 ```{r}
 font_size <- 45#35
 
@@ -285,7 +357,7 @@ tbl_tol_results %>%
 ```
 
 
-## Figure 2 combined
+### Figure 2 combined
 Figure 2 Panels
 ```{r, fig.width=8, fig.height=6}
 fig2C <- ggdraw() + draw_image(here("tables/top_genes_ixndietinf_colors.png")) 
@@ -299,11 +371,11 @@ ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 8, height = 6, 
 ```
 
 
-# Figure 3
+## Figure 3
 
 
 
-## Fig3A
+### Fig3A
 
 ```{r}
 cor_dietvInfL_DE <- left_join(topTags_lipid_inf_edgeR, topTags_diet_uninf_edgeR, #topTags_inf_edgeR,
@@ -454,7 +526,7 @@ protvsall_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
 ```
 
 
-## Fig3B
+### Fig3B
 
 ```{r}
 
@@ -629,7 +701,7 @@ barplot_enrichments
 ggsave(plot = barplot_enrichments, "figures/GO_term_enrichment_comparison.png", width = 12, height = 10, units = "in", dpi = 1200)
 ```
 
-## Fig 3C
+### Fig 3C
 
 Heatmap of DE genes in all contrasts
 ```{r, fig.height=10, fig.width=8}
@@ -911,7 +983,7 @@ for (i in row_order(ht)) {
 ```
 
 
-## Figure 3 combined
+### Figure 3 combined
 
 ```{r, fig.width=7, fig.height=8}
 fig3C <- ggdraw() + draw_image(here("figures/logFC_heatmap.png"), scale = 1.25, halign=0.4) +
@@ -961,9 +1033,9 @@ ggsave(plot = fig3, filename = here("figures/fig3.png"), width = 7, height = 8, 
 ```
 
 
-# Figure 4
+## Figure 4
 
-## 4A: Venn Diagram of DE gene overlap between phenotype measures and infection
+### 4A: Venn Diagram of DE gene overlap between phenotype measures and infection
 
 compile results.
 ```{r}
@@ -1087,7 +1159,7 @@ theme(legend.position = "none"#, #legend.text = element_text(size=8,hjust=8),
 fig4a.1
 ggsave(plot = fig4a.1, filename= here("figures/fig4a_venn_plot_phenotype_fig.png"), width = 16, height = 16, units = "cm", dpi=1200, bg="white")
 ```
-## 4A.table Table of genes DE in infection, eye score, and pathogen load analyses
+### 4A part II: table Table of genes DE in infection, eye score, and pathogen load analyses
 
 this might also just be a part of 4A...
 
@@ -1132,7 +1204,7 @@ fig4A
 
 
 
-## 4B/C: network plot of genes DE accoridng to Eye Scores.
+### 4B: network plot of genes DE accoridng to Eye Scores.
 
 ```{r, fig.height=4, fig.width=8}
 library(clusterProfiler)
@@ -1169,7 +1241,7 @@ network_ES_plot
 ```
 
 
-## Figure 4 combined
+### Figure 4 combined
 ```{r, fig.height=7, fig.width=7}
 
 fig4 <- cowplot::plot_grid(fig4A, network_ES_plot, ncol=1, labels = c("", "B"), rel_heights = c(3,2.5))

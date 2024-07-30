@@ -21,8 +21,8 @@ library(flextable)
 library(GGally)
 ```
 
-# load in data
-```{r}
+# Data Preparation
+```{r load annotations}
 # get annotation hub (orgdb)
 
 ah <- AnnotationHub()
@@ -30,296 +30,17 @@ orgs <- subset(ah, ah$rdataclass == "OrgDb")
 orgdb <- query(orgs, "Serinus canaria")[[1]]
 ```
 
-## define functions
-```{r functions}
-# A function to tidy gene expression matrix
-get_tidy_expression <- function(data, meta, from_file=T, type = "tpm") {
-  if (type == "tpm") {
-    # tpm_df <- readr::read_tsv(data_path,
-    #                           show_col_types = FALSE) %>%
-    if (from_file) {
-      tpm_df <- data.table::fread(data_path, sep="\t") %>%
-      tibble() %>%
-      dplyr::select(
-        -c(
-          "ES89_Blue-049_Control-protein_0",
-          "ES31_Blue-055_NA_0",
-          "ES32_Blue-055_NA_14",
-          "ES65_106_NA_0",
-          'transcript_id(s)'#, contains("Blue-050")
-        )
-      )
-      meta_subset <- meta %>%
-      dplyr::select(c(1,3,4,5,6,7))
-    
-    tpm_df <<- tpm_df %>%
-      as_tibble() %>%
-      mutate(gene = gene_id) %>%
-      dplyr::select(-gene_id) %>%
-      pivot_longer(
-        !gene,
-        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
-        names_sep = "_",
-        values_to = type
-      ) %>%
-      separate(col = MG.Diet, c("MG", "Diet"), remove=FALSE) %>%
-      left_join(meta_subset, join_by(Lane==SampID,
-                                     Bird==Bird.ID,
-                                     Diet==Diet,
-                                     Day==Day,
-                                     MG.Diet==MG.Diet)) %>%
-      left_join(result_BM_merged,
-    #gene_GO_tbl |>
-              #mutate(gene = as.character(entrezgene_id)),
-            by = "gene")
-    } else {
-      # when data is already in R.
-      tpm_df <- data
-      
-      meta_subset <- meta %>%
-      dplyr::select(c(1,3,4,5,6,7))
-    
-    tpm_df <<- tpm_df %>%
-      as_tibble(rownames = "gene_gff") %>%
-      pivot_longer(
-        !gene_gff,
-        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
-        names_sep = "_",
-        values_to = "tpm"
-      ) %>%
-      separate(col = MG.Diet, c("MG", "Diet"), remove=FALSE) %>%
-      left_join(#entrez_IDs |> dplyr::select(-go_id),
-            result_BM_merged,
-            by = "gene_gff", multiple = "first") %>%
-      left_join(meta_subset, join_by(Lane==SampID,
-                                     Bird==Bird.ID,
-                                     Diet==Diet,
-                                     Day==Day,
-                                     MG.Diet==MG.Diet)) 
-    }
-    
-    
-    
-    
-  } else if (type == "count") {
-    # count_df <- readr::read_tsv(data_path,
-    #                             show_col_types = FALSE) %>%
-    if (from_file) {
-      count_df <- data.table::fread(data_path, sep="\t") %>%
-      tibble() %>%
-      dplyr::select(
-        -c(
-          "ES89_Blue-049_Control-protein_0",
-          "ES31_Blue-055_NA_0",
-          "ES32_Blue-055_NA_14",
-          "ES65_106_NA_0"
-        )
-      )
-    count_df <<-count_df %>%
-      as_tibble(rownames = "gene") %>%
-      pivot_longer(
-        !gene,
-        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
-        names_sep = "_",
-        values_to = type
-      ) %>%
-      separate(col = MG.Diet, c("MG", "Diet"), remove = FALSE)
-    } else {
-      error("Error, input of count data object not supported at this time. Convert to TPM.")
-    }
-    
-    
-  } else if (length(type)==2){
-    # tpm_df <- readr::read_tsv(filepath_rsem_gene_tpm,
-    #                           show_col_types = FALSE) %>%
-    tpm_df <- data.table::fread(filepath_rsem_gene_tpm, sep="\t") %>%
-      tibble() %>%
-      dplyr::select(
-        -c(
-          "ES89_Blue-049_Control-protein_0",
-          "ES31_Blue-055_NA_0",
-          "ES32_Blue-055_NA_14",
-          "ES65_106_NA_0"
-        )
-      )
-    tpm_df <<- tpm_df %>%
-      as_tibble(rownames = "gene") %>%
-      pivot_longer(
-        !gene,
-        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
-        names_sep = "_",
-        values_to = "tpm"
-      ) %>%
-      separate(col = MG.Diet, c("MG", "Diet"))
-    
-    # count_df <- readr::read_tsv(filepath_rsem_gene_counts,
-                                # show_col_types = FALSE) %>%
-    count_df <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>%
-      tibble() %>%
-      dplyr::select(
-        -c(
-          "ES89_Blue-049_Control-protein_0",
-          "ES31_Blue-055_NA_0",
-          "ES32_Blue-055_NA_14",
-          "ES65_106_NA_0"
-        )
-      )
-    count_df <<-count_df %>%
-      as_tibble(rownames = "gene") %>%
-      pivot_longer(
-        !gene,
-        names_to = c("Lane", "Bird", "MG.Diet", "Day"),
-        names_sep = "_",
-        values_to = "count"
-      ) %>%
-      separate(col = MG.Diet, c("MG", "Diet"),remove=FALSE)
-    count_df <<- count_df
-  } else {
-    stop("Error in inputs")
-  }
-}
-
-
-# negate %in%
-`%ni%` <- Negate(`%in%`)
-
-
-# A function to take gene name and plot ggplot scatterboxplot
-geneviz <- function(gene, tpm_df, subset) {
-  ggdat <- 
-    if (subset=="CTLvsINF") {
-      tpm_df %>%
-        filter(gene_id == gene) %>%
-        dplyr::filter(MG == "Control" | Day != 0)
-    } else if (subset=="DAY0") {
-      tpm_df %>%
-        filter(gene_id == gene) %>%
-        dplyr::filter(Day == 0)
-    } else if (subset=="ALL_UNINF") {
-      tpm_df %>%
-        filter(gene_id == gene) %>%
-        dplyr::filter(MG == "Control" | Day == 0)
-    } else {
-      tpm_df %>%
-        filter(gene_id == gene)
-    }
-  
-  # identify where anova stat should go
-  anova_y_low <- ggdat %>%
-    dplyr::mutate(log2tpm = log2(tpm+1)) %>%
-    dplyr::arrange(log2tpm) %>%
-    head(1) %>%
-    pull(log2tpm) %>% as.numeric()
-  
-  y_high <- ggdat %>%
-    dplyr::mutate(log2tpm = log2(tpm+1)) %>%
-    dplyr::arrange(desc(log2tpm)) %>%
-    head(1) %>%
-    pull(log2tpm) %>% as.numeric()
-    
-  
-  ggdat %>%
-    ggplot(aes(
-      x = interaction(Diet, MG),
-      y = log2(tpm+1),
-      #color=Diet,
-      shape = as.factor(Day),
-      group = interaction(Diet, MG)
-    )) +
-    # ylim(0,3) +
-    geom_boxplot(width = 0.3, outlier.shape = NA) +
-    ggbeeswarm::geom_quasirandom(cex = 1.5) +
-    ggpubr::stat_compare_means(
-      comparisons =
-        list(
-          c("lipid.Control", "protein.Control"),
-          c("lipid.MG", "protein.MG"),
-          c("lipid.Control", "lipid.MG"),
-          c("protein.Control", "protein.MG")
-        ),
-      method = "t.test",
-      # label = "p.signif",
-      label = "p.format",
-      # Add pairwise comparisons p-value
-      label.y = c(y_high+0.2,y_high+0.2,y_high+0.7,y_high+1.3)
-    ) +
-    # ylim(-1,8) +
-    ylim(anova_y_low-1, y_high+2) +
-    ggpubr::stat_compare_means(label.y = anova_y_low-0.5, method = "anova") +
-    ggtitle(paste0(gene, " expression - ", subset)) +
-    theme_classic()
-}
-
-
-# visualize gene expression over time
-timevizMG <- function(gene, tpm_df, include_control=T, diff=T) {
-  if (include_control==T) {
-    if (diff==T) {
-      tpm_df %>%
-        filter(gene_id == gene) %>%
-        group_by(Bird) %>%
-        dplyr::select(c('gene_id', "Bird", "MG", "Diet", 
-                        "Day", "tpm")) %>%
-        dplyr::mutate(Day = paste0("Day", Day)) %>% 
-        # dplyr::filter(tpm>1) %>% # remove samples where gene has very low expression
-        pivot_wider(names_from=Day, values_from=tpm) %>%
-        dplyr::mutate(diff14v0 = log(Day14)-log(Day0),
-                  diff21v0 = log(Day21)-log(Day0)) %>%
-        dplyr::select("gene_id", "Bird", "MG", "Diet", 
-                        "diff14v0", "diff21v0") %>%
-        pivot_longer(c("diff14v0", "diff21v0"),names_to="comparison", values_to="LogDiff") %>%
-        ggplot(aes(
-          x = interaction(Diet,MG),
-          y = LogDiff,
-          shape = Diet
-        )) +
-        # geom_line() +
-        geom_boxplot(outlier.shape = NA) +
-        geom_point() +
-        ggtitle(paste0(gene, " expression changes")) +
-        theme_classic() +
-          facet_wrap(~comparison)
-    } else {
-    tpm_df %>%
-      filter(gene_id == gene) %>%
-      ggplot(aes(
-        x = Day,
-        y = log2(tpm+1),
-        shape = Diet,
-        group = Bird
-      )) +
-      geom_point() +
-      geom_line() +
-      # geom_boxplot() +
-      ggtitle(paste0(gene, " expression over time")) +
-      theme_classic() +
-        facet_wrap(~MG)
-    }
-  } else {
-  tpm_df %>%
-    filter(gene_id == gene,
-           MG == "MG") %>% # filter only the MG group
-    ggplot(aes(
-      x = Day,
-      y = log2(tpm+1),
-      shape = Diet,
-      group = Bird
-    )) +
-    geom_point() +
-    geom_line() +
-    # geom_boxplot() +
-    ggtitle(paste0(gene, " expression over time in MG infected birds")) +
-    theme_classic()
-  }
-}
+## load custom functions
+```{r custom functions}
+source(here::here("scripts/canary_data_processing_functions.R"))
 ```
 
 ```{r read-data}
 # assign file path locaiton of rsem.merged.gene_counts.tsv file
-filepath_rsem_gene_counts <- here::here("SerCan2020", "rsem.merged.gene_counts.tsv")
+filepath_rsem_gene_counts <- here::here("data", "rsem.merged.gene_counts.tsv")
 
 #assign location of tpm file for later analysis
-filepath_rsem_gene_tpm <- here::here("SerCan2020", "rsem.merged.gene_tpm.tsv")
+# filepath_rsem_gene_tpm <- here::here("SerCan2020", "rsem.merged.gene_tpm.tsv")
 
 # read in rsem.merged.gene_counts.tsv
 g.counts.l <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>% as_tibble()
@@ -400,7 +121,7 @@ metadata <-
 canary_loads <-
   # only birds with both phenotype and genotype data
   # readr::read_csv(here("Geno.x.Pheno/canary_loads.csv")) %>% 
-  data.table::fread(here("Geno.x.Pheno/canary_loads.csv"),sep=",") %>% 
+  data.table::fread(here("sample_metadata/canary_loads.csv"),sep=",") %>% 
   tibble() %>%
   # mutate(measure = "eye_score", value = ES) %>% # allow data to be merged with tidygeneExpr
   mutate(Bird = stringr::str_replace(ID, " ", ".")) %>%
@@ -416,7 +137,7 @@ canary_loads <-
 eyescores <-
   # readr::read_csv(
   data.table::fread(
-    here("Geno.x.Pheno/canary_eyescores.csv"),
+    here("sample_metadata/canary_eyescores.csv"),
     sep=","
     # col_types = cols(Day = col_integer(),
     #                  Date = col_character())
@@ -573,15 +294,9 @@ metadata_phenotypes <- metadata %>%
     TRUE ~ ES_minMax
   )
   ) %>%
-  # mutate(tolerance = (logLoad/(ES_day0_analysis+1))-1) # current tolerance index
-  # mutate(tolerance = log((logLoad)/(ES_day0_analysis+1))) # new better tolerance index
-  # mutate(tolerance = (logLoad)-log(ES_day0_analysis+1)) %>% # is this even better??
-  mutate(tolerance_loadoverES = (1+logLoad_alt)/(ES_day0_analysis+1)-1, # this is the best one??
+  mutate(tolerance_loadoverES = (1+logLoad_alt)/(ES_day0_analysis+1)-1, 
          tolerance_erin = 1-((ES)/(logLoad_alt)),
          tolerance = 1-(ES/logLoad_alt))
-
-
-
 ```
 
 
