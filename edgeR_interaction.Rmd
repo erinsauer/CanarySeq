@@ -5591,7 +5591,7 @@ ggplot(ggPCA, aes(x=x,y=y, group=interaction(Diet,MG.Status), #shape = Day,
 ```{r}
 set.seed(123)
 
-  
+
 dummy <- tpm_data %>% cpm(log = TRUE) %>% t() %>%
   data.frame() %>% rownames_to_column("sample") %>%
   left_join(metadata_phenotypes, by=c("sample"="SampID")) %>%

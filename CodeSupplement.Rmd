@@ -30,6 +30,7 @@ library(clusterProfiler)
 library(flextable)
 library(GGally)
 library(biomartr)
+library(gt)
 
 options(ggrepel.max.overlaps = Inf)
 ```
@@ -48,8 +49,9 @@ source(here::here("scripts/canary_data_processing_functions.R"))
 ```
 
 ```{r read-data}
-# assign file path locaiton of rsem.merged.gene_counts.tsv file
+# assign file path location of gene count file
 filepath_rsem_gene_counts <- here::here("data", "rsem.merged.gene_counts.tsv")
+filepath_rsem_gene_tpm <- here::here("data", "rsem.merged.gene_tpm.tsv")
 
 # read in rsem.merged.gene_counts.tsv
 g.counts.l <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>% as_tibble()
@@ -630,7 +632,120 @@ gseKEGG_infection_protein <- topTags_protein_inf_edgeR %>%
 
 ## Ordinal Logistic Regression of Eye Score
 ```{r}
+tpm_data <- data.table::fread(filepath_rsem_gene_tpm, sep="\t") %>% as_tibble() %>%
+  dplyr::select(-c(
+      "ES89_Blue-049_Control-protein_0",
+      "ES31_Blue-055_NA_0",
+      "ES32_Blue-055_NA_14",
+      "ES65_106_NA_0" )) %>% 
+  # dplyr::select(-contains("Blue-050")) %>%
+  # change diet group of bird SEM19-1481 from MG-lipid to MG-protein
+  dplyr::rename(all_of(
+       c(`ES64_SEM19-1481_MG-protein_21`="ES64_SEM19-1481_MG-lipid_21",
+         `ES52_SEM19-1481_MG-protein_14`="ES52_SEM19-1481_MG-lipid_14",
+         `ES83_SEM19-1481_MG-protein_0`="ES83_SEM19-1481_MG-lipid_0"))
+       ) %>%
+  # remove globin genes
+  dplyr::filter(gene_id != "LOC103824466" ) %>%
+  dplyr::filter(gene_id != "LOC103817748" ) %>%
+  dplyr::filter(gene_id != "LOC103817749" ) %>%
+  dplyr::filter(gene_id != "LOC115485052" ) %>%
+  dplyr::filter(gene_id != "LOC103817748" ) %>%
+  # Add rownames
+  column_to_rownames("gene_id") %>%
+  # remove unneeded column
+  dplyr::select(-`transcript_id(s)`) %>% 
+  # convert to matrix for edgeR
+  as.matrix()
+```
 
+This analysis can take a significant amount of time to complete.
+```{r}
+set.seed(123)
+
+dummy <- tpm_data %>% cpm(log = TRUE) %>% 
+  t() %>%
+  data.frame() %>% rownames_to_column("sample") %>%
+  left_join(metadata_phenotypes, by=c("sample"="SampID")) %>%
+  # filter(MG.Status == "MG") %>%
+  # filter(logLoad>0) %>%
+  # dplyr::select(where(~ any(. != 0))) %>%
+  mutate(ES = as.ordered(as.factor(ES)),
+         tolerance_ord = as.ordered(as.factor(tolerance))#,
+         # logload = as.ordered(as.factor(logload))
+         )
+
+# dummy <- tibble(ID = 1:50,
+#                 A = sample(x = 1:200, size = 50, replace = T),
+#                 B = as.factor(sample(x = c("day", "night"), size = 50, 
+#                                      replace = T)),
+#                 C = as.factor(sample(x = c("blue", "red", "green"), size = 50, replace = T)))
+library(tidyverse)
+library(VGAM)
+
+mod_f <- function(x) {
+  vglm(
+    formula = as.formula(x),
+    family = cumulative(parallel = TRUE,
+                        reverse = FALSE),
+    data = dummy
+  )
+}
+
+## get genes that are included in edgeR analysis:
+edgeR_analyzed_genes <- topTags_inf_edgeR %>% 
+  left_join(mutate(result_BM_merged,entrezgene_id= as.character(entrezgene_id)), by=c("gene" = "entrezgene_id")
+            ) %>% 
+  mutate(match_gene_tmp = case_when(
+    str_detect(gene,"^1") ~ str_replace(gene, "^1", "LOC1"),
+    TRUE~gene
+  )) %>%
+  mutate(match_gene = case_when(
+    match_gene_tmp %in% rownames(tpm_data) ~ match_gene_tmp,
+    gene_tag %in% rownames(tpm_data) ~ gene_tag,
+    TRUE~NA
+  )) %>%
+  arrange(desc(logFC)) %>%
+  pull(match_gene, name = gene)# %>% unique()
+
+n <- length(unique(edgeR_analyzed_genes))
+      # 2000
+
+formulas_tolerance <-
+  c(paste0("ES~Diet+logLoad+", rownames(tpm_data)[rownames(tpm_data) %in% edgeR_analyzed_genes]))[1:n]
+
+tbl_tolerance <- tibble(forms = formulas_tolerance)
+
+tbl_2_tol <-
+  tbl_tolerance %>% mutate(
+    all = map(formulas_tolerance, mod_f) %>% 
+      map(summary) %>% 
+      map(coef) %>% 
+      map(as_tibble, rownames = "gene")
+  )
+
+tbl_tol_results <- tbl_2_tol$all %>% set_names(rownames(tpm_data)[1:n]) %>% 
+  dplyr::bind_rows() %>%
+  filter(!str_detect(gene, "Intercept")) %>% #View()
+  left_join(result_BM_merged, by=c("gene" = "gene_tag")) %>% 
+  mutate(FDR= p.adjust(`Pr(>|z|)`, method="fdr")) %>%
+  # mutate(id = c(rep(1:m, each = 3),885))# %>%
+  filter(gene != "Dietprotein" & gene != "logLoad") %>% #View()
+  filter(entrezgene_id %in% topTags_inf_edgeR$entrezgene_id) %>%
+  mutate(gene.z = case_when(
+    gene.y %in% topTags_inf_edgeR$gene ~ gene.y,
+    gene %in% topTags_diet_edgeR$gene ~ gene,
+    gene %in% paste0("LOC",topTags_diet_edgeR$gene) & 
+      is.na(entrezgene_id) ~ str_remove(gene, "LOC"),
+    TRUE ~ NA
+  )) %>%
+    filter(entrezgene_id %in% topTags_inf_edgeR$entrezgene_id & gene.z %in% topTags_inf_edgeR$gene) %>%
+    dplyr::select(-c(wikigene_name,ensembl_gene_id))%>%
+  right_join(topTags_inf_edgeR, by=c("entrezgene_id" = "entrezgene_id", "description" = "description", "gene.z" = "gene", "gene_name" = "gene_name"
+                                    ),
+            suffix = c("_tol", "_inf"))
+
+write_tsv(tbl_tol_results, here::here("supplement/tbl_ordinal_regression_results.tsv"))
 ```
 
 
@@ -854,7 +969,7 @@ tbl_tol_results %>%
             locations = gt::cells_body(columns = logFC_inf_prot,
                                    rows = FDR_inf_prot < 0.05)
   ) %>%
-  tab_options(data_row.padding = px(15))# %>%
+  gt::tab_options(data_row.padding = px(15))# %>%
   #gt::gtsave(file = here::here("tables/top_genes_ixndietinf_colors.png"), zoom=2, vwidth = 4000, vheight=4000, expand=20)
 ```
 
@@ -1049,15 +1164,24 @@ gseKEGG_infection_lipid@result %>%
   mutate(comparison = "diet (protein vs lipid)")
 )
 ```
-how about we scale the logFC values for each of those so they are on 0,1 scale? maybe, but that could be messy b/c of outliers.. z score fine but goes too far out.. maybe just leave it out? or rescale? we'll see.
+
 
 ```{r, fig.height=8}
+
+DE_GO_terms_any_inf_simple <- bind_rows(fig4_plot_list[[1]], 
+          fig4_plot_list[[2]],
+          fig4_plot_list[[3]]
+          ) %>%
+  filter(p.adjust < 0.05) %>%
+  pull(ID) %>% unique()
+
 
 DE_KEGG_terms_any_inf <- bind_rows(fig4_plot_list[[4]], 
           fig4_plot_list[[5]],
           fig4_plot_list[[6]]) %>%
   filter(p.adjust < 0.05) %>%
   pull(ID) %>% unique()
+
 
 bind_rows(fig4_plot_list[[4]], 
           fig4_plot_list[[5]],
