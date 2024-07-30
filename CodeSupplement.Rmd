@@ -380,7 +380,6 @@ topTags_logLoad_inf <- topTags(res_logLoad_inf, n=Inf) %>% data.frame() %>%
   distinct(gene,.keep_all = TRUE)
 ```
 
-
 ## merge results
 ```{r}
 genes_higher_in_infection <- topTags_inf_edgeR %>%
@@ -524,17 +523,17 @@ gseGO_infection <- topTags_inf_edgeR %>%
                 pvalueCutoff  = 1
   )
 
-gseGO_diet <- topTags_diet_edgeR %>%
-  arrange(desc(logFC)) %>%
-  pull(logFC, gene) %>%
-  gseGO(
-    geneList     = .,
-    OrgDb         = orgdb,
-                keyType       = 'ENTREZID',
-                ont           = "BP",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 1
-  )
+# gseGO_diet <- topTags_diet_edgeR %>%
+#   arrange(desc(logFC)) %>%
+#   pull(logFC, gene) %>%
+#   gseGO(
+#     geneList     = .,
+#     OrgDb         = orgdb,
+#                 keyType       = 'ENTREZID',
+#                 ont           = "BP",
+#                 pAdjustMethod = "BH",
+#                 pvalueCutoff  = 1
+#   )
 
 gseGO_diet_uninf <- topTags_diet_uninf_edgeR %>%
   arrange(desc(logFC)) %>%
@@ -629,15 +628,10 @@ gseKEGG_infection_protein <- topTags_protein_inf_edgeR %>%
   )
 ```
 
+## Ordinal Logistic Regression of Eye Score
+```{r}
 
-
-
-
-
-
-
-
-
+```
 
 
 
@@ -650,7 +644,7 @@ gseKEGG_infection_protein <- topTags_protein_inf_edgeR %>%
 topTags_lipid_inf_edgeR
 topTags_protein_inf_edgeR
 topTags_inf_edgeR
-topTags_ixn_edgeR
+topTags_ixd_edgeR
 topTags_diet_uninf_edgeR
 topTags_logLoad_inf
 DE_genes_edgeR_upset
@@ -671,8 +665,6 @@ genes_higher_protein_diet
 genes_higher_lipid_diet
 genes_bigger_protein_infection_difference
 genes_bigger_lipid_infection_difference
-
- topTags_ES_inf
 ```
 # Main Text Figures
 
@@ -686,7 +678,7 @@ genes_bigger_lipid_infection_difference
 
 ## Figure 2
 
-### 2A
+### Fig 2A
 ```{r}
 
 source(here::here("scripts/canary_data_processing_functions.R"))
@@ -707,12 +699,12 @@ fig2A <- list("Infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in
 
 fig2A
   
-ggsave(plot = fig2A, filename= here("figures/venn_plot_interaction_fig.png"), width = 16, height = 16, units = "cm", dpi=1200)
+# ggsave(plot = fig2A, filename= here("figures/venn_plot_interaction_fig.png"), width = 16, height = 16, units = "cm", dpi=1200)
 
 ```
 
 
-### 2B
+### Fig 2B
 ```{r}
 fig2b.ma.inf.L <- topTags_lipid_inf_edgeR %>%
   clean_and_mutate_data() %>% 
@@ -743,13 +735,13 @@ fig2B <- ggpubr::ggarrange(fig2b.ma.inf.L, fig2b.ma.inf.P, ncol=1,common.legend 
 
 fig2B
 
-ggsave(plot = fig2B, filename = here("figures/logFC_density_DE_in_diet_fig.png"), width = 3, height = 4, units = "cm", dpi=1200)
+# ggsave(plot = fig2B, filename = here("figures/logFC_density_DE_in_diet_fig.png"), width = 3, height = 4, units = "cm", dpi=1200)
 ```
 
 
 
 
-### 2C
+### Fig 2C
 ```{r}
 font_size <- 45#35
 
@@ -862,8 +854,8 @@ tbl_tol_results %>%
             locations = gt::cells_body(columns = logFC_inf_prot,
                                    rows = FDR_inf_prot < 0.05)
   ) %>%
-  tab_options(data_row.padding = px(15)) %>%
-  gt::gtsave(file = here::here("tables/top_genes_ixndietinf_colors.png"), zoom=2, vwidth = 4000, vheight=4000, expand=20)
+  tab_options(data_row.padding = px(15))# %>%
+  #gt::gtsave(file = here::here("tables/top_genes_ixndietinf_colors.png"), zoom=2, vwidth = 4000, vheight=4000, expand=20)
 ```
 
 
@@ -877,7 +869,7 @@ fig2 <- cowplot::plot_grid(fig2AB, NULL, fig2C, rel_widths = c(0.7, 0.025, 1.3),
 
 fig2
 
-ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 8, height = 6, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 8, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -885,7 +877,7 @@ ggsave(plot = fig2, filename = here("figures/fig2.png"), width = 8, height = 6, 
 
 
 
-### Fig3A
+### Fig 3A
 
 ```{r}
 cor_dietvInfL_DE <- left_join(topTags_lipid_inf_edgeR, topTags_diet_uninf_edgeR, #topTags_inf_edgeR,
@@ -915,7 +907,7 @@ cor_dietvInfL_DE <- left_join(topTags_lipid_inf_edgeR, topTags_diet_uninf_edgeR,
         axis.text = element_text(size = 8), axis.title=element_text(size=8)) #+
   # theme_classic()
 
-ggsave("figures/DEGenesBothCorrlipInfDietLogFC.png", width=16, height=16, units = "cm", dpi=1200)
+#ggsave("figures/DEGenesBothCorrlipInfDietLogFC.png", width=16, height=16, units = "cm", dpi=1200)
 
 cor_dietvInfP_DE <- left_join(topTags_protein_inf_edgeR, topTags_diet_uninf_edgeR, #topTags_inf_edgeR,
           by=c("gene","gene_name", "description"),suffix = c(".inf", ".diet")) %>%
@@ -942,7 +934,7 @@ cor_dietvInfP_DE <- left_join(topTags_protein_inf_edgeR, topTags_diet_uninf_edge
         axis.text = element_text(size = 8), axis.title=element_text(size=8))  #+
   # theme_classic()
 
-ggsave("figures/DEGenesBothCorrprotInfDietLogFC.png", width=8, height=8, units = "cm", dpi=1200)
+#ggsave("figures/DEGenesBothCorrprotInfDietLogFC.png", width=8, height=8, units = "cm", dpi=1200)
 
 cor_dietvInf_DE <- left_join(topTags_inf_edgeR, topTags_diet_uninf_edgeR,
 # left_join(topTags_lipid_inf_edgeR, topTags_diet_uninf_edgeR, #topTags_inf_edgeR,
@@ -970,7 +962,7 @@ cor_dietvInf_DE <- left_join(topTags_inf_edgeR, topTags_diet_uninf_edgeR,
         axis.text = element_text(size = 8), axis.title=element_text(size=8)
         ) 
 
-ggsave("figures/DEGenesBothCorrInfDietLogFC.png", width=8, height=8, units = "cm", dpi=1200)
+#ggsave("figures/DEGenesBothCorrInfDietLogFC.png", width=8, height=8, units = "cm", dpi=1200)
 
 ```
 ######
@@ -1036,7 +1028,7 @@ protvsall_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
 ```
 
 
-### Fig3B
+### Fig 3B
 
 ```{r}
 
@@ -1056,53 +1048,6 @@ gseKEGG_infection_lipid@result %>%
 (gseGO_diet_uninf)@result %>%
   mutate(comparison = "diet (protein vs lipid)")
 )
-# 
-# bind_rows(fig4_plot_list[[1]], 
-#           fig4_plot_list[[2]],
-#           fig4_plot_list[[3]],
-#           fig4_plot_list[[7]]) %>%
-#   filter(ID %in% DE_GO_terms_any_inf_simple) %>%
-#   mutate(Description = str_replace_all(Description, "biological process involved in ", ""),
-#          `p.adj<0.05` = case_when(p.adjust < 0.05 ~ "YES",
-#                             TRUE ~ 'NO')) %>%
-#   mutate(Term = paste0(" ",Description, " (", ID, ") ")) %>%
-#   mutate(Term = fct_reorder(as.factor(Term), -enrichmentScore)) %>%
-#   mutate(Term_labels = case_when(
-#     Description == "monoatomic ion transport" & comparison == "infection (all)" ~ Term,
-#     Description == "monoatomic ion transport" ~ NA,
-#     comparison == "infection (all)" ~ Term,
-#     TRUE ~ NA
-#   ),
-#   y_labels = case_when(
-#     Description == "monoatomic ion transmembrane transport" & comparison == "infection (all)" ~ 0.42,
-#     Description == "monoatomic ion transport" & comparison == "infection (all)" ~ 0.36,
-#     TRUE ~ 0
-#   )) %>%
-#   group_by(Term) %>%
-#   mutate(Term_labels2 = case_when(
-#     n() == 4 & comparison == "infection (all)" ~ Term,
-#     n() == 3 & !is.na(Term_labels) & comparison == "infection (all)" ~ Term,
-#     n() == 2 & is.na(Term_labels) & comparison == "infection (protein)" ~ Term,
-#     n() == 2 & is.na(Term_labels) & comparison == "infection (lipid)" ~ Term,
-#     n() == 1 ~ Term,
-#     TRUE ~ NA) 
-#     )%>%
-#   ungroup() %>% 
-#   arrange(desc(enrichmentScore)) %>%
-#   ggplot(., aes(x= reorder(Term, -enrichmentScore), y=enrichmentScore, group = comparison, fill = comparison, alpha=`p.adj<0.05`#-log(p.adjust)
-#                 )) +
-#   geom_col(#position = "dodge",
-#            position = position_dodge(preserve = 'single')) +
-#   geom_text(aes(y = y_labels, label = Term_labels2, hjust = as.numeric(enrichmentScore) > 0), alpha=1) + 
-#   xlab("GO Term") +
-#   scale_alpha_discrete(range=c(0.2, 1)) +
-#   scale_fill_manual(values = c("yellow","purple", "blue","red")) +
-#   coord_flip() + theme_classic() +
-#   theme(axis.title.y=element_blank(),
-#           axis.text.y=element_blank(),
-#           axis.ticks.y=element_blank(),axis.text = element_text(size = 14), axis.title=element_text(size=16))
-# 
-# ggsave("figures/GO_term_enrichment_comparison.png", width = 12, height = 10, units = "in", dpi = 600)
 ```
 how about we scale the logFC values for each of those so they are on 0,1 scale? maybe, but that could be messy b/c of outliers.. z score fine but goes too far out.. maybe just leave it out? or rescale? we'll see.
 
@@ -1208,7 +1153,7 @@ barplot_enrichments <- bind_rows(fig4_plot_list[[1]],
 
 barplot_enrichments
 
-ggsave(plot = barplot_enrichments, "figures/GO_term_enrichment_comparison.png", width = 12, height = 10, units = "in", dpi = 1200)
+# ggsave(plot = barplot_enrichments, "figures/GO_term_enrichment_comparison.png", width = 12, height = 10, units = "in", dpi = 1200)
 ```
 
 ### Fig 3C
@@ -1325,45 +1270,6 @@ heatmap_enrichment_terms <- list(
 ha = rowAnnotation(foo = anno_empty(border = FALSE, 
     width = max_text_width(unlist(heatmap_enrichment_terms)) + unit(4, "mm")))
 
-# Generate the heatmap with internal annotations
-# heatmap <- Heatmap(logFC_matrix, name = "logFC", 
-#                    cluster_rows = TRUE,
-#                    show_row_dend = TRUE,
-#                    width = unit(8, "cm"),
-#                    heatmap_legend_param = list(direction = "horizontal"),
-#                    cluster_columns = FALSE, 
-#                    split=8,
-#                    show_row_names = FALSE,
-#                    show_column_names = TRUE, 
-#                    column_names_side = "top",
-#                    clustering_distance_rows = "pearson",
-#                    row_names_gp = gpar(fontsize = 10),
-#                    column_names_gp = gpar(fontsize = 12),
-#                    column_names_rot = 0,
-#                    column_names_centered = TRUE,
-#                    right_annotation = ha,
-#                    cell_fun = function(j, i, x, y, width, height, fill) {
-#                        grid.rect(x, y, width, height, gp = gpar(fill = fill, col = NA))
-#                        if (significance_matrix[i, j] == "*") {
-#                            grid.text("*", x, y, gp = gpar(col = "black", alpha=0.5, fontsize = 6))
-#                        }
-#                    }
-#                    ) 
-# for(i in 1:8) {
-#     + decorate_annotation("foo", slice = i, {
-#         grid.rect(x = 0.01, width = unit(0.75, "mm"), gp = gpar(fill = "black", col = NA), just = "left")
-#         grid.text(paste(heatmap_enrichment_terms[[i]], collapse = "\n"), x = unit(4, "mm"), just = "left")
-#     })
-# }
-
-
-# Draw the heatmap
-ht <- draw(heatmap2, heatmap_legend_side = "bottom")
-
-#ht
-
-#row_order(ht)
-
 # change padding 
 ht_opt$DIMNAME_PADDING = unit(0.25, "cm")
 #ht_opt$COLUMN_ANNO_PADDING = unit(0.25, "cm")
@@ -1405,7 +1311,7 @@ ht
 ```
 
 ```{r, fig.height=9, fig.width=8, message=FALSE, warning=FALSE}
-png(file="figures/logFC_heatmap.png", width=8, height=16, res=1200,units = "in",bg = "transparent")
+#png(file="figures/logFC_heatmap.png", width=8, height=16, res=1200,units = "in",bg = "transparent")
 
 draw(heatmap2, heatmap_legend_side = "bot")
 
@@ -1436,7 +1342,7 @@ decorate_annotation("foo",  {
               gp = gpar(fontface="bold")) 
 })
 
-dev.off()
+#dev.off()
 ```
 
 
@@ -1513,27 +1419,17 @@ fig3 <- cowplot::plot_grid(fig3AB, NULL, fig3C, ncol=3, labels = c("", "", "C"),
                            rel_widths = c(2.3, 0, 1.8)
                            )
 fig3
-#cowplot::get_legend(barplot_enrichments) %>% ggdraw()
-#fig3_legend <- get_legend(barplot_enrichments)
 
 
-
-
-
-# ggpubr::ggarrange(fig3AB, fig3C, get_legend(barplot_enrichments),ncol=2)
-
-# fig2AB <- cowplot::plot_grid(fig2A, fig2B, ncol=1, labels = c("A","B"))
-# fig2 <- cowplot::plot_grid(fig2AB, NULL, fig2C, rel_widths = c(0.8, -0.05, 1), ncol=3,labels = c(" "," ", " "))
-
-# fig2
-
-ggsave(plot = fig3, filename = here("figures/fig3.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig3, filename = here("figures/fig3.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
 ```
 
 
 ## Figure 4
 
-### 4A: Venn Diagram of DE gene overlap between phenotype measures and infection
+### Fig 4A 
+
+Venn Diagram of DE gene overlap between phenotype measures and infection
 
 compile results.
 ```{r}
@@ -1655,12 +1551,11 @@ theme(legend.position = "none"#, #legend.text = element_text(size=8,hjust=8),
 
 
 fig4a.1
-ggsave(plot = fig4a.1, filename= here("figures/fig4a_venn_plot_phenotype_fig.png"), width = 16, height = 16, units = "cm", dpi=1200, bg="white")
+# ggsave(plot = fig4a.1, filename= here("figures/fig4a_venn_plot_phenotype_fig.png"), width = 16, height = 16, units = "cm", dpi=1200, bg="white")
 ```
-### 4A part II: table Table of genes DE in infection, eye score, and pathogen load analyses
 
-this might also just be a part of 4A...
 
+part II: table Table of genes DE in infection, eye score, and pathogen load analyses
 ```{r}
 merged_results %>%
   filter(FDR_inf < 0.05 & FDR_tol < 0.05) %>%
@@ -1688,8 +1583,8 @@ merged_results %>%
                   logFC_inf ~ "8em",
                  Estimate ~ "8em"#,
                  #logCPM_inf ~ "5em"
-                 ) %>%
-  gt::gtsave(file = here("tables/top_genes_all.png"))
+                 ) #%>%
+  #gt::gtsave(file = here("tables/top_genes_all.png"))
 ```
 
 ```{r}
@@ -1702,13 +1597,15 @@ fig4A
 
 
 
-### 4B: network plot of genes DE accoridng to Eye Scores.
+### Fig 4B 
+
+network plot of genes DE accoridng to Eye Scores.
 
 ```{r, fig.height=4, fig.width=8}
 library(clusterProfiler)
-ah <- AnnotationHub()
-orgs <- subset(ah, ah$rdataclass == "OrgDb")
-orgdb <- query(orgs, "Serinus canaria")[[1]]
+# ah <- AnnotationHub()
+# orgs <- subset(ah, ah$rdataclass == "OrgDb")
+# orgdb <- query(orgs, "Serinus canaria")[[1]]
 
 options(ggrepel.max.overlaps = Inf)
 network_ES_plot <- enrichGO_tol_ord2 %>%
@@ -1744,7 +1641,7 @@ network_ES_plot
 
 fig4 <- cowplot::plot_grid(fig4A, network_ES_plot, ncol=1, labels = c("", "B"), rel_heights = c(3,2.5))
 fig4
-ggsave(plot = fig4, filename= here("figures/fig4_phenotype.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig4, filename= here("figures/fig4_phenotype.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -1841,7 +1738,7 @@ fig.s1 <- cowplot::plot_grid(fig.s1.ma, s1.density, ncol=1, labels = c("", "D"))
 
 fig.s1
 
-ggsave(plot = fig.s1, filename = here("figures/fig.s1.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig.s1, filename = here("figures/fig.s1.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -1922,7 +1819,7 @@ fig.s2b <- gseKEGG_all_df %>%
 fig.s2 <- ggpubr::ggarrange(fig.s2a, fig.s2b, common.legend = T,legend = "right")
 fig.s2
 
-ggsave(plot = fig.s2, filename = here("figures/fig.s2.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig.s2, filename = here("figures/fig.s2.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -1966,7 +1863,7 @@ fig.s3 <- merged_results %>%
         axis.title=element_text(size=7), axis.text.x=element_text(angle=90, hjust=1))
 
 fig.s3
-ggsave(plot = fig.s3, filename = here("figures/fig.s3.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig.s3, filename = here("figures/fig.s3.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
 
 ```
 
@@ -2063,7 +1960,7 @@ nudge_x = -0.4,force=0.1,
 
 
 
-ggsave(plot = fig.s4, filename = "figures/fig.s4.DE_genes_multinode_ES_combined_upsetplot.png", width = 6, height = 9, units = "in", dpi = 1200)
+# ggsave(plot = fig.s4, filename = "figures/fig.s4.DE_genes_multinode_ES_combined_upsetplot.png", width = 6, height = 9, units = "in", dpi = 1200)
 ```
 
 
@@ -2138,7 +2035,7 @@ fig.s5 <- cowplot::plot_grid(s5.ma.logLoad, s5.ma.eyeScore, nrow=2, labels = c("
 
 fig.s5
 
-ggsave(plot = fig.s5, filename = here("figures/fig.s5.png"), width = 4, height = 6, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig.s5, filename = here("figures/fig.s5.png"), width = 4, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -2216,7 +2113,7 @@ fig.s6b <- gseKEGG_all_df %>%
 fig.s6 <- ggpubr::ggarrange(fig.s6a, fig.s6b, common.legend = T,legend = "right")
 fig.s6
 
-ggsave(plot = fig.s6, filename = here("figures/fig.s6.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig.s6, filename = here("figures/fig.s6.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -2246,7 +2143,7 @@ fig.s7 <- ggplot(ggPCA, aes(x=x,y=y, group=interaction(Diet,MG.active), #shape =
   stat_ellipse(type = "norm",level=0.8)
   # facet_wrap(~MG.active)
 
-ggsave(plot = fig.s7, filename = here("figures/fig.s7.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
+# ggsave(plot = fig.s7, filename = here("figures/fig.s7.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
