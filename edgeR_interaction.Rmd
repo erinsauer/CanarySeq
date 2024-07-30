@@ -7007,3 +7007,65 @@ tbl_tol_results %>%
                  logCPM_inf ~ "5em")# %>%
   gt::gtsave(file = here("tables/top_genes_all.png"))
 ```
+
+```{r}
+
+
+inf x diet interaction
+```{r}
+protvslipid_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
+                                      topTags_lipid_inf_edgeR, 
+                                      #topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  filter(FDR.protein < 0.05 | FDR.lipid < 0.05) %>% 
+  ggplot(aes(x=logFC.protein, y=logFC.lipid)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  theme_classic() +
+  ggtitle("Cor(logFC) protein vs lipid infection")
+
+
+allvslipid_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
+                                      topTags_lipid_inf_edgeR, 
+                                      #topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  filter(FDR < 0.05 | FDR.lipid < 0.05 | FDR.protein < 0.05 ) %>% #View()
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC, y=logFC.lipid)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  theme_classic() +
+  #
+  ggtitle("Cor(logFC) combined vs lipid infection")
+
+protvsall_inf_logfc_gg <- left_join(topTags_protein_inf_edgeR,
+                                      topTags_lipid_inf_edgeR, 
+                                      #topTags_inf_edgeR, 
+          by=c("gene","gene_name", "description"),suffix = c(".protein", ".lipid")) %>%
+  left_join(topTags_inf_edgeR, by=c("gene","gene_name", "description")) %>%
+  #filter(FDR < 0.05 | FDR.protein < 0.05 ) %>% #View()
+  # pivot_longer(cols = c(logFC.protein, logFC.lipid), names_to = "Diet", values_to = "logFC") %>% View()
+  ggplot(aes(x=logFC, y=logFC.protein)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")+
+  ggpubr::stat_cor(label.x = -2, label.y = 1.5) +
+  ggpubr::stat_regline_equation(label.x = -2, label.y = 2)+
+  geom_rug(col=rgb(.5,0,0,alpha=.2)) +
+  # xlim(-2,2) +
+  # ylim(-2,2) +
+  theme_classic() +
+  #ylab("") +
+  ggtitle("Cor(logFC) combined vs lipid infection")
+```
+```
+
