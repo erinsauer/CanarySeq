@@ -278,3 +278,87 @@ timevizMG <- function(gene, tpm_df, include_control=T, diff=T) {
       theme_classic()
   }
 }
+
+
+# function to convert eulerr to ggplot (https://gist.github.com/danlooo/d23d8bcf8856c7dd8e86266097404ded.js")
+# prefer to move to a helper function file.
+ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, text_size = 2, ...) {
+  data <-
+    eulerr::euler(combinations = combinations) %>%
+    plot(quantities = show_quantities) %>%
+    pluck("data")
+  
+  tibble() %>%
+    ggplot() +
+    ggforce::geom_ellipse(
+      data = data$ellipses %>% as_tibble(rownames = "Set"),
+      mapping = aes(x0 = h, y0 = k, a = a, b = b, angle = 0, fill = Set),
+      alpha = 0.5
+    ) +
+    geom_text(
+      data = {
+        data$centers %>%
+          mutate(
+            label = labels %>% map2(quantities, ~ {
+              if (!is.na(.x) && !is.na(.y) && show_labels) {
+                paste0(.x, "\n", sprintf(.y, fmt = "%.4g"))
+              } else if (!is.na(.x) && show_labels) {
+                .x
+              } else if (!is.na(.y)) {
+                .y
+              } else {
+                ""
+              }
+            })
+          )
+      },
+      mapping = aes(x = x, y = y, label = label), size = text_size
+    ) +
+    theme(panel.grid = element_blank()) +
+    coord_fixed() +
+    scale_fill_hue()
+}
+
+
+
+# Function to clean and mutate the data
+clean_and_mutate_data <- function(data, sig.cutoff=0.05, logFC.cutoff=0.575) {
+  data %>%
+    mutate(delabel = case_when(
+      !is.na(gene_name) ~ gene_name,
+      TRUE ~ paste0("LOC",gene)
+    )) %>%
+    mutate(delabel = case_when(
+      FDR < sig.cutoff ~ delabel,
+      abs(logFC) > logFC.cutoff ~ delabel,
+      TRUE ~ NA
+    )) %>%
+    mutate(diffexpressed = case_when(
+      FDR > sig.cutoff ~ "Neither",
+      logFC < 0 ~ "Down",
+      logFC > 0 ~ "Up"
+    )) %>%
+    mutate(diffexpressed = factor(diffexpressed, levels = c("Neither", "Down", "Up"))) %>%
+    arrange(diffexpressed)
+}
+
+# Function to create the plot
+create_gene_plot <- function(data, title, sig.cutoff=0.05, logFC.cutoff=0.575, show.names=T) {
+  ggplot(data, aes(x = logCPM, 
+                   y = logFC, 
+                   col = diffexpressed, 
+                   label = delabel#, size=AveExpr
+  )) +
+    geom_point(size=0.5) +
+    theme_classic() +
+    scale_color_manual("Differentially\n Expressed",values = c("black", "blue", "red")) +
+    #geom_vline(xintercept = c(-logFC.cutoff, logFC.cutoff), col = "red") +
+    #geom_hline(yintercept = -log10(sig.cutoff), col = "red") +
+    {if (show.names) ggrepel::geom_text_repel(size=2, na.rm=TRUE)} +
+    scale_size_area() +
+    # ggsci::scale_color_aaas() +
+    ggtitle(title) + 
+    theme(legend.position="none",
+          text = element_text(size=10),
+          axis.text = element_text(size=10))
+}

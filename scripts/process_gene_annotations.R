@@ -6,8 +6,8 @@ filepath_rsem_gene_counts <- here::here("data", "rsem.merged.gene_counts.tsv")
 g.counts.l <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>% as_tibble()
 
 # biomartr::getCollection( db = "refseq", organism = "Serinus canaria")
-
-scan_gff <- biomartr::read_gff("./_db_downloads/collections/refseq/Serinus_canaria/Serinus_canaria_genomic_refseq.gff.gz") %>%
+here()
+scan_gff <- biomartr::read_gff(here("_db_downloads/collections/refseq/Serinus_canaria/Serinus_canaria_genomic_refseq.gff.gz")) %>%
   filter(type=="gene", source == "Gnomon") %>%
   # create new column pulling out gene name
   mutate(gene_common_name = str_extract(attribute, "ID=gene-([^;]+)"),
@@ -50,4 +50,46 @@ gene_anno <- scan_gff %>%
                        too_few = "align_start") %>%
   dplyr::select(entrezgene_id, gene_gff, description) %>%
   mutate(description = str_remove(description, "description="))
+
+
+
+# Generate count matrix
+gene_expression_matrix <- g.counts.l %>% #View()
+  # remove globin genes
+  dplyr::filter(gene_id != "LOC103824466" ) %>%
+  dplyr::filter(gene_id != "LOC103817748" ) %>%
+  dplyr::filter(gene_id != "LOC103817749" ) %>%
+  dplyr::filter(gene_id != "LOC115485052" ) %>%
+  dplyr::filter(gene_id != "LOC103817748" ) %>%
+  # Add rownames
+  column_to_rownames("gene_id") %>%
+  # remove unneeded column
+  dplyr::select(-`transcript_id(s)`) %>% 
+  # convert to matrix for edgeR
+  as.matrix()
+
+# create merged biomart annotation
+result_BM_merged <- result_BM %>%
+  mutate(entrezgene_id = as.character(entrezgene_id)) %>%
+  full_join(gene_anno, by = "entrezgene_id") %>%
+  mutate(gene_name = case_when(
+    str_detect(gene_gff, "LOC1") & !str_detect(external_gene_name, "LOC1") & !is.na(external_gene_name) & external_gene_name != "" ~ external_gene_name,
+    str_detect(gene_gff, "LOC1") & !str_detect(wikigene_name, "LOC1") & !is.na(wikigene_name) ~ wikigene_name,
+    #str_detect(gene_gff, "LOC10") ~ gene_gff,
+    TRUE ~ gene_gff#paste0("LOC",entrezgene_id)
+  ),
+  gene_tag = case_when(
+    paste0("LOC",entrezgene_id) %in% rownames(gene_expression_matrix) ~ paste0("LOC",entrezgene_id),
+    gene_name %in% rownames(gene_expression_matrix) ~ gene_name,
+    TRUE ~ NA),
+  gene = case_when(
+    paste0("LOC",entrezgene_id) %in% rownames(gene_expression_matrix) ~ entrezgene_id,
+    gene_name %in% rownames(gene_expression_matrix) ~ gene_name,
+    TRUE ~ NA)
+  ) %>%
+  # remove formatting issue for commas in description.
+  mutate(description = str_replace_all(description, "%2", ",")) %>%
+  mutate(description = str_replace_all(description, ",C", ",")) 
+
+write_tsv(result_BM_merged, file = here::here("data/annotation/results_BM_merged.tsv"))
 

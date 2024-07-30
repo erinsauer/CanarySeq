@@ -417,12 +417,12 @@ result_BM <- biomartr::biomart( genes      = gene_set, # genes were retrieved us
 
 head(result_BM)
 
-GO_tbl <- biomartr::getGO(organism = "Serinus canaria",
-                          genes    = gene_set,
-                          filters  = "entrezgene_id"
-                          )
+# GO_tbl <- biomartr::getGO(organism = "Serinus canaria",
+#                           genes    = gene_set,
+#                           filters  = "entrezgene_id"
+#                           )
 
-head(GO_tbl)
+# head(GO_tbl)
 
 
 # gff anno
@@ -481,8 +481,6 @@ result_BM_merged <- result_BM %>%
 ```
 
 ```{r make-DGElist}
-
-
 # generate tidy data objects for downstream analysis
 get_tidy_expression(
   #data_path=filepath_rsem_gene_tpm,
@@ -5548,7 +5546,7 @@ left_join(topTags_ES_inf, by=c("gene","gene_name", "description", "entrezgene_id
 ```{r}
 # PCA plot of gene expression for all samples
 PCA <- plotMDS(y_ixn, gene.selection="common",
-               top = 2000,pch = 2, cex = 0.5, main = "PCA plot of gene expression for all samples", dim.plot=c(1,2))
+               top = 300,pch = 2, cex = 0.5, main = "PCA plot of gene expression for all samples", dim.plot=c(1,2))
 ```
 
 ```{r}
@@ -5571,7 +5569,19 @@ ggplot(ggPCA, aes(x=x,y=y, group=Bird.ID, shape = Day, color = Diet)) +
   ylab(paste0("Principal Component 2 (",100*round(PCA$var.explained[2],2),"%)")) #+
   # facet_wrap(~MG.Status)
 
-ggsave("figures/PCA_plot_all_samples.png", width = 6, height = 5, units = "in", dpi = 600)
+ggplot(ggPCA, aes(x=x,y=y, group=interaction(Diet,MG.Status), #shape = Day,
+                  color = interaction(MG.Status,Diet), linetype = Diet)) +
+  #geom_line(aes(alpha = MG.Status)) +
+  geom_point() +
+  theme_classic() +
+  # theme(legend.position = "none") +
+  labs(title="PCA plot of gene expression") +
+  xlab(paste0("Principal Component 1 (",100*round(PCA$var.explained[1],2),"%)")) +
+  ylab(paste0("Principal Component 2 (",100*round(PCA$var.explained[2],2),"%)")) +
+  scale_color_discrete("MG.Diet") +
+  stat_ellipse(type = "norm",level=0.8)
+
+#ggsave("figures/PCA_plot_all_samples.png", width = 6, height = 5, units = "in", dpi = 600)
 
 ```
 
