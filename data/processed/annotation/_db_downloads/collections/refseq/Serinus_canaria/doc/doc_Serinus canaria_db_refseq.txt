@@ -1,0 +1,16 @@
+File Name: _db_downloads/collections/refseq/Serinus_canaria/Serinus_canaria_assembly_stats_refseq.txt
+Organism Name: Serinus canaria
+Database: NCBI refseq
+URL: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/022/539/315/GCF_022539315.1_serCan2020/GCF_022539315.1_serCan2020_assembly_stats.txt
+Download_Date: Fri May 24 13:18:46 2024
+refseq_category: representative genome
+assembly_accession: GCF_022539315.1
+bioproject: PRJNA870458
+biosample: PRJNA870458
+taxid: 9135
+infraspecific_name: na
+version_status: latest
+release_type: Major
+genome_rep: Full
+seq_rel_date: 2022-08-25
+submitter: Max Planck Institute for Biological Intelligence, in foundation, Seewiesen
