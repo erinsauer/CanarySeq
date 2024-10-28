@@ -1,7 +1,3 @@
-Data and code for: Sauer, Stacy et al. in review 
-
-see metadata file for details
-
 # Overview
 
 This repository contains the code, data, and analysis accompanying the paper:
