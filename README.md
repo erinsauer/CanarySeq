@@ -70,7 +70,7 @@ All analysis is available in CodeSupplement.Rmd. Helper scripts used in the main
 
 ## Contact
 For questions, please contact:
-Erin Sauer
-- Email: erinsauer10@gmail.com
-Carson Stacy
-- Email: clstacy.stat@gmail.com
+- Erin Sauer
+  - Email: erinsauer10@gmail.com
+- Carson Stacy
+  - Email: clstacy.stat@gmail.com
