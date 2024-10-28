@@ -1,7 +1,7 @@
 # Installation Guide
 
 ## Prerequisites
-Before you begin, ensure you have met the following requirements:
+Software requirements:
 - Operating System: Linux, macOS, or Windows
 - R version: ≥ 4.3.0
 - RStudio (optional but recommended)
