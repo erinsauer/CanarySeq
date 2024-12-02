@@ -51,8 +51,8 @@ source(here::here("scripts/canary_data_processing_functions.R"))
 
 ```{r read-data}
 # assign file path location of gene count file
-filepath_rsem_gene_counts <- here::here("data", "rsem.merged.gene_counts.tsv")
-filepath_rsem_gene_tpm <- here::here("data", "rsem.merged.gene_tpm.tsv")
+filepath_rsem_gene_counts <- here::here("data/processed", "rsem.merged.gene_counts.tsv")
+filepath_rsem_gene_tpm <- here::here("data/processed", "rsem.merged.gene_tpm.tsv")
 
 # read in rsem.merged.gene_counts.tsv
 g.counts.l <- data.table::fread(filepath_rsem_gene_counts, sep="\t") %>% as_tibble()
@@ -84,10 +84,10 @@ g.counts.l <- g.counts.l %>%
 ```{r}
 # see generate_metadata.R script for metadata generation code.
 metadata_phenotypes <-
-  read_tsv(here("sample_metadata/metadata_phenotypes.tsv"))
+  read_tsv(here("data/raw/sample_metadata/metadata_phenotypes.tsv"))
 
 # annotation compiled in process_gene_annotation.R script.
-result_BM_merged <- read_tsv(here::here("data/annotation/results_BM_merged.tsv"))
+result_BM_merged <- read_tsv(here::here("data/processed/annotation/results_BM_merged.tsv"))
 ```
 
 ## Filter Hemoglobulin genes
@@ -140,15 +140,16 @@ design <- model.matrix(~ 0 + diet_inf)
 
 ```{r}
 y <- DGEList(
-  counts = round(gene_expression_matrix,0),
-  remove.zeros = TRUE
+  counts = #round(
+    gene_expression_matrix
+  #               ,0),remove.zeros = TRUE
 )
 
 #determine cpm cutoff
 cpm_cutoff <- as.numeric(round(cpm(10, mean(y$samples$lib.size)),1))
 
 # apply cutoff
-keep <- rowSums(cpm(y) > cpm_cutoff) >= 12
+keep <- rowSums(cpm(y) > cpm_cutoff) >= 10
 y <- y[keep,]
 summary(keep)
 
@@ -347,15 +348,16 @@ Diet <- metadata_phenotypes$Diet
 design_logLoad <- model.matrix(~ 0 + logLoad * Diet)
 
 y_logLoad <- DGEList(
-  counts = round(gene_expression_matrix),
-  remove.zeros = TRUE
+  counts = #round(
+    gene_expression_matrix#),
+  #remove.zeros = TRUE
 )
 
 #determine cpm cutoff
 cpm_cutoff_logLoad <- as.numeric(round(cpm(10, mean(y_logLoad$samples$lib.size)),1))
 
 # apply cutoff
-keep_logLoad <- rowSums(cpm(y_logLoad) > cpm_cutoff_logLoad) >= 12
+keep_logLoad <- rowSums(cpm(y_logLoad) > cpm_cutoff_logLoad) >= 10
 y_logLoad <- y_logLoad[keep_logLoad,]
 
 y_logLoad <- calcNormFactors(y_logLoad)
@@ -500,6 +502,8 @@ gseGO_ixd <- topTags_ixd_edgeR %>%
     geneList     = .,
     OrgDb         = orgdb,
     keyType       = 'ENTREZID',
+    #minGSSize     = 20,
+    seed          = 123,
     ont           = "BP",
     pAdjustMethod = "BH",
     pvalueCutoff  = 1
@@ -512,6 +516,8 @@ gseGO_infection <- topTags_inf_edgeR %>%
     geneList     = .,
     OrgDb         = orgdb,
     keyType       = 'ENTREZID',
+    #minGSSize     = 20,
+    seed          = 123,
     ont           = "BP",
     pAdjustMethod = "BH",
     pvalueCutoff  = 1
@@ -523,10 +529,12 @@ gseGO_diet <- topTags_diet_edgeR %>%
   gseGO(
     geneList     = .,
     OrgDb         = orgdb,
-                keyType       = 'ENTREZID',
-                ont           = "BP",
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 1
+    keyType       = 'ENTREZID',
+    #minGSSize     = 20,
+    seed          = 123,
+    ont           = "BP",
+    pAdjustMethod = "BH",
+    pvalueCutoff  = 1
   )
 
 gseGO_diet_uninf <- topTags_diet_uninf_edgeR %>%
@@ -536,6 +544,9 @@ gseGO_diet_uninf <- topTags_diet_uninf_edgeR %>%
     geneList     = .,
     OrgDb         = orgdb,
     keyType       = 'ENTREZID',
+    exponent      = 0.8,
+   # minGSSize     = 20,
+    seed          = 123,
     ont           = "BP",
     pAdjustMethod = "BH",
     pvalueCutoff  = 1
@@ -550,6 +561,8 @@ gseGO_infection_lipid <- topTags_lipid_inf_edgeR %>%
     geneList     = .,
     OrgDb         = orgdb,
     keyType       = 'ENTREZID',
+    # minGSSize     = 20,
+    seed          = 123,
     ont           = "BP",
     pAdjustMethod = "BH",
     pvalueCutoff  = 1
@@ -562,6 +575,8 @@ gseGO_infection_protein <- topTags_protein_inf_edgeR %>%
     geneList     = .,
     OrgDb         = orgdb,
     keyType       = 'ENTREZID',
+    # minGSSize     = 20,
+    seed          = 123,
     ont           = "BP",
     pAdjustMethod = "BH",
     pvalueCutoff  = 1
@@ -574,6 +589,8 @@ gseGO_logLoad <- topTags_logLoad_inf %>%
     geneList     = .,
     OrgDb         = orgdb,
     keyType       = 'ENTREZID',
+    # minGSSize     = 20,
+    seed          = 123,
     ont           = "BP",
     pAdjustMethod = "BH",
     pvalueCutoff  = 1
@@ -588,6 +605,9 @@ gseKEGG_ixd <- topTags_ixd_edgeR %>%
   gseKEGG(
     geneList     = .,
     organism = 'scan',
+    exponent = 0.8,
+    #minGSSize     = 12,
+    seed          = 123,
     pvalueCutoff = 1,
     verbose      = FALSE
   )
@@ -598,6 +618,9 @@ gseKEGG_infection <- topTags_inf_edgeR %>%
   gseKEGG(
     geneList     = .,
     organism = 'scan',
+    exponent = 0.8,
+    #minGSSize     = 12,
+    seed          = 123,
     by = "fgsea",
     exponent = 1,
     pvalueCutoff = 1,
@@ -610,6 +633,9 @@ gseKEGG_infection_lipid <- topTags_lipid_inf_edgeR %>%
   gseKEGG(
     geneList     = .,
     organism = 'scan',
+    exponent = 0.8,
+    #minGSSize     = 12,
+    seed          = 123,
     pvalueCutoff = 1,
     verbose      = FALSE
   )
@@ -620,6 +646,9 @@ gseKEGG_infection_protein <- topTags_protein_inf_edgeR %>%
   gseKEGG(
     geneList     = .,
     organism = 'scan',
+    exponent = 0.8,
+    #minGSSize     = 12,
+    seed          = 123,
     pvalueCutoff = 1,
     verbose      = FALSE
   )
@@ -630,6 +659,9 @@ gseKEGG_diet_uninf <- topTags_diet_uninf_edgeR %>%
   gseKEGG(
     geneList     = .,
     organism = 'scan',
+    exponent = 0.8,
+    #minGSSize     = 12,
+    seed          = 123,
     pvalueCutoff = 1,
     verbose      = FALSE
   )
@@ -640,6 +672,9 @@ gseKEGG_logLoad <- topTags_logLoad_inf %>%
   gseKEGG(
     geneList     = .,
     organism = 'scan',
+    exponent = 0.8,
+    #minGSSize     = 12,
+    seed          = 123,
     pvalueCutoff = 1,
     verbose      = FALSE
   )
@@ -750,7 +785,7 @@ tbl_tolerance <- tibble(forms = formulas_tolerance)
 
 #write_tsv(tbl_tol_results, here::here("supplement/tbl_ordinal_regression_results.tsv"))
 
-tbl_tol_results <- read_tsv(here::here("supplement/tbl_ordinal_regression_results.tsv"))
+tbl_tol_results <- read_tsv(here::here("results/tables/all_genes/tbl_ordinal_regression_results.tsv"))
 ```
 
 Functional enrichments on eye score analysis results
@@ -1327,18 +1362,32 @@ labs(subtitle = "Elbow method")
 
 
 heatmap_enrichment_terms <- list(
-    text1 = list("Translation", "Translation Regulation", 
-                 "Ribonucleoprotein Complex"),
-    text2 = list("Nuclear Protein Complex", "Homologous Recombination"),
-    text3 = list(expression(Transferase~Activity^"\u2020")),
-    text4 = list("Lysosome", "Protein Kinase Activity", "Phosphorylation"),
-    text5 = list("Innate Immune Response", "Defense Response", "Apoptosis"),
-    text6 = list(expression(Lysosome^"\u2020"),
-                 expression(Lytic~Vacuole^"\u2020")),
-    text7 = list(expression(Apoptosis^"\u2020"),
-                 expression(Channel~Activity^"\u2020")),
-    text8 = list(expression(ECM-receptor~interaction^"\u2020"),
-                 expression(Nucleosome^"\u2020"))
+        # old list
+    # text1 = list("Translation", "Translation Regulation", 
+    #              "Ribonucleoprotein Complex"),
+    # text2 = list("Nuclear Protein Complex", "Homologous Recombination"),
+    # text3 = list(expression(Transferase~Activity^"\u2020")),
+    # text4 = list("Lysosome", "Protein Kinase Activity", "Phosphorylation"),
+    # text5 = list("Innate Immune Response", "Defense Response", "Apoptosis"),
+    # text6 = list(expression(Lysosome^"\u2020"),
+    #              expression(Lytic~Vacuole^"\u2020")),
+    # text7 = list(expression(Apoptosis^"\u2020"),
+    #              expression(Channel~Activity^"\u2020")),
+    # text8 = list(expression(ECM-receptor~interaction^"\u2020"),
+    #              expression(Nucleosome^"\u2020"))
+    
+    text1 = list("Ribonucleoprotein Complex","Ribosome"),
+    text2 = list("Ribosome"),
+    text3 = list(expression(Lysosome^"\u2020")),
+    text4 = list("ECM-receptor interaction"),
+    text5 = list(expression(Lysosome^"\u2020"), "Phosphoric Diester Hydrolase"),
+    text6 = list(expression(Lytic~Vacuole^"\u2020"), 
+      expression(Cytokine-Cytokine~Receptor^"\u2020"),
+      expression(Lysosome^"\u2020") ),
+    text7 = list(#expression(Influenza~A^"\u2020"),
+                 # expression(Apoptosis^"\u2020"),
+                 "Innate Immune Response", "Defense Response" ),
+    text8 = list("Nuclear Lumen", "Pyrophosphatase Activity")
 )
 
 # note how we set the width of this empty annotation
@@ -1363,16 +1412,18 @@ heatmap2 <- Heatmap(logFC_matrix, name = "logFC",
                                                labels_gp = gpar(fontsize=12)
                                                ),
                    cluster_columns = FALSE, 
-                   split=8,
+                   split = 8, #8,
                    show_row_names = FALSE,
                    show_column_names = TRUE,
                    column_names_side = "top",
-                   clustering_distance_rows = "pearson",
+                   clustering_distance_rows = "canberra",
+                   clustering_method_rows = "ward.D2",
                    row_names_gp = gpar(fontsize = 12),
                    column_names_gp = gpar(fontsize = 12),
                    column_names_rot = 0,
                    column_names_centered = TRUE,
                    right_annotation = ha,
+                   row_dend_reorder = TRUE,
                    cell_fun = function(j, i, x, y, width, height, fill) {
                        grid.rect(x, y, width, height, gp = gpar(fill = fill, col = NA))
                        if (significance_matrix[i, j] == "*") {
@@ -1436,7 +1487,8 @@ for (i in row_order(ht)) {
                 pAdjustMethod = "BH",
                 pvalueCutoff  = 0.8,
                 qvalueCutoff  = 0.8) %>%
-    data.frame()
+    data.frame() %>%
+    arrange(p.adjust)
   
 }
 
@@ -1453,7 +1505,8 @@ for (i in row_order(ht)) {
                universe = topTags_diet_uninf_edgeR$gene,
                pvalueCutoff = 0.9,
                 qvalueCutoff  = 0.9) %>%
-    data.frame()
+    data.frame() %>%
+    arrange(p.adjust)
 }
 ```
 
