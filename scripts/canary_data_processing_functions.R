@@ -282,7 +282,7 @@ timevizMG <- function(gene, tpm_df, include_control=T, diff=T) {
 
 # function to convert eulerr to ggplot (https://gist.github.com/danlooo/d23d8bcf8856c7dd8e86266097404ded.js")
 # prefer to move to a helper function file.
-ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, text_size = 2, ...) {
+ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, text_size = 2, alpha=0.5, ...) {
   data <-
     eulerr::euler(combinations = combinations) %>%
     plot(quantities = show_quantities) %>%
@@ -293,7 +293,7 @@ ggeulerr <- function(combinations, show_quantities = TRUE, show_labels = TRUE, t
     ggforce::geom_ellipse(
       data = data$ellipses %>% as_tibble(rownames = "Set"),
       mapping = aes(x0 = h, y0 = k, a = a, b = b, angle = 0, fill = Set),
-      alpha = 0.5
+      alpha = alpha
     ) +
     geom_text(
       data = {
