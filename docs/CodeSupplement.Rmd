@@ -1080,9 +1080,43 @@ color.logLoad = "orange"
 
 ## Figure 1
 
-#TODO Add Erin's code for this figure here.
+#TODO Erin's NEW code needs to be added.
 ```{r}
+library(mgcv)
 
+### load in the load and eye score data ###
+ld <- read.csv(here::here("data/raw/sample_metadata/tolerance data.csv"))
+  
+ld <- subset(ld, Treatment=="MG")
+str(ld)
+
+### run tolerance analysis ###
+tolm <- gamm(ES ~ Diet*logLoad+s(day, k=6), family=nb,
+             correlation=corCAR1(form=~day|ID), data = ld)
+plot(tolm$gam, pages=1) 
+gam.check(tolm$gam)
+summary(tolm$gam)
+
+### Figure 1B ###
+TolPlot <- ggplot(ld, aes(y=ES, x=logLoad, color=Diet)) +
+  geom_smooth(method="lm")+
+  geom_point()+
+  theme_bw()+
+  geom_jitter(height = .01) +
+  theme(axis.text=element_text(size=20, color="black"),
+        panel.border = element_blank(),
+        axis.title=element_text(size=25),
+        legend.position=c(0.2,0.9),
+        legend.text=element_text(size=20),
+        legend.title=element_blank())+
+  ylab("Eye score")+
+  xlab("log10(MG load)")
+
+detach(package:mgcv)
+
+ggsave(plot = TolPlot, 
+       filename= here::here("figures/fig2_TolPlot.png"),
+       width = 16, height = 16, units = "cm", dpi=600)
 ```
 
 
