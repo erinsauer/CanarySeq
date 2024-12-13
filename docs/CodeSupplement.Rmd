@@ -31,6 +31,7 @@ library(flextable)
 library(GGally)
 library(biomartr)
 library(gt)
+library(officer)
 
 options(ggrepel.max.overlaps = Inf)
 set.seed(123)
@@ -142,9 +143,8 @@ design <- model.matrix(~ 0 + diet_inf)
 
 ```{r}
 y <- DGEList(
-  counts = #round(
-    gene_expression_matrix
-  #               ,0),remove.zeros = TRUE
+  counts = gene_expression_matrix,
+  remove.zeros = TRUE
 )
 
 #determine cpm cutoff
@@ -186,7 +186,7 @@ contrast <- makeContrasts(
   levels = design
 )
 
-fit <- glmQLFit(y, design)
+fit <- glmQLFit(y, legacy = TRUE, design)
 ```
 
 ## Infection x Diet interaction
@@ -348,8 +348,8 @@ design_logLoad <- model.matrix(~ 0 + logLoad * Diet)
 
 y_logLoad <- DGEList(
   counts = #round(
-    gene_expression_matrix#),
-  #remove.zeros = TRUE
+    gene_expression_matrix,
+  remove.zeros = TRUE
 )
 
 #determine cpm cutoff
@@ -361,7 +361,7 @@ y_logLoad <- y_logLoad[keep_logLoad,]
 
 y_logLoad <- calcNormFactors(y_logLoad)
 y_logLoad <- estimateDisp(y_logLoad, design_logLoad)
-fit_logLoad <- glmQLFit(y_logLoad, design_logLoad)
+fit_logLoad <- glmQLFit(y_logLoad, legacy = TRUE, design_logLoad)
 res_logLoad_inf <-  glmQLFTest(fit_logLoad, coef="logLoad")
 
 
@@ -597,10 +597,49 @@ merged_results <- ES_results %>% unique() %>%
 
 # Gene Set Enrichment Analysis of DE genes
 
+```{r}
+# Create Functions
+run_gseGO_analysis <- function(top_tags, exponent = 0.8, ont = "BP") {
+  gene_list <- top_tags %>%
+    arrange(desc(logFC)) %>%
+    pull(logFC, gene)
+  
+  gseGO(
+    geneList     = gene_list,
+    OrgDb        = orgdb,
+    keyType      = 'ENTREZID',
+    exponent     = exponent,
+    ont          = ont,
+    pAdjustMethod = "BH",
+    minGSSize    = 11,
+    seed         = 123,
+    pvalueCutoff = 1
+  )
+}
+
+run_gseKEGG_analysis <- function(top_tags, exponent = 0.8, organism = 'scan') {
+  gene_list <- top_tags %>%
+    arrange(desc(logFC)) %>%
+    pull(logFC, gene)
+  
+  gseKEGG(
+    geneList     = gene_list,
+    organism     = organism,
+    exponent     = exponent,
+    minGSSize    = 11,
+    seed         = 123,
+    pvalueCutoff = 1,
+    verbose      = FALSE
+  )
+}
+```
+
+
 Grouped by comparison
 ```{r}
 #gseGO
-gseGO_ixd <- topTags_ixd_edgeR %>%
+gseGO_ixd <- run_gseGO_analysis(topTags_ixd_edgeR)
+  topTags_ixd_edgeR %>%
   arrange(desc(logFC)) %>%
   pull(logFC, gene) %>%
   gseGO(
@@ -817,7 +856,6 @@ dummy <- tpm_data %>% cpm(log = TRUE) %>%
   left_join(metadata_phenotypes, by=c("sample"="SampID")) %>%
   mutate(ES = as.ordered(as.factor(ES)))
 
-library(tidyverse)
 library(VGAM)
 
 mod_f <- function(x) {
@@ -885,6 +923,8 @@ tbl_ES <- tibble(forms = formulas_ES)
 # write_tsv(ES_results, here::here("results/tables/all_genes/EyeScore_ordinal_regression_results.tsv"))
 
 ES_results <- read_tsv(here::here("results/tables/all_genes/EyeScore_ordinal_regression_results.tsv"))
+
+detach(package:VGAM)
 ```
 
 Functional enrichments on eye score analysis results
@@ -1128,7 +1168,7 @@ ggsave(plot = TolPlot,
 ### Fig 2A
 ```{r}
 
-source(here::here("scripts/canary_data_processing_functions.R"))
+# source(here::here("scripts/canary_data_processing_functions.R"))
 
 fig2A <- list("Infection" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_infection],
      "Diet" = DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet],
@@ -1158,10 +1198,10 @@ Hypergeometric test of significance in overlap between diet and interaction betw
 q <- length(intersect(DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixd],
                       DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet]))
 m <- length(DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet])
-n_genes <- length(unique(edgeR_analyzed_genes)) - m
+n_genes <- length(unique(edgeR_analyzed_genes)) 
 k <- length(DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixd])
 
-phyper(q, m, n_genes, k, lower.tail=FALSE)
+phyper(q, m, n_genes- m, k, lower.tail=FALSE)
 
 q
 m
@@ -1451,8 +1491,8 @@ ggsave(here::here("results/figures/DEGenesBothCorrInfDietLogFC.png"), width=8, h
 
 
 cor_dietvInf_DE
-cor_dietvInfP_DE
 cor_dietvInfL_DE
+cor_dietvInfP_DE
 ```
 
 ### Fig 3B
@@ -1585,7 +1625,8 @@ barplot_enrichments <-
       theme(legend.position = "top", legend.text = element_text(size=8,hjust=0.5),
             legend.title = element_text(size=8),
             legend.key.size = unit(0.25, 'cm'),legend.justification="center",
-            panel.border = element_rect(color="black", fill = NA, linewidth = 0.5)) + 
+            axis.line=element_blank(),
+            panel.border = element_rect(color="black", fill = NA, linewidth = 0.3)) + 
     guides(fill = guide_legend(reverse=TRUE,nrow=2)) +
   #geom_vline(xintercept = 13.5) +
   geom_vline(xintercept = c(1:12)+0.5, linetype = "dotted", color="grey")
@@ -1702,17 +1743,26 @@ heatmap_enrichment_terms <- list(
     # text8 = list(expression(ECM-receptor~interaction^"\u2020"),
     #              expression(Nucleosome^"\u2020"))
     
-    text1 = list("Ribonucleoprotein Complex","Ribosome"),
-    text2 = list("Ribosome"),
-    text3 = list(expression(Lysosome^"\u2020")),
-    text4 = list("ECM-receptor interaction"),
-    text5 = list(expression(Lysosome^"\u2020"), "Phosphoric Diester Hydrolase"),
+     
+    #text2 = list("Ribosome"),
+     
+     
+    #text5 = list(expression(Lysosome^"\u2020"), "Phosphoric Diester Hydrolase"),
+     
+    
+    
+    text1 = list(expression(Nucleotide~Binding^"\u2020")),
+    text2 = list("ECM-receptor interaction"),
+    text3 = list("Ribonucleoprotein Complex","Ribosome"),
+    text4 = list(expression(Ribosome^"\u2020")),
+    text5 = list(expression(Lysosome^"\u2020")),
     text6 = list(expression(Lytic~Vacuole^"\u2020"), 
       expression(Cytokine-Cytokine~Receptor^"\u2020"),
-      expression(Lysosome^"\u2020") ),
+      expression(Lysosome) ),
     text7 = list(#expression(Influenza~A^"\u2020"),
                  # expression(Apoptosis^"\u2020"),
-                 "Innate Immune Response", "Defense Response" ),
+                 "Innate Immune Response", "Defense Response",
+                 "Apoptosis"),
     text8 = list("Nuclear Lumen", "Pyrophosphatase Activity")
 )
 
@@ -1775,7 +1825,8 @@ write_excel_csv(heatmap_gene_clusters,
 
 
 
-NOTE: seed setting doesn't keep cluster orders. Have to manually adjust the enrichments for each cluster to line up with the corresponding cluster. 
+NOTE: Heat map appears to be version sensitive. Note manually entered enrichment for each cluster to line up with the corresponding cluster. 
+
 ```{r, fig.height=9, fig.width=8, message=FALSE, warning=FALSE}
 png(file=here::here("results/figures/logFC_heatmap.png"), width=8, height=16, res=1200,units = "in",bg = "transparent")
 
@@ -1840,14 +1891,17 @@ j=0
 for (i in row_order(ht)) {
   genes_i <- rownames(heatmap2@matrix)[i] %>%
     word(., 1)
-  j = j+1
-  list_kegg_results[[j]] <- enrichKEGG(gene = logFC_all_contrasts %>%
-    filter(gene_name %in% genes_i) %>%
-    pull(gene)  ,
-               organism = 'scan', keyType = "kegg",
-               universe = topTags_diet_uninf_edgeR$gene,
-               pvalueCutoff = 0.9,
-                qvalueCutoff  = 0.9) %>%
+  j = j + 1
+  list_kegg_results[[j]] <- enrichKEGG(
+    gene = logFC_all_contrasts %>%
+      filter(gene_name %in% genes_i) %>%
+      pull(gene)  ,
+    organism = 'scan',
+    keyType = "kegg",
+    universe = topTags_diet_uninf_edgeR$gene,
+    pvalueCutoff = 0.9,
+    qvalueCutoff  = 0.9
+  ) %>%
     data.frame() %>%
     arrange(p.adjust)
 }
@@ -1898,12 +1952,11 @@ fig3AB <-
     labels = c("A", " ", "", "B"),
     vjust = c(1.5, 0, 0, 4)
   )
-fig3AB
 
 
 fig3 <- cowplot::plot_grid(fig3AB, NULL, fig3C, ncol=3, labels = c("", "", "C"),
                            # rel_widths = c(2.2,0.1,1.65)
-                           rel_widths = c(2.3, 0, 1.8)
+                           rel_widths = c(2.3, 0.1, 1.8)
                            )
 fig3
 
@@ -1924,9 +1977,11 @@ fig4a.1 <- list("Infection" = merged_results$gene.z[merged_results$DE_inf],
      "Pathogen\n Load" = merged_results$gene.z[merged_results$DE_logLoad],
      "Eye Score" = merged_results$gene.z[merged_results$DE_ES]
      ) %>%
-  ggeulerr(shape="circle", text_size = 3, alpha=0.75) +
+  ggeulerr(shape="circle", text_size = 3, alpha=0.7) +
   scale_fill_manual(values = #c("darkblue","#C77CFF","orange"
-                               c(color.EyeScore, color.infection, color.logLoad
+                               c(color.EyeScore, 
+                                 color.infection, 
+                                 color.logLoad
                                ) , name = " ") +
     theme_void(base_size = 18) +
     theme(#legend.position = "bottom", 
@@ -1967,14 +2022,14 @@ merged_results %>%
                  logFC_inf = "logFC (Infection)",
                  Estimate =  html("
       <span style='display:inline-block; position:relative;'>
-        β
+        &beta;
         <span style='position:absolute; top:-0.3em; left:0.05em;'>ˆ</span>
       </span><sub>gene</sub><br>(Eye Score)"),
                  ) %>%
   #md("$\\hat\\beta$   (Eye Score)")
   gt::cols_width(gene_name ~ "5em", description ~ "15em",
                  logFC_inf ~ "8em", Estimate ~ "8em") %>%
-  gt::gtsave(file = here("results/figures/top_genes_all.png"))
+  gt::gtsave(file = here("results/figures/top_genes_all.pdf"))
 ```
 
 ```{r}
@@ -2175,7 +2230,7 @@ g <- gseGO_all_clusters %>%
                             set.seed=123,
                             showCategory=categories,
                             # see all enriched terms by using below instead:
-                            #showCategory=12,
+                            #showCategory=13,
                             cex_gene=2,
                             cex_category=2,
                             node_label = "category",
@@ -2189,7 +2244,8 @@ g <- gseGO_all_clusters %>%
 
 g
 
-ggsave(plot = g, filename= here("results/figures/fig4b_network_annotated.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+ggsave(plot = g, filename= here("results/figures/fig4b_network_annotated.svg"), 
+       width = 10, height = 8, units = "in", dpi=1200, bg="white")
 
 g_unannotated <- gseGO_all_clusters %>%
   DOSE::setReadable(OrgDb = orgdb) %>%
@@ -2206,8 +2262,8 @@ g_unannotated <- gseGO_all_clusters %>%
                                color.inf.lipid, '#4844ac',#color.EyeScore, 
                                color.logLoad))
 
-ggsave(plot = g_unannotated, filename= here("results/figures/fig4b_network.png"), 
-       width = 7, height = 7, units = "in", dpi=1200, bg="white")
+ggsave(plot = g_unannotated, filename= here("results/figures/fig4b_network.svg"), 
+       width = 8, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -2244,24 +2300,24 @@ categories <- c(#"GO:0006955", #
                 "mitochondrion"
 )
 
-p3 <- clusterProfiler::emapplot(xx2, pie.params = list(legend_n = 7, pie = "count"), 
-                                #layout = "kk",
-                                showCategory=categories, 
-                                #showCategory=19,
-                                layout.params	=list(layout="kk"), #group_category = T, group_legend = F,
-                                color="p.adjust"#,
-   #cex_label_group = 1.5, node_label = "group", 
-    #circular = TRUE, colorEdge = TRUE
-   ) + ggsci::scale_fill_bmj()
+# p3 <- clusterProfiler::emapplot(xx2, pie.params = list(legend_n = 7, pie = "count"),
+#                                 #layout = "kk",
+#                                 showCategory=categories,
+#                                 #showCategory=19,
+#                                 layout.params	=list(layout="kk"), #group_category = T, group_legend = F,
+#                                 color="p.adjust"#,
+#    #cex_label_group = 1.5, node_label = "group",
+#     #circular = TRUE, colorEdge = TRUE
+#    ) + ggsci::scale_fill_bmj()
+# 
+# p3
+# 
+# clusterProfiler::cnetplot(xx2, showCategory = categories, layout="fr")
+# 
 
-p3
-
-clusterProfiler::cnetplot(xx2, showCategory = categories, layout="fr")
-
-
-dotplot(xx2, showCategory = 8, by = "pvalue") +
-  geom_path(aes(GeneRatio, Description), group=1,linewidth=0.3,color='steelblue') #+
-  coord_polar(theta='y')
+# dotplot(xx2, showCategory = 8, by = "pvalue") +
+#   geom_path(aes(GeneRatio, Description), group=1,linewidth=0.3,color='steelblue') #+
+#   coord_polar(theta='y')
 
 ```
 
@@ -2285,24 +2341,24 @@ xx.kegg <- enrichplot::pairwise_termsim(xx.kegg)
 
 xx.kegg <- mutate(xx.kegg, Description = str_replace(Description, " - Serinus canaria \\(common canary\\)", " ") )
 
-network_plot_kegg <- clusterProfiler::emapplot(xx.kegg,# pie.params = list(legend_n = 7, pie = "count"), 
-                                layout = "kk",
-                                #showCategory=categories, 
-                                #showCategory=19,
-                                layout.params	=list(layout="kk")#, #group_category = T, group_legend = F,
-                                #color="p.adjust"#,
-   #cex_label_group = 1.5, node_label = "group", 
-    #circular = TRUE, colorEdge = TRUE
-   ) + ggsci::scale_fill_bmj()
+# network_plot_kegg <- clusterProfiler::emapplot(xx.kegg,# pie.params = list(legend_n = 7, pie = "count"), 
+#                                 layout = "kk",
+#                                 #showCategory=categories, 
+#                                 #showCategory=19,
+#                                 layout.params	=list(layout="kk")#, #group_category = T, group_legend = F,
+#                                 #color="p.adjust"#,
+#    #cex_label_group = 1.5, node_label = "group", 
+#     #circular = TRUE, colorEdge = TRUE
+#    ) + ggsci::scale_fill_bmj()
 
 cnetplot(xx.kegg)
 dotplot(xx.kegg)
-network_plot_kegg
+# network_plot_kegg
 ```
 
 
 ```{r}
-fig4B_new <- ggdraw() + draw_image(here("results/figures/fig4a_new_network_plot.png")) + theme_void()
+fig4B_new <- ggdraw() + draw_image(here("results/figures/fig4b_new_network_plot.png")) + theme_void()
 ```
 
 ### Figure 4 combined
@@ -2401,7 +2457,7 @@ fig.s1 <- cowplot::plot_grid(fig.s1.ma, s1.density, ncol=1, labels = c("", "D"))
 
 fig.s1
 
-# ggsave(plot = fig.s1, filename = here("results/figures/fig.s1.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+ggsave(plot = fig.s1, filename = here("results/figures/fig.s1.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -2561,11 +2617,12 @@ fig.s2b <- gseKEGG_all_df %>%
             text = element_text(size=6),
             axis.text = element_text(size=6))
 
-fig.s2 <- ggpubr::ggarrange(fig.s2a, fig.s2b, common.legend = T,legend = "right")
+fig.s2 <- ggpubr::ggarrange(fig.s2a, fig.s2b, common.legend = T,legend = "right",
+                            labels = "AUTO")
 
 fig.s2
 
-# ggsave(plot = fig.s2, filename = here("results/figures/fig.s2.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
+ggsave(plot = fig.s2, filename = here("results/figures/fig.s2.png"), width = 7, height = 8, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -2573,7 +2630,7 @@ fig.s2
 
 ```{r}
 fig.s3 <- merged_results %>%
-  dplyr::select(DE_inf, gene.z,entrezgene_id_inf, Estimate, logFC_inf, logFC_inf_lipid, logFC_inf_prot,
+  dplyr::select(DE_inf, gene.z,entrezgene_id.x, Estimate, logFC_inf, logFC_inf_lipid, logFC_inf_prot,
                 logFC_diet, logFC_ixd, logFC_logLoad) %>%
   rename(all_of(c("logFC_inf" = "Infection \n(all)" ,
          "logFC_inf_lipid" = "Infection \n(lipid)",
@@ -2586,11 +2643,11 @@ fig.s3 <- merged_results %>%
   mutate(`Differentially\nExpressed\nInfection` = ifelse(DE_inf,"yes","no")) %>%
   relocate(`Differentially\nExpressed\nInfection`, .before = DE_inf) %>%
   dplyr::select(-DE_inf) %>%
-  mutate(rowid = paste0(gene.z, "_", entrezgene_id_inf)) %>%
+  mutate(rowid = paste0(gene.z, "_", entrezgene_id.x)) %>%
   group_by(rowid) %>%
   slice_head(n=1) %>%
   column_to_rownames("gene.z") %>%
-  dplyr::select(-c(rowid, entrezgene_id_inf)) %>%
+  dplyr::select(-c(rowid, entrezgene_id.x)) %>%
   GGally::ggpairs(., aes(color=fct_rev(`Differentially\nExpressed\nInfection`), alpha=0.3),
     upper = list(continuous = GGally::wrap("cor", size = 2))) + 
   theme_classic() +
@@ -2599,7 +2656,7 @@ fig.s3 <- merged_results %>%
 
 fig.s3
 
-# ggsave(plot = fig.s3, filename = here("results/figures/fig.s3.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
+ggsave(plot = fig.s3, filename = here("results/figures/fig.s3.png"), width = 7, height = 7, units = "in", dpi=1200, bg="white")
 ```
 
 ## Figure S4: Upset All Contrasts
@@ -2756,7 +2813,7 @@ s5.ma.eyeScore <- merged_results %>%
             text = element_text(size=10),
             axis.text = element_text(size=10)) +
     # add custom text to plot
-  geom_text(inherit.aes = F,data= data.frame(label = c("Expression + correlates\n   with Eye Score", "Expression - correlates\n  with Eye Score"),
+  geom_text(inherit.aes = F,data= data.frame(label = c("Expression (+) correlates\n   with Eye Score", "Expression (-) correlates\n  with Eye Score"),
                              x = c(10,10),
                              y= c(-15,15), delabel = c(T,T), 
                              diffexpressed=c("Down", "Up")
@@ -2770,7 +2827,7 @@ fig.s5 <- cowplot::plot_grid(s5.ma.logLoad, s5.ma.eyeScore, nrow=2, labels = c("
 
 fig.s5
 
-# ggsave(plot = fig.s5, filename = here("results/figures/fig.s5.png"),        width = 4, height = 6, units = "in", dpi=1200, bg="white")
+ggsave(plot = fig.s5, filename = here("results/figures/fig.s5.png"),        width = 6, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -2843,7 +2900,7 @@ fig.s6b <- gseKEGG_all_df %>%
 fig.s6 <- ggpubr::ggarrange(fig.s6a, fig.s6b, common.legend = T,legend = "right")
 fig.s6
 
-#ggsave(plot = fig.s6, filename = here("results/figures/fig.s6.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
+ggsave(plot = fig.s6, filename = here("results/figures/fig.s6.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -2870,7 +2927,7 @@ fig.s7 <- ggplot(ggPCA, aes(x=x,y=y, group=interaction(Diet,MG.active),
   scale_color_discrete("MG.Diet") +
   stat_ellipse(type = "norm",level=0.8)
 
-# ggsave(plot = fig.s7, filename = here("results/figures/fig.s7.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
+ggsave(plot = fig.s7, filename = here("results/figures/fig.s7.png"), width = 7, height = 6, units = "in", dpi=1200, bg="white")
 ```
 
 
@@ -3005,14 +3062,6 @@ read_docx() %>%
   body_add_flextable(value = ts3) |>
   print(target = here("results/tables/supplemental_table_S3.docx"))
 
-# 
-#   kbl(booktabs = T, longtable = T) |>
-#     kable_styling("striped", latex_options = c("repeat_header")) |>
-#   # pack_rows("MG-Diet Interaction", 1, 20) |>
-#   # pack_rows("MG Infection", 21, 40) |>
-#   # pack_rows("Diet (Protein-Lipid)", 41, 60) 
-#   collapse_rows(columns = 1, valign="top", latex_hline = "major") |>
-#   save_kable(here("results/figures/table.s3.png"))
 ```
 
 ## Table S4: Heatmap Cluster GO Enrichments
@@ -3022,7 +3071,7 @@ table.s4.go <- list_GO_results |>
   rownames_to_column("rowname") |>
   group_by(cluster) |>
   arrange(pvalue) |>
-  filter(Count > 3) |>
+  #filter(Count > 3) |>
   slice_head(n=5) |>
   dplyr::select(cluster, ID, Description, GeneRatio, BgRatio,p.adjust) |>
   mutate(across(is.numeric, signif, 3)) 
@@ -3032,7 +3081,7 @@ table.s4.kegg <- list_kegg_results |>
   rownames_to_column("rowname") |>
   group_by(cluster) |>
   arrange(pvalue) |>
-  filter(Count > 3) |>
+  #filter(Count > 3) |>
   slice_head(n=5) |>
   dplyr::select(cluster, ID, Description, GeneRatio, BgRatio, p.adjust) |>
   mutate(Description = 
@@ -3043,7 +3092,7 @@ table.s4.kegg <- list_kegg_results |>
   
 bind_rows(table.s4.go, table.s4.kegg) |>
   group_by(cluster) |>
-  arrange(cluster) |>
+  arrange(cluster,p.adjust) |>
   mutate(across(is.numeric, as.character, 3)) |>
   kbl(booktabs = T, longtable = T) |>
     kable_styling("striped", latex_options = c("repeat_header")) |>
@@ -3078,7 +3127,7 @@ ES_results |>
   group_by(sign(Estimate)) %>%
   arrange(`Pr(>|z|)`) %>%
   slice_head(n=20) %>%
-  arrange(Estimate) %>%
+  #arrange(Estimate) %>%
   ungroup() %>%
   mutate(comparison = "MG-Diet Interaction") %>%
   dplyr::select(gene.z, gene_name, Estimate,`Pr(>|z|)`, description) |>
