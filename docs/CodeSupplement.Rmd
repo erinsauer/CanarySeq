@@ -1,7 +1,7 @@
 ---
 title: "Code Supplement Canary-Seq"
 author: "Carson Stacy"
-date: "2024-07-15"
+date: "2024-12-15"
 output: pdf_document
 ---
 
@@ -40,6 +40,25 @@ exponent=0.8
 # Define significance level
 sig.cutoff <- 0.05
 ```
+
+```{bash, eval=FALSE}
+# Read Filtering and Mapping Command
+# Analyzed on HPC, copied here for reproducability
+nextflow run nf-core/rnaseq \
+	-r 3.10.1 \
+	-profile singularity \
+	--fasta serCan2020.fna.gz \
+	--gtf serCan2020.gtf \
+	--outdir serCan2020 \
+	--input nfinput_withIDs.csv \
+	--featurecounts_group_type transcript_biotype \
+	-w work_serCan \
+	--skip_markduplicates \
+	--aligner 'star_rsem' \
+	--pseudo_aligner salmon \
+	--save_reference
+```
+
 
 # Data Preparation
 ```{r load annotations}
@@ -485,12 +504,12 @@ merged_results <- merged_results %>%
   ) %>%
   distinct() %>%
   dplyr::select(c(
-    entrezgene_id_inf,gene_name, description_inf,
+    entrezgene_id_inf,gene_name, description_inf, logCPM_inf,
     logFC_inf, logFC_diet,logFC_inf_prot, logFC_inf_lipid, 
     logFC_ixd, logFC_logLoad,  Estimate, `z value`, 
     DE_inf, DE_diet, DE_inf_prot, DE_inf_lipid, DE_ixd, DE_logLoad, DE_ES, 
     FDR_inf, FDR_diet, FDR_inf_prot, FDR_inf_lipid, FDR_ixd, FDR_logLoad, FDR_ES,
-    gene_alt, gene)
+    gene_alt, gene, goi)
     ) %>%
   dplyr::rename(entrezgene_id = "entrezgene_id_inf",
                 description = "description_inf")
@@ -499,6 +518,8 @@ merged_results <- merged_results %>%
 
 
 # Gene Set Enrichment Analysis of DE genes
+
+By analyzing the entire spectrum of gene expression changes, biological pathways being activated or repressed in the comparison are identified. Furthermore, this approach ensures that an arbitrary critical value for significance does not produce spurious patterns of enrichment. 
 
 ```{r}
 # Create Enrichment Functions
@@ -575,7 +596,7 @@ tpm_data <- data.table::fread(filepath_rsem_gene_tpm, sep="\t") %>% as_tibble() 
          `ES52_SEM19-1481_MG-protein_14`="ES52_SEM19-1481_MG-lipid_14",
          `ES83_SEM19-1481_MG-protein_0`="ES83_SEM19-1481_MG-lipid_0"))
        ) %>%
-  dplyr::filter( !gene_id %in% globin_genes ) |> 
+  dplyr::filter(!gene_id %in% globin_genes ) |> 
   # Add rownames
   column_to_rownames("gene_id") %>%
   # remove unneeded column
@@ -584,7 +605,7 @@ tpm_data <- data.table::fread(filepath_rsem_gene_tpm, sep="\t") %>% as_tibble() 
   as.matrix()
 ```
 
-This analysis can take a significant amount of time to complete.
+
 ```{r}
 dummy <- tpm_data %>% cpm(log = TRUE) %>% 
   t() %>%
@@ -631,6 +652,7 @@ formulas_ES <-
 tbl_ES <- tibble(forms = formulas_ES)
 ```
 
+This analysis can take a significant amount of time to complete.
 ```{r}
 run_analysis <- FALSE  # Set to TRUE to run the code below, FALSE to skip
 
@@ -678,8 +700,9 @@ if (run_analysis) {
 ```
 
 ```{r}
-ES_results <- read_tsv(here::here(
-  "results/tables/all_genes/EyeScore_ordinal_regression_results.tsv"))
+ES_results <- read_tsv(
+here::here("results/tables/all_genes/EyeScore_ordinal_regression_results.tsv")
+)
 
 detach(package:VGAM)
 ```
@@ -831,7 +854,7 @@ ggsave(plot = fig2A,
 
 ```
 
-Hypergeometric test of significance in overlap between diet and interaction between diet and infeciton:
+Hypergeometric test for significance in overlap between diet and interaction between diet and infection compared to what would be expected by chance.
 ```{r}
 q <- length(intersect(DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixd],
                       DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet]))
@@ -839,14 +862,19 @@ m <- length(DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_diet])
 n_genes <- length(unique(edgeR_analyzed_genes)) 
 k <- length(DE_genes_edgeR_upset$gene[DE_genes_edgeR_upset$DE_in_ixd])
 
-phyper(q, m, n_genes- m, k, lower.tail=FALSE)
+hgeom_result = phyper(q, m, n_genes-m, k, lower.tail=FALSE)
 
-q
-m
-n_genes
-k
+hgeom_result
 ```
 
+The number of genes differentially expressed according to diet: `r m`
+The number of genes differentially expressed in the interaction between diet and infection: `r k`
+The total number of genes: `r n_genes`
+The number of DE genes that are shared between diet and the interaction gene sets: `r q`
+
+Resulting in an exact p-value of: `r hgeom_result`.
+
+Hence, there is strong evidence that this overlap is not due to chance.
 
 ### Fig 2B
 ```{r}
@@ -1494,7 +1522,9 @@ for (i in row_order(ht)) {
     data.frame() %>%
     arrange(p.adjust)
 }
+```
 
+```{r eval=FALSE}
 list_GO_results
 list_kegg_results
 ```
@@ -1566,7 +1596,8 @@ Venn Diagram of DE gene overlap between phenotype measures and infection
 ```{r}
 fig4a.1 <- list("Infection" = merged_results$gene_alt[merged_results$DE_inf],
      "Pathogen\n Load" = merged_results$gene_alt[merged_results$DE_logLoad],
-     "Eye Score" = merged_results$gene_alt[merged_results$DE_ES]
+     "Eye Score" = merged_results$gene_alt[merged_results$DE_ES==TRUE] |> 
+       na.omit()
      ) %>%
   ggeulerr(shape="circle", text_size = 3, alpha=0.7) +
   scale_fill_manual(values = c(color.EyeScore, 
@@ -1601,7 +1632,7 @@ merged_results %>%
                 logFC_inf, Estimate
                 ) %>%
   arrange(desc(logFC_inf)) %>%
-  mutate(across(where(is.numeric), round, 2)) %>%
+  mutate(across(where(is.numeric), \(x) round(x, 2))) %>%
   gt::gt() %>%
  gt::tab_header(
    title = gt::html("Notable Genes among <span style='color:#A37DE2;'>189</span> shared in Eye Score and Infection")) %>%
@@ -1843,44 +1874,37 @@ ggsave(plot = fig.s1, filename = here("results/figures/fig.s1.png"),
 ```{r}
 gseGO_inf_df <- gseGO_infection %>%
   data.frame() %>%
-    head(n=30) %>%
   mutate(ONTOLOGY = "BP") %>%
   mutate(comparison = "infection_all")
 
 gseGO_diet_df <- gseGO_diet_uninf %>%
   data.frame() %>%
-  head(n=30) %>%
   mutate(ONTOLOGY = "BP") %>%
   mutate(comparison = "diet_uninf")
 
 gseGO_ixn_df <- gseGO_ixd %>%
   data.frame() %>%
-  head(n=30) %>%
   mutate(ONTOLOGY = "BP") %>%
   mutate(comparison = "interaction_diet:infection")
 
 gseGO_infection_protein_df <- gseGO_infection_protein %>%
   data.frame() %>%
-  head(n=30) %>%
   mutate(ONTOLOGY = "BP") %>%
   mutate(comparison = "infection_protein")
 
 gseGO_infection_lipid_df <- gseGO_infection_lipid %>%
   data.frame() %>%
-    head(n=30) %>%
   mutate(ONTOLOGY = "BP") %>%
   mutate(comparison = "infection_lipid")
 
 gseGO_logLoad_df <- gseGO_logLoad %>%
   data.frame() %>%
-    head(n=30) %>%
   mutate(ONTOLOGY = "BP") %>%
   mutate(comparison = "pathogen_load")
 
 gseGO_ES_df <- gseGO_ES_ord %>%
   data.frame() %>%
   group_by(ONTOLOGY) %>%
-  head(n=30) %>%
   mutate(comparison = "eye_score")
 
 gseGO_all_df <- rbind(gseGO_inf_df, gseGO_diet_df, gseGO_ixn_df, 
@@ -1895,37 +1919,30 @@ gseGO_all_df %>%
 
 gseKEGG_inf_df <- gseKEGG_infection %>%
   data.frame() %>%
-    head(n=30) %>%
   mutate(comparison = "infection_all")
 
 gseKEGG_diet_df <- gseKEGG_diet_uninf %>%
   data.frame() %>%
-  head(n=30) %>%
   mutate(comparison = "diet_uninf")
 
 gseKEGG_ixd_df <- gseKEGG_ixd %>%
   data.frame() %>%
-  head(n=30) %>%
   mutate(comparison = "interaction_diet:infection")
 
 gseKEGG_infection_protein_df <- gseKEGG_infection_protein %>%
   data.frame() %>%
-  head(n=30) %>%
   mutate(comparison = "infection_protein")
 
 gseKEGG_infection_lipid_df <- gseKEGG_infection_lipid %>%
   data.frame() %>%
-    head(n=30) %>%
   mutate(comparison = "infection_lipid")
 
 gseKEGG_logLoad_df <- gseKEGG_logLoad %>%
   data.frame() %>%
-    head(n=30) %>%
   mutate(comparison = "pathogen_load")
 
 gseKEGG_ES_df <- gseKEGG_ES_ord %>%
   data.frame() %>%
-  head(n=30) %>%
   mutate(comparison = "eye_score")
 
 gseKEGG_all_df <- rbind(gseKEGG_inf_df, gseKEGG_diet_df, gseKEGG_ixd_df, 
@@ -2158,7 +2175,7 @@ fig.s4 <- merged_results %>%
               theme(legend.position='none')
         ),
         'Eye Score'=(
-            ggplot(mapping=aes(y=est,color=-log10(FDR_ES),label=goi)) +
+            ggplot(mapping=aes(y=Estimate,color=-log10(FDR_ES),label=goi)) +
               geom_hline(yintercept=0, linetype="solid", color = "grey30") +
               ggbeeswarm::geom_quasirandom(size=pt_size, na.rm=TRUE) + 
               ggrepel::geom_text_repel(direction = "y",
@@ -2425,7 +2442,7 @@ ts2
 
 read_docx() %>%
   body_add_flextable(value = ts2) |>
-  print(target = here("results/tables/supplemental_table_S2.docx"))
+  print(target = here("results/tables/supplement/supplemental_table_S2.docx"))
 ```
 
 
@@ -2440,6 +2457,9 @@ ts3 = gseGO_all_df |>
     rownames_to_column("rowname") |>
   dplyr::select(comparison, ID, Description, setSize, enrichmentScore, 
                 NES, pvalue, p.adjust, qvalue, rank, ONTOLOGY) |>
+  group_by(comparison) %>% 
+  arrange(pvalue) %>%
+  slice_head(n=30) %>%
   mutate(comparison = case_when(
     comparison == "infection_all" ~ "Infection (all)",
     comparison == "diet_uninf" ~ "Diet (Protein-Lipid)",
@@ -2469,7 +2489,7 @@ ts3 = padding(ts3, padding.top = 0.1, padding.bottom = 0.1, part = "all")
 
 read_docx() %>%
   body_add_flextable(value = ts3) |>
-  print(target = here("results/tables/supplemental_table_S3.docx"))
+  print(target = here("results/tables/supplement/supplemental_table_S3.docx"))
 
 ```
 
@@ -2547,3 +2567,135 @@ ES_results |>
     kable_styling("striped", latex_options = c("repeat_header"))
 ```
 
+
+# Supplemental Data
+
+Compile results into a single excel file
+```{r}
+# Load required library
+# pak::pak("openxlsx")
+library(openxlsx)
+
+wb <- createWorkbook()
+
+# README content
+readme <- data.frame(
+  Sheet = c("README", 
+            "topTags_infection_ALL", 
+            "topTags_diet_uninfected", 
+            "topTags_interaction_diet_inf", 
+            "topTags_lipid_infection", 
+            "topTags_protein_infection",
+            "topTags_logLoad_pathogen",
+            "Eye_Score_results",
+            "gseGO_all_df",
+            "gseKEGG_all_df"),
+  Description = c(
+    "This README sheet describes all subsequent sheets in this Excel workbook.",
+    "Results of differential expression analysis for infection (all birds).",
+    "Differential expression (diet effect in uninfected birds, Protein - Lipid).",
+    "Differential expression testing for the diet-by-infection interaction.",
+    "Differential expression for infection in lipid-fed birds only.",
+    "Differential expression for infection in protein-fed birds only.",
+    "Differential expression associated with pathogen load.",
+    "Results from Eye Score ordinal logistic regression of gene expression",
+    "GO enrichment results from gseGO analyses across multiple comparisons.",
+    "KEGG enrichment results from gseKEGG analyses across multiple comparisons."
+  )
+)
+
+# Add README
+addWorksheet(wb, "README")
+writeData(wb, "README", readme)
+
+# Write each results data frame to its own sheet
+# Ensure these objects exist in your environment before running this script
+addWorksheet(wb, "topTags_infection_ALL")
+writeData(wb, "topTags_infection_ALL", topTags_inf_edgeR)
+
+addWorksheet(wb, "topTags_diet_uninfected")
+writeData(wb, "topTags_diet_uninfected", topTags_diet_uninf_edgeR)
+
+addWorksheet(wb, "topTags_interaction_diet_inf")
+writeData(wb, "topTags_interaction_diet_inf", topTags_ixd_edgeR)
+
+addWorksheet(wb, "topTags_lipid_infection")
+writeData(wb, "topTags_lipid_infection", topTags_lipid_inf_edgeR)
+
+addWorksheet(wb, "topTags_protein_infection")
+writeData(wb, "topTags_protein_infection", topTags_protein_inf_edgeR)
+
+addWorksheet(wb, "topTags_logLoad_pathogen")
+writeData(wb, "topTags_logLoad_pathogen", topTags_logLoad_inf)
+
+addWorksheet(wb, "Eye_Score_results")
+writeData(wb, "Eye_Score_results", ES_results)
+
+addWorksheet(wb, "gseGO_all_df")
+writeData(wb, "gseGO_all_df", gseGO_all_df)
+
+addWorksheet(wb, "gseKEGG_all_df")
+writeData(wb, "gseKEGG_all_df", gseKEGG_all_df)
+
+# Save to file
+saveWorkbook(wb, file = here::here("results/tables/supplement/Compiled_Canary_Seq_Results.xlsx"), overwrite = TRUE)
+
+message("All results successfully compiled into 'Compiled_Canary_Seq_Results.xlsx'.")
+```
+<!-- TABLE TITLE: -->
+(ref:Reproducibility-SessionInfo-R-environment-title) R environment session info for reproducibility of results
+
+\renewcommand{\arraystretch}{0.8} <!-- decrease line spacing for the table -->
+```{r Reproducibility-SessionInfo-R-environment, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%', results='asis'}
+library("devtools")
+# library("knitr")
+
+df_session_platform <- devtools::session_info()$platform %>% 
+  unlist(.) %>% 
+  as.data.frame(.) %>% 
+  rownames_to_column(.)
+
+colnames(df_session_platform) <- c("Setting", "Value")
+
+kable(
+  df_session_platform, 
+  booktabs = T, 
+  align = "l",
+  caption = "(ref:Reproducibility-SessionInfo-R-environment-title)", # complete caption for main document
+  caption.short = " " # "(ref:Reproducibility-SessionInfo-R-environment-caption)" # short caption for LoT
+) %>% 
+  kable_styling(full_width = F,
+                latex_options = c(
+                  "hold_position" # stop table floating
+                ) 
+  ) 
+```
+\renewcommand{\arraystretch}{1} <!-- reset row height/line spacing --
+
+<!-- TABLE TITLE: -->
+(ref:Reproducibility-SessionInfo-R-packages-title) Package info for reproducibility of results
+
+\renewcommand{\arraystretch}{0.6} <!-- decrease line spacing for the table -->
+```{r Reproducibility-SessionInfo-R-packages, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width='100%', results='asis'}
+df_session_packages <- devtools::session_info()$packages %>% 
+  as.data.frame(.) %>% 
+  filter(attached == TRUE) %>% 
+  dplyr::select(loadedversion, date) %>% 
+  rownames_to_column
+
+colnames(df_session_packages) <- c("Package", "Loaded version", "Date")
+
+kable(
+  df_session_packages, 
+  booktabs = T, 
+  align = "l",
+  caption = "(ref:Reproducibility-SessionInfo-R-packages-title)", # complete caption for main document
+  caption.short = " " # "(ref:Reproducibility-SessionInfo-R-packages-caption)" # short caption for LoT
+) %>% 
+  kable_styling(full_width = F,
+                latex_options = c(
+                  "hold_position" # stop table floating
+                ) 
+  ) 
+```
+\renewcommand{\arraystretch}{1} <!-- reset row height/line spacing -->
