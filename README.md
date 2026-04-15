@@ -2,12 +2,7 @@
 
 This repository contains the code, data, and analysis accompanying the paper:
 
-"Diet driven differences in host tolerance are linked to shifts in global gene expression in a common avian host-pathogen system"
-
-Authors: Erin L. Sauer, Carson Stacy, Weston Perrine, Ashley C. Love, Jeffrey A. Lewis, Sarah E. DuRant
-
-Paper currently under review.
-Published on bioRxiv, 2024.
+Sauer, E.L., Stacy, C., Perrine, W., Love, A.C., Lewis, J.A. and DuRant, S.E. (2025), Diet Driven Differences in Host Tolerance Are Linked to Shifts in Global Gene Expression in a Common Avian Host-Pathogen System. Mol Ecol, 34: e17793. https://doi.org/10.1111/mec.17793
 
 ## Description
 In this study, we explore how diet influences the immune response of canaries following infection with Mycoplasma gallisepticum (MG), a significant avian pathogen. By conducting RNA-Seq analysis, we aim to understand the transcriptomic changes associated with diet composition alongside MG infection.
